@@ -1,0 +1,1567 @@
+# HermesScript 语言规范 v3.1
+
+| 项 | 内容 |
+|---|---|
+| 文档 | LANGUAGE v3.1（Phase 1 语言基线；v3.0 基础上并入 D-014） |
+| 状态 | **规范性**。语义以本文为准；与 `DECISIONS.md` 冲突时以 DECISIONS 为准（唯一例外见 §12.2） |
+| 上游 | `DECISIONS.md` D-009 / D-010 / D-011 / D-012 / D-013 / **D-014** / **D-023（末节）**、`docs/PRD.md` |
+| 实现 | 词法/语法/类型检查/codegen：`native/cpp/*`（C++，静态库 `libhermes_parser`，C ABI `hm_parse_*`）；业务校验/归档/链接：Go |
+| 配套 | `docs/IR.md`（IR 与归档格式）、`docs/ARCH.md`（系统架构） |
+| 一句话 | 一种**无循环、无递归、无用户函数、不可变绑定**的强类型编排语言。因此控制流是 DAG，所以最大步骤数、最大并发数、最大调用次数**在编译期可算**——这是语言设计对预算与反压的真实回报。 |
+
+### 变更记录
+
+| 版本 | 改动 |
+|---|---|
+| v3.0 | 首版。五阶段编译链路、`<T>` 消歧 R-TY-1..4、`parallel` 语义、四个静态上界、幂等证明、错误层级、诊断质量 |
+| **v3.1** | **并入 D-014（语法随库模型调整），另并入 D-023 末节的 `auth` 子句。11 处改动，全部是语法/契约层，不动 v3.0 的语义结论** |
+
+v3.1 的 11 处改动，逐条给出「为什么它不是风格问题」：
+
+| # | 改动 | 章节 | 来源 |
+|---|---|---|---|
+| 1 | `#include` **只吃 `.h`**；`#include "x.hermes"` 变编译错误（`E3015`）；实现靠 `#link` | §2.7 §9 | D-014.1 |
+| 2 | 顶层声明**默认私有**，加 `export`；符号表只认 `export` | §3.1 §3.5 | D-014.2 |
+| 3 | 新增 `#link <std/net>` / `#link "models"`，依赖写进源码、编进 `.hbc` 的 `requires` | §2.7 §9.5 | D-014.3 |
+| 4 | `backend` 拆声明（`.h`）/定义（`.hermes`）；地址走 `env(名, 字面量默认值)` | §3.1 §8.5 | D-014.4 |
+| 5 | 新增 `entry` 标注：恰好一个才可省略 `--workflow` | §3.1 §3.6 | D-014.5 |
+| 6 | **`input` 必须显式类型**，且其类型必须 `export`；请求 schema 由它生成 | §3.1 §4.8 | D-014.6 |
+| 7 | **`method` 只接受 6 个字面量**；省略时默认 `"GET"`（只读） | §3.3 §5.6 | D-014.7 |
+| 8 | `workflow` 名从**字符串字面量**改为**标识符**（D-014 示例隐含，未在条目里点名）：`workflow "support_bot"` → `workflow support_bot` | §3.1 | D-014 示例 |
+| 9 | `HttpError` 必须携带 `status` 字段（否则"订单不存在"分支写不出来）；`W5004` 降级为**启发式**警告 | §7.1 §12.1 L3 | D-014 末段 |
+| 10 | **撤销 v3.0 的「`catch` 体内不能 `return`」**（`E2012` 废弃） | §5.4 | 本版自裁（D-014 末段的写法要求它，见 §12.4 裁决 6） |
+| 11 | `backend` 定义可带 **`auth` 子句**（密钥只从 `env` 来、无默认值）；`env()` 的**元数按位置定**（地址位 2 个、`auth` 位 1 个） | §3.1 §2 §8 | D-023 末节 |
+
+> 第 8 条要单独说一句：`workflow "support_bot"` 变 `workflow support_bot` 不是排版差异。名字进符号表后就是**标识符**，
+> 于是 `--workflow support_bot` 的取值来自符号表而不是字符串匹配，`hermes ar t` / `E_LINK_*` 报的符号名也就没有
+> "带引号还是不带"的二义。字符串字面量名会让符号表同时接受 `"support_bot"` 与 `support_bot` 两种拼写。
+>
+> 第 10 条是**本版唯一一处撤销既有规则**的地方，理由见 §5.4：v3.0 说"允许 `return` 会让 trace 父子关系与实际执行不符"，
+> 但同一套论证会让 `if`/`match` 分支里也不能 `return`。而 D-014 末段要求的正是
+> `catch (HttpError e) { if (e.status == 404) { ... } }`——没有 `return` 的话，恢复出来的值无处安放。
+>
+> 另修三处 v3.0 自身的缺陷（与 D-014 无关，但同批改掉，避免工程师照错的写）：
+> ① §4.7 的注解示例写成 `string currency;  @enum("USD","CNY");`（双分号），与 §3.1 的
+> `Field = Type Ident ["?"] {Annotation} ";"` 矛盾；
+> ② §11.2 ④ 的 `idem_key = "{intent.order.order_id}"` 违反 §5.7 的 `Pure(e)`（`intent` 来自 `model.generate`，不纯）；
+> ③ §3.4 的 R-TY-2 写成"其余一切情形 `<` 是 LT"，漏了作用域——`#link <std/net>` 里的 `<` 由词法器吃掉，永不到达表达式解析器；
+> 且 §2.8 的 token 表漏登记了 `->`（ARROW）与 `:`（COLON）两个 v3.0 已经用到的 token。
+
+---
+
+## 1. 定位与范围
+
+### 1.1 它是什么
+
+HermesScript 描述"一次 AI 工作流执行"：读入一个强类型输入，串/并联若干次模型调用与 HTTP 工具调用，最后返回一个值。文件模型照搬 C（D-013），但**声明与实现的分界线是强制的**（D-014）：
+
+| 文件 | 对应 C | 内容 | 谁产出 |
+|---|---|---|---|
+| `.hermes` | `.c` | 实现：`#link` + `backend` 定义 + 带体的 `workflow` + 本 unit 私有 `struct` | 人写 |
+| `.h` | `.h` | 接口：`#include` + **`export`** 的 `struct` / `backend` 声明 / `workflow` 签名（无体） | `hermes header` 生成，可手改 |
+| `.hbc` | `.a` | 归档：可链接单元（多个 unit + 符号表 + 类型表 + `requires` + 签名） | `hermes build` / `hermes link` |
+| `#link` 指令 | `-l` | **链接输入**，写在 `.hermes` 源码里而不是命令行 | 人写 |
+
+两个方向各自单向：
+
+```
+   源码方向（人读的东西）                     二进制方向（机器读的东西）
+   #include "x.h"   ── 只给声明 ──┐
+   #link "x"        ── 只给实现 ──┤
+                                  ├──►  compile  ──►  x.hbc ──►  link  ──►  可执行 IR 集合
+   .hermes 的实现   ── 给出实现 ──┘                    （requires 在此校验）
+```
+
+**`#include` 与 `#link` 不是一回事，不许互换**：前者回答"它长什么样"，后者回答"它的代码在哪"。把两者合成一个 `#include`（v3.0 的做法）会得到一个无法回答的问题——"我 include 的到底是声明还是实现"，而这个问题只能在链接期回答，不能在词法期假装回答。
+
+### 1.2 编译链路（五阶段，D-011）与语言规范的对应
+
+| # | 阶段 | 语言 | 产物 | 本文对应章节 |
+|---|---|---|---|---|
+| 1 | Lexer + Parser（含 include 解析） | C++ | AST + 诊断 | §2 §3 §9 |
+| 2 | Type Checker（含幂等证明、上界计算） | C++ | 带类型标注的 AST | §4 §5 §6 §7 |
+| 3 | Codegen → JSON DAG | C++ | **IR（JSON）** | §10 + `IR.md` |
+| 4 | Static Analyzer（业务校验） | Go | 校验报告 + warning | §8（能力/预算可行性） |
+| 5 | Emit / Sign / Archive | Go | `.hbc` + `dist/<name>.sealed.hermes` | `IR.md` §7、`ARCH.md` §5.11 |
+
+**前端不依赖运行时**（D-011）：`libhermes_parser` 是纯 CPU、纯内存、**无 IO**、**无全局可变状态**、**`-fno-exceptions -fno-rtti`** 的静态库。所有 IO（读文件、展开 include 的候选路径、写产物）在 Go 侧；C++ 收字节、还字节。这条边界的收益：前端可被 Python 绑定或编辑器插件单独复用；且异常不会在 cgo 边界上变成未定义行为。
+
+### 1.3 它不是什么（Phase 1 的硬边界，不许偷偷实现）
+
+| 不做 | 因此可证的性质（这不是缺陷，是收益） |
+|---|---|
+| 无 `for` / `while`；`model.agent` 的 `max_steps` 与 `max_parallel_tools` 必须是常量 | 最大步骤数、最大调用次数可静态计算（工具上界 = `max_parallel_tools × max_steps`） |
+| 无用户自定义函数 | 泛型 `<T>` 的消歧只需一张**封闭内建表**（§3.4）；调用图是树 |
+| 无递归 | IR 是有限树 |
+| 无可变变量（`let` 不可重绑定，无赋值） | `parallel` 分支间零共享，无数据竞态 |
+| 无类/方法/接口 | 类型集合封闭，`catch` 可穷尽检查 |
+| 无浮点进入金额路径 | D-010.1，编译期拒 |
+| 无可变全局（语言层） | IR 与 trace 同构，replay 无需快照 |
+
+> **代价必须承认**：`parallel` 的元组不能存储、不能跨块传递；长流程要靠拆 workflow 而非写函数；重复逻辑只能复制。这些是 Phase 2 的评估项，不是 Phase 1 的 bug。
+
+### 1.4 黄金样例（本规范的验收基线，必须原样编译通过）
+
+**权威副本在 `examples/support_bot/`**（四个文件 + `input.json` + `README.md`）。本节逐字重复一遍，因为规范不能引用一个可能被改坏的外部文件；`tests/compiler/golden_support_bot_test.go` 负责断言两边**代码逐字节相等**——用 `go:embed` 读 `examples/` 下的真文件，**剥掉全部注释与空行**后与本节的代码块比对。剥注释是刻意的：注释是给人读的，若它进断言，规范里每补一句说明就要同步改样例，最后两边都会被逼着少写注释。**代码一行都不许差。**
+
+#### ① `models/order.h`
+
+```h
+export struct OrderInfo {
+    string order_id;
+    int status;         // 业务状态码。注意：这不是 HTTP 状态码（见 README §4）
+    cost amount;       // D-010.1：金额禁止 float
+}
+```
+
+#### ② `models/intent.h`
+
+```h
+#include "order.h"
+
+export struct Intent {
+    string action;      // "refund" / "logistics" / 其他
+    OrderInfo order;
+}
+```
+
+#### ③ `support.h`（对外契约，分发到无源码环境时只需要它 + `support_bot.hbc`）
+
+```h
+#include <std/net.h>
+#include <std/model.h>
+#include "models/intent.h"
+#include "models/order.h"
+
+export backend homonoia;
+
+export struct SupportInput {
+    string text;
+    string user_id;
+}
+
+export workflow support_bot(input: SupportInput, backend = homonoia) entry -> string;
+```
+
+#### ④ `support.hermes`（实现；编译入口是它）
+
+```h
+#include "support.h"
+
+#link <std/net>
+#link <std/model>
+
+backend homonoia = env("HOMONOIA_URL", "http://127.0.0.1:8080");
+
+workflow support_bot(input: SupportInput, backend = homonoia) entry {
+    auto intent = model.generate<Intent>(
+        prompt = "识别用户意图：{input.text}",
+        precision = "exact"
+    );
+    match (intent.action) {
+        case "refund": {
+            auto [order, history] = parallel {
+                auto o = tool.call<OrderInfo>(
+                    url = "https://api.internal.com/orders/{intent.order.order_id}",
+                    method = "GET"
+                );
+                auto h = tool.call(url = "https://api.internal.com/history/{input.user_id}");
+                return [o, h];
+            };
+            return model.generate(
+                prompt = "根据订单金额 {order.amount}，生成退款话术。",
+                precision = "fast"
+            );
+        }
+        default: { return "抱歉，我无法处理该请求。"; }
+    }
+}
+```
+
+#### 这个样例刻意固定下来的 8 个语法事实
+
+| # | 事实 | 若写错 |
+|---|---|---|
+| 1 | `workflow` 名是**标识符** `support_bot`，不是字符串 `"support_bot"` | `E2002` |
+| 2 | 顶层声明**必须 `export`** 才能被外部/链接看见；`.hermes` 里的 `workflow` 与 `backend` 定义**不带** `export`（`export` 已在 `.h` 的声明上出现一次） | `E3012`（重复 export）或 `W3013`（私有 workflow 恒为死代码——语言没有跨 workflow 调用） |
+| 3 | `input` **带类型** `SupportInput`，且该类型必须 `export` | `E3023` / `E3013` |
+| 4 | `#include` 只吃 `.h`；`#link` 只吃模块名；`tool.call`/`model.generate` 用了就必须 `#link` 对应 std | `E3015` / `E3016` |
+| 5 | `env("名","默认值")` 只出现在 `backend` 定义的右值位置 | `E3018` |
+| 6 | `entry` 在本 unit 恰好一个 | `E3021`/`E3022` |
+| 7 | `method` 只写字面量；`h` 那次调用省略 `method` ⇒ 默认 `"GET"` ⇒ 只读 | `E2016` |
+| 8 | `match` 必须有 `_`；`intent.action` 是 `string` | `E4018` |
+
+#### 与用户原始语法参考的 5 处刻意差异
+
+| # | 原文 | 本文 | 依据 |
+|---|---|---|---|
+| 1 | `float amount` | `cost amount` | D-010.1：金额禁止浮点（§4.3） |
+| 2 | `if (order.status == 404)` | 删掉 | D-010.2：404 已抛 `HttpError`，该分支不成立（`examples/support_bot/README.md` §4 给出正确写法） |
+| 3 | `auto user_input = input.text;`（`input` 无声明） | `input: SupportInput` | D-014.6：强类型不能从入口第一行就漏 |
+| 4 | `workflow "support_bot" (backend = homonoia)` | `workflow support_bot(input: ..., backend = homonoia) entry` | D-014.2/5/6 + 变更记录第 8 条 |
+| 5 | `backend homonoia = "http://..."` | `.h` 声明 + `.hermes` 里 `env("HOMONOIA_URL", "http://127.0.0.1:8080")` | D-014.4：硬编码地址的库无法分发 |
+
+
+---
+
+## 2. 词法
+
+### 2.1 源文件
+
+- UTF-8，允许 BOM（解析前剥除）；非法 UTF-8 → `E1001`（报字节偏移）。
+- 行尾 `\n` 或 `\r\n`；`hermes fmt` 统一输出 `\n`。
+- 单文件上限 8 MiB（`E1002`）；include 展开后总 token 数上限 2,000,000（`E1003`）；模块数上限 256（`E3004`）；include 深度上限 32（`E3003`）。
+
+### 2.2 注释
+
+```h
+// 行注释
+/* 块注释，不嵌套（与 C 一致） */
+```
+
+不嵌套是**故意**的：嵌套注释让 `/* /* */` 的解释依赖实现，而 `fmt` 必须语义不变地重排注释。注释在 AST 上以"附着到下一个 token"的方式保留，供 `fmt` 还原（§13）。注释**不进 IR**（IR 是执行计划，注释无执行语义）。
+
+### 2.3 空白与换行
+
+空白仅用于分隔 token；**换行不是语句终结符**（语句以 `;` 或 `}` 终结），因此 `fmt` 可自由折行而不改语义——这是 `fmt` 幂等性的基础。
+
+换行有语义的唯三处：`//` 注释到行尾；`#include` 是**行指令**（`#` 必须是行内第一个非空白字符，路径必须同行闭合）；`#link` 也是行指令（同样必须同行闭合，且以 `;` 结尾）。
+
+### 2.4 标识符与保留字
+
+```
+Ident = ( Letter | '_' ) { Letter | Digit | '_' } ;   Letter = A-Z a-z ;  Digit = 0-9
+```
+
+| 类别 | 词 |
+|---|---|
+| 关键字（16） | `struct` `backend` `workflow` `let` `if` `else` `match` `case` `default` `retry` `delay` `try` `catch` `return` `parallel` **`export`** |
+| 字面量关键字（2） | `true` `false` |
+| 类型名（6，仅类型位置） | `string` `int` `float` `bool` `json` `cost` |
+| **保留命名空间（6）** | `model` `tool` `json` `input` `memory` `vector` |
+| 错误类型名（6，仅 `catch` 位置） | `Error` `NetworkError` `HttpError` `ModelError` `ContractError` `CircuitOpenError` |
+| **上下文关键字（3）** | `entry`（仅 workflow 签名的 `)` 之后）、`env`（仅 `backend` 定义的 `=` 之后）、`auth`（仅 `BackendDef` 的地址（`env(...)` 或字符串字面量）之后，且后随 `env`） |
+| 通配（1） | `_`（仅 `let` 解构丢弃位）。兜底分支用 `default:`，不再用 `_` |
+
+**保留命名空间是硬约束**（`E1004`）：`model`/`tool`/`json`/`input` 不能作变量名、struct 名、字段名、backend 名。理由见 §3.4——泛型消歧的正确性依赖"内建被调者集合封闭且可判定"。
+
+**为什么 `entry` / `env` / `auth` 是上下文关键字而不是保留字**：三者都出现在**唯一**的语法位置，所以判定只需定长前瞻——
+`)` 之后若见 `IDENT("entry")` 且其后是 `{` 或 `->`，就是标注（那里本来不允许出现标识符）；`backend X =` 之后若见 `IDENT("env")` 且后随 `(`，就是环境读取（那里本来只允许字符串字面量）；`backend X = <地址>` 之后若见 `IDENT("auth")` 且后随 `IDENT("env")`，就是 `auth` 子句（那里本来只允许 `;`，见下）。语法上完全可判定。
+而把这三个词设为保留字会白拿走三个高概率标识符：配置 struct 里的 `env` 字段、审计模型里的 `entry` 字段、认证配置里的 `auth` 字段都很常见——为一个定长前瞻就能解决的问题付这个代价不值得。**判定规则必须是规则，不是"实现自己看着办"**，所以上表把它写成规范。
+
+**`auth` 这一处单独写清，免得下次还要重新推一遍**：`BackendDef` 的地址部分读完（`env(...)` 的 `)` 或字符串字面量）之后，按文法合法的下一个 token **只有 `;`**——产生式里已经没有任何还能吃标识符的位置了。于是"这里冒出一个标识符"本身就说明它不是普通标识符，判据与 `entry` / `env` 完全同类：**那里本来不允许标识符**。再看它为何不必成为关键字——`auth` 是配置结构里最普通不过的字段名（`.homo` 的 `gateway` 就叫 `auth`），设成保留字会把它从每个 struct 字段、变量名、backend 名里拿走，而这个代价换不到任何判定能力：「地址之后见 `IDENT("auth")` 且后随 `IDENT("env")`」是 2 token 定长前瞻，且只可能在这一个位置成立。**所以它是上下文关键字，§2.4 关键字表那一行（数量 16）一个字不变。**
+
+
+### 2.5 字面量
+
+| 字面量 | 语法 | 语义 |
+|---|---|---|
+| 整数 | `0` \| `[1-9][0-9_]*` \| `0x[0-9a-fA-F_]+` | `int`（int64）。**无八进制**：`0755` 是十进制 755（与 C 的刻意差异，前导零在配置里常见） |
+| 浮点 | `D.D` \| `D.D e[±]D` \| `D e[±]D` | `float`（binary64）。`1.` 合法，`.5` 非法（`E1005`，避免与路径 `.` 混淆） |
+| 金额 | `$` `D` `[.D{1,6}]` | `cost`，单位 **micro-USD**。`$1.50` = 1,500,000。>6 位小数 → `E1006`（§12.2） |
+| 字符串 | `"..."`（单行，含插值） | `string` |
+| 布尔 | `true` `false` | `bool` |
+
+**字符串必须单行**：字面换行 → `E1007`。这条让"未闭合字符串"立刻在行末失败，而不是吞掉后面几百行——错误恢复质量的关键。
+
+转义：`\\` `\"` `\n` `\r` `\t` `\u{XXXX}`（1–6 位十六进制，必须合法标量值，不接受代理对）。未知转义 → `E1008` 并列出全部合法转义。
+
+### 2.6 字符串插值（设计裁决 Q2）
+
+```h
+"orders/{user_id}"
+"意图：{input.text}"
+"a{{b"                     // 字面 "a{b"
+"金额 {order.amount_cents} 元"
+```
+
+**规范规则（5 条，全部可测）**
+
+| # | 规则 |
+|---|---|
+| I-1 | 字符串内 `{` 开启插值，到同层第一个 `}` 结束 |
+| I-2 | 字面 `{` 写作 `{{`。**`}` 不需转义**：插值之外的 `}` 是普通字符（刻意非对称：`{` 有歧义，`}` 没有） |
+| I-3 | 插值内容**只允许路径** `ident ( "." ident )*`。不允许任意表达式、调用、算术、嵌套插值、索引 |
+| I-4 | 静态类型必须 **text-able**：`string`/`int`/`float`/`bool`/`cost`/`json`。**struct 不允许**（必须取到叶子） |
+| I-5 | 插值依赖**静态可见**：编译期把每个字面量的插值路径记入 IR（`interp_deps`），`hermes explain` 直接打印"此 prompt 依赖 `input.text`、`intent.order.order_id`"，无需运行 |
+
+**为什么 I-3 限制为路径（这是本文最容易被质疑的一条）**
+
+1. **消除第二个 `{` 歧义源**。`{` 同时是块分隔符。若插值内允许完整表达式，则 `{` 之后要重新进入表达式解析器，而表达式解析器又要处理 `match` 臂里的 `case ...: {`——两个 `{` 语法位置互相嵌套，错误恢复会给出荒谬定位（用户看到"第 87 行 `}` 少了"，实际错在第 3 行）。
+2. **`explain` 的核心价值**是"这个 prompt 依赖哪些输入"。允许任意表达式时这变成不可静态回答的问题。
+3. **需要计算时有更清晰的写法**：`auto amount = order.amount_cents;` 然后 `{amount}`。符合"无隐式魔法"。
+
+**`{` 的两种角色如何彻底消除歧义**：由**词法状态**决定，不由语法分析决定。进入 `"` 后切到 `STRING` 模式；该模式内 `{` 只有插值含义、`"` 退出、换行报 `E1007`。块分隔符 `{` 只可能出现在 `NORMAL` 模式。**不存在需要回溯的情形**。
+
+### 2.7 `#include` 与 `#link` 的词法
+
+两条指令都是**单 token**：识别行首的 `#` 后要求紧跟 `include` 或 `link`，按下一非空白字符分流 `<...>` 或 `"..."`，整条内容作为载荷。因此 `<` 在指令行内**不会**被当作泛型或关系运算符。
+
+| 指令 | 形态 | 载荷 | 行尾 | 语义 |
+|---|---|---|---|---|
+| include | `#include <std/net.h>` | 角度路径 | **无** `;`（路径自行闭合） | 取声明（类型信息） |
+| include | `#include "models/order.h"` | 引号路径，相对当前文件 | 无 `;` | 同上 |
+| link | `#link <std/net>` | 角度模块名，仅 `std` 域 | **不带**分号（同 `#include`） | 取实现（内置 `stdlib.hbc` 成员） |
+| link | `#link "models"` | 引号模块名 | 不带分号 | 取实现（`models.hbc`） |
+
+为什么 `#include` 不带 `;` 而 `#link` 必须带：`#include` 的载荷在 `>` 或 `"` 处**已经自闭合**，再加分号是冗余且容易被 `fmt` 误删；`#link` 的引号形式之后没有闭合字符（`"models"` 后面可以是注释），必须有显式终结符才能与"下一行是 `#include`"区分开。**刻意的不对称，理由是可判定性，不是历史包袱。**
+
+约束：
+
+- `<...>` 内禁止 `>`、换行、空字节；include 的两种形式都禁止路径分量 `.` / `..`（`E1009`，防穿越）。
+- `#link "..."` 的载荷**不是路径**，是模块名：必须匹配 `Ident ( "/" Ident )*`（`E1010`），且**不得**带 `.hbc` 后缀（`#link "models.hbc"` → `E1010`，文案："模块名不是文件名，`#link "models"` 会解析到 `models.hbc`"）。这条防的是"看起来像路径、以为是路径，于是以为能写绝对路径"。
+- `#link` 只允许出现在 `.hermes` 里（`E3017`）。理由见 §9.1。
+- 内置域之外的 `<>` → `E3001`（`#link <net>` 报"内置模块名必须形如 `<std/名字>`"）。
+
+### 2.8 Token 种类（实现契约）
+
+```
+EOF IDENT INT FLOAT MONEY STRING(parts) INCLUDE(path,mode) LINK(spec,mode)
+STRUCT BACKEND WORKFLOW LET IF ELSE MATCH RETRY DELAY TRY CATCH RETURN PARALLEL EXPORT
+TRUE FALSE TYPE(which) RESERVED_NS(which) ERR_TYPE(which) UNDERSCORE
+LBRACE RBRACE LPAREN RPAREN LBRACKET RBRACKET SEMI COMMA DOT COLON AT
+LT LE GT GE EQEQ NE ANDAND OROR BANG PLUS MINUS STAR SLASH PERCENT ARROW COLON
+```
+
+> `mode ∈ {angle, quote}`。`ARROW` 是 `->`（workflow 返回类型），`COLON` 是 `:`（`case`/`default` 臂与字段声明共用）。
+> `FATARROW`（`=>`）在 v3.1 存在过，**v3.2 起取消**：`match` 臂改为 C 风格的 `case X:` / `default:`。
+> 取消理由：它只出现在一个语法位置，没有任何第二种用途；而 `case`/`default` 与语言整体 C 风格一致，
+> 且 `default` 这个词本身就说清了「这是兜底」，比 `_` 更难被误读。
+
+
+---
+
+## 3. 语法
+
+### 3.1 EBNF（完整，无省略；`.hermes` 与 `.h` 各一套顶层产生式）
+
+```ebnf
+; ---- 两套顶层：实现文件与接口文件 ----
+ImplFile    = { Directive } { ImplDecl } EOF .
+HeaderFile  = { Directive } { HdrDecl  } EOF .
+
+Directive   = INCLUDE | LINK .
+
+ImplDecl    = DeclVis StructDecl | DeclVis BackendDef | DeclVis WorkflowDecl .
+HdrDecl     = DeclVis StructDecl | DeclVis BackendSig | DeclVis WorkflowSig .
+DeclVis     = [ "export" ] .
+
+StructDecl  = "struct" Ident "{" { Field } "}" .
+Field       = Type Ident [ "?" ] { Annotation } ";" .
+Type        = BaseType { "[" "]" } .
+BaseType    = "string" | "int" | "float" | "bool" | "json" | "cost" | Ident .
+Annotation  = "@" Ident [ "(" Lit { "," Lit } ")" ] .
+
+BackendSig  = "backend" Ident ";" .
+BackendDef  = "backend" Ident "=" ( StringLit | EnvExpr ) [ "auth" EnvExpr ] ";" .
+EnvExpr     = "env" "(" StringLit [ "," StringLit ] ")" .  ; 仅允许出现在此处（§2.4）。
+                                                           ; 元数按位置定：地址位 2 个（缺默认值 → E3018），auth 位 1 个（多给默认值非法，见 §3.1 注 8）
+
+WorkflowDecl= "workflow" Ident "(" [ ParamList ] ")" [ "entry" ] [ "->" Type ] Block .
+WorkflowSig = "workflow" Ident "(" [ ParamList ] ")" [ "entry" ] "->" Type ";" .
+ParamList   = InputParam { "," Param } .
+InputParam  = "input" ":" Type .                           ; 固定标签，不是普通标识符
+Param       = Ident "=" Expr .
+
+; ---- 语句 ----
+Block       = "{" { Stmt } "}" .
+Stmt        = LetStmt | IfStmt | MatchStmt | RetryStmt | TryStmt | ReturnStmt | ExprStmt .
+
+LetStmt     = "let" Pattern "=" Expr ";" .
+Pattern     = Ident | "[" [ DestrElem { "," DestrElem } ] "]" .
+DestrElem   = Ident | "_" .
+
+IfStmt      = "if" "(" Expr ")" Block { "else" "if" "(" Expr ")" Block } [ "else" Block ] .
+
+MatchStmt   = "match" "(" Expr ")" "{" { MatchArm } "}" .
+MatchArm    = "case" StringLit ":" Block | "default" ":" Block .
+
+RetryStmt   = "retry" "(" IntLit [ "," "delay" "=" IntLit ] ")" Block .
+
+TryStmt     = "try" Block { "catch" "(" CatchType Ident ")" Block } .
+CatchType   = "NetworkError" | "HttpError" | "ModelError" | "ContractError"
+            | "CircuitOpenError" | "Error" .
+
+ReturnStmt  = "return" Expr ";" .
+ExprStmt    = Expr ";" .
+
+; ---- 表达式 ----
+Expr        = OrExpr .
+OrExpr      = AndExpr { "||" AndExpr } .
+AndExpr     = EqExpr { "&&" EqExpr } .
+EqExpr      = RelExpr { ( "==" | "!=" ) RelExpr } .
+RelExpr     = AddExpr { ( "<" | "<=" | ">" | ">=" ) AddExpr } .
+AddExpr     = MulExpr { ( "+" | "-" ) MulExpr } .
+MulExpr     = UnaryExpr { ( "*" | "/" | "%" ) UnaryExpr } .
+UnaryExpr   = [ "!" | "-" ] PostfixExpr .
+PostfixExpr = Primary { "." Ident | "[" StringLit "]" } .
+
+Primary     = Lit | Path | CallExpr | ParallelExpr | "(" Expr ")" .
+Path        = Ident { "." Ident } .
+CallExpr    = Callee [ "<" Type ">" ] "(" [ Arg { "," Arg } ] ")" .
+Callee      = ( "model" | "tool" | "json" ) "." Ident .
+Arg         = Ident "=" Expr .
+
+ParallelExpr= "parallel" "{" { Stmt } RetArray "}" .
+RetArray    = "return" "[" [ Expr { "," Expr } ] "]" ";" .
+
+Lit         = IntLit | FloatLit | MoneyLit | StringLit | "true" | "false" .
+```
+
+**注**：
+1. `PostfixExpr` 的 `"[" StringLit "]"` 只允许**字符串常量**键（`json` 字段访问）；`j[expr]` 非法（`E2010`）。
+2. `Callee` 只允许 3 个命名空间 ⇒ **没有一等函数**，`model.generate` 不能赋值给变量。
+3. `.h` 里出现带体的 `workflow` → `E3005`；出现语句 → `E3006`；出现 `#link` → `E3017`。
+4. `DeclVis` 是**可见性**，不是语法装饰：只有 `export` 的符号进符号表（§3.5）。`.hermes` 与 `.h` 都可写 `export`，但同一符号**只能写一次**（`E3012`）。惯例：`export` 写在 `.h` 的声明上，`.hermes` 的定义不重复；单文件法（没有 `.h`）时直接写在 `.hermes` 上。
+5. `WorkflowSig` 的 `-> Type` **必填**（头文件没有体，没有东西可供推断）；`WorkflowDecl` 的 `-> Type` **可省**，省略时由各 `return` 推断（§3.7）。定义写了就与推断结果比对，不一致 → `E3014`。
+6. `InputParam` 是**固定标签** `input`，不是普通标识符：因此不存在"参数名叫 input 的普通参数"，也不需要为此把 `input` 做成保留字（它本来就在保留命名空间里，§2.4）。`input` 可整体省略；省略时该 workflow 无输入，请求体必须是空对象 `{}`。
+7. **地址位**的 `env()` 只在 `BackendDef` 右值位置合法；两个实参都必须是字符串字面量（`E3018`）。这是**静态审计**要求：不解析任何东西就能读出"这个 backend 在没设变量时去哪里"。
+8. **`auth` 子句**：`backend X = <地址> auth env("KEY");` —— 密钥的来源是一个**子句**，既不是地址的一部分，也不是地址 `env(...)` 的第三个实参。它的右值**必须是 `env(名)` 单实参形式**；给了两个实参（即给了默认值）→ **`E2018`**，文案必须说清"密钥没有安全默认值：给了默认就等于允许没配也能跑，而那只会在运行期变成一个 401"。三条边界：
+   - **允许与地址的变量名相同**（`backend h = env("H", "http://127.0.0.1:8080") auth env("H");` 不报错）。这不是可静态判定的错——同一个环境变量被用来装两个值，只有到了运行期解析出来才知道，语言不做这种语义检查，由运行期失败暴露。（注意地址位的 `env` 是**两**参，见第 7 条；`env("H")` 单独出现在地址位本身就是 `E3018`，与 `auth` 无关。）
+   - 一个 `backend` 定义**最多一个** `auth` 子句；写第二个 → 同一个 `E2018`（不为"重复"单开错误码：两者都是"这个位置上的 `auth` 子句不合法"）。
+   - 理由与第 7 条同构：**不解析任何东西就能读出这个 backend 用哪个环境变量装密钥**，而"有没有默认值"正是审计结论的差别所在——有默认值意味着"没配也能跑"。
+
+
+### 3.2 运算符优先级（紧 → 松）
+
+| 级 | 运算符 | 结合 | 说明 |
+|---|---|---|---|
+| 1 | `.` `[]` `()` 后缀 | 左 | 字段 / 常量键 / 调用 |
+| 2 | `!` `-` 一元 | 右 | 无一元 `+` |
+| 3 | `*` `/` `%` | 左 | `%` 仅 `int` |
+| 4 | `+` `-` | 左 | string 禁止 `+`（§4.4） |
+| 5 | `<` `<=` `>` `>=` | 左 | `a<b<c` ⇒ `(a<b)<c` ⇒ 类型错 |
+| 6 | `==` `!=` | 左 | 仅同类型 |
+| 7 | `&&` | 左 | 两侧 `bool` |
+| 8 | `\|\|` | 左 | 两侧 `bool` |
+
+**无位运算、无三元、无赋值、无 `++/--`**。`match` 取代三元；`let` 取代赋值。
+
+### 3.3 语句形态约束
+
+| 约束 | 理由 |
+|---|---|
+| `if`/`match` 是**语句**不是表达式 | 于是不存在"分支产出值"⇒ 无 φ 节点/合流值 ⇒ IR 是纯控制树，无需 SSA。要产出值就在分支里 `return` |
+| `parallel { }` 体内 `return` 只允许最外层一个，且必须是数组字面量 | 元组唯一入口；其他位置 `return` → `E2011` |
+| `workflow` 体必须**所有路径**都 `return` | 否则可能不返回值（`E4001`）。判定是出口可达性分析，不是"数一数有没有 return"：`match` 各臂全 `return` 且必须有 `_` 时出口不可达——黄金样例正是这个形状 |
+| 同一 `try` 内子类型必须写在父类型之前 | 否则后者不可达 → `E4002`（硬错：写反的 catch 顺序几乎总是 bug，且会让专用分支的错误落到通用分支，静默降级） |
+| `match` 必须有 `_` 分支 | 无 `_` 时"全不命中"路径无定义（`E4018`） |
+| `retry` 的次数与 `delay` 必须是整数字面量 | 上界与成本必须编译期可算（`E2015`） |
+| `precision` 必须是字符串字面量 | 同上（`E2014`） |
+| **`method` 必须是 6 个字面量之一**：`"GET"` `"HEAD"` `"POST"` `"PUT"` `"PATCH"` `"DELETE"`；省略时默认 `"GET"` | 非字面量 → `E2016`；字面量但不在集合内 → `E2017`。**D-014.7**：幂等证明（§5.7）依赖"编译期知道这是只读方法"。若 `method` 可由运行期表达式决定，`retry` 包着 POST 也拦不住——证明就是假的。限定字面量后，"只读"成为编译期事实 |
+| 所有内建调用的参数必须**命名**且**纯** | 求值顺序确定 + 上界可算 + trace 树不重叠（§5.1 E-3） |
+| 顶层声明必须显式 `export` 才进符号表 | 默认私有（D-014.2）。理由见 §3.5 |
+
+### 3.4 `<T>` 与 `<` 的消歧（设计裁决 Q1）
+
+解析器最容易写错的地方。给出**确定性规则 + 形式化理由 + 退化边界**。
+
+#### 规则
+
+```
+R-TY-1  「类型实参」判定（四条同时成立）：
+        (a) `<` 左侧的 token 序列恰好构成 Callee，即 `model.<ident>` / `tool.<ident>` / `json.<ident>`；
+        (b) `<` 之后、候选 Type 之后必须紧跟 `>`；
+        (c) `>` 之后必须紧跟 `(`；
+        (d) 候选 Type 必须能被 Type 产生式**完整**解析。
+        满足 → 类型实参列表，不存在第二种解释。
+
+R-TY-2  其余一切**表达式上下文**中的情形：`<` 是关系运算符 LT，`>` 是 GT。
+        注意作用域：`#include <std/net.h>` / `#link <std/net>` 里的 `<...>` 已由
+        词法器整体吃成一个 token（§2.7），**永不到达表达式解析器**。因此 R-TY-2 的
+        前提是"已经进入表达式解析"，不是"任何地方看到 `<` 就当 LT"。v3.0 把它写成
+        "其余一切情形"是漏了这条作用域，v3.1 补上。
+
+R-TY-3  Type 的形态是 `BaseType ( "[]" )*`，BaseType 为 6 个类型名或一个 Ident。
+        因此 R-TY-1 最多只需 3 token 前瞻（Ident, ">", "("）。实现是 LL(3)，
+        **不需要回溯、不需要 mark/reset**。
+
+R-TY-4  词法器不产生 `>>` token（语言无移位运算），因此没有 C++ 的 `>>` 拆分问题。
+        `<=` / `>=` 是合法 token，但不可能出现在类型实参内部；
+        在 `Callee <` 之后读到 `<=` 时直接判 R-TY-1 失败 → 按 R-TY-2 处理。
+```
+
+#### 为什么充分（形式化理由）
+
+> `model`/`tool`/`json` 是**保留命名空间**，不能作变量、字段名或 struct 名。因此任何形如 `model . X` 的表达式**只可能是内建被调者**，不可能是"变量 `model` 的字段 X"。而 `model.generate` / `tool.call` / `json.*` 的集合**封闭且有限**（无用户函数、无一等函数、无别名）。于是"左侧是不是内建被调者"是**词法 + 一张内建表**就能回答的问题，与作用域无关、与类型推导无关——这就是 R-TY-1(a) 可以只靠语法判定的原因。
+
+#### 退化边界（必须知道的四条）
+
+| # | 退化情形 | 当前可达？ | Phase 2 修补 |
+|---|---|---|---|
+| D1 | 用户给内建命名空间起别名（`using g = model.generate;`） | **不可达**（无别名语法） | 禁止别名指向泛型内建，或改全量回溯解析 |
+| D2 | 嵌套泛型（`List<OrderInfo>`），`>` `>` 相邻需拆分 | **不可达**（无嵌套泛型类型） | 类型实参上下文内把 `>>` 拆成两个 `>`（需上下文相关词法） |
+| D3 | 用户函数/用户泛型（`foo<Bar>(x)`） | **不可达**（无用户函数） | R-TY-1(a) 扩为"被调者可能是用户函数"，必须 speculative parse + 64 token 预算 |
+| D4 | `a < b` 中 `a` 恰是内建被调者（`model.generate < 5`） | 可达，但**必然类型错**（内建调用无值语义） | 诊断应指向"内建调用缺少 `(`"，而不是"类型不匹配" |
+
+#### 诊断质量要求（验收项）
+
+对 `model.generate<Intent(x);`（漏 `>`）必须给出：
+
+```
+error[E2001]: 类型实参列表未闭合
+  --> support.hermes L12:30
+   |
+12 |     auto intent = model.generate<Intent(
+   |                                    ^ 期望 '>'，读到 '('
+   = 为什么: model.generate<T>(...) 的形态是 '<' 类型 '>' 紧接 '('。
+   = 怎么改: model.generate<Intent>(prompt = "...", precision = "fast")
+```
+
+不是 "unexpected token"。
+
+### 3.5 可见性与符号表（D-014.2）
+
+**规则**：顶层声明（`struct` / `backend` / `workflow`）默认**私有**；只有带 `export` 的符号进符号表。
+
+| 概念 | 定义 |
+|---|---|
+| **编译单元（unit）** | root `.hermes` + 它 `#include` 的闭包（所有 `.h`）。`.hbc` 里的一个 member 就是一个 unit |
+| **私有** | 只在本 unit 内可见；不进 IR 的 `exports`、不进 `.hbc` 的符号表、链接后消失 |
+| **`export`** | 进符号表 ⇒ 可被 `hermes ar`/`header` 看见、可被别的 `.hbc` 通过 `#include 它的.h` + `#link 它` 使用、是死代码剥离的**根集合** |
+| `export` 写两次 | `E3012`：同一符号的声明（`.h`）与定义（`.hermes`）都写 `export`。**惯例是只写在声明上**；写两次不是更保险，是让"这个符号到底由谁发布"变成两处事实 |
+| `export` 的符号无人定义 | **编译期不报**，链接期必须被满足，否则 `E_LINK_UNRESOLVED`。等价于 C 的 `extern`：声明是承诺，兑现是链接期的事 |
+| 私有 `struct` 重名 | 仍报 `E4014`（同 unit 内 struct 名必须唯一，不论可见性）。这不是为可见性让步的规则：IR 的类型表用**非限定名**做 `$defs` 键（§4.6），两个同名 struct 会让生成的 schema 二义，而 schema 字节进请求哈希 |
+
+**为什么默认私有（两个具体失效模式，不是洁癖）**
+
+1. **符号空间污染**：每个库的内部辅助类型（`_RetryState`、`_Page`）都进符号表后，两个库同时被链接就会产生命名冲突——而冲突的双方根本不该被外人看见，作者也没有动机预先给它们加前缀。
+2. **死代码剥离会剥错**：剥离器必须知道"哪些是根"。若一切默认导出，则**所有**符号都是根，剥离等于不剥（`.hbc` 虚胖）；反过来若剥离器自己猜"没人用就剥"，它会把 `support.h` 声明、只被外部消费者用到的 `SupportInput` 剥掉——于是分发出去的库里没有请求契约。显式 `export` 让根集合成为**语法事实**，剥离器不需要猜。
+
+**这条规则与 `#link` 是一对**：`export` 决定"我提供什么"，`#link` 决定"我使用什么"。两侧都是源码里的显式事实，所以 `hermes ar t` 能同时列出它们，链接器能在**不读任何源码**的前提下完成符号解析与版本校验。
+
+### 3.6 `entry`：默认入口（D-014.5）
+
+| 情形 | 行为 |
+|---|---|
+| root unit 里恰好 1 个 `entry`，命令行没给 `--workflow` | 用它 |
+| root unit 里 0 个 `entry`，没给 `--workflow` | `E3021`：列出本 unit 全部可运行的 export workflow，要求 `--workflow` 指定 |
+| root unit 里 ≥2 个 `entry`，没给 `--workflow` | `E3022`：列出全部 entry 及其位置，**不猜**（"第一个声明的"是坏默认值：重排声明就会换入口，而重排是 `fmt` 允许的操作） |
+| 给了 `--workflow X` | 用 X；若 X 不是本 unit 的 export workflow → `E3025` |
+| `entry` 但该符号没被 `export` | `E3024`：入口必须在符号表里，否则 `hermes run` 按名字解析时根本看不到它 |
+
+`entry` 是 workflow 签名的一部分：`.h` 与 `.hermes` 上的 `entry` 必须一致（`E3014`），`hermes header` 会把它写进生成的 `.h`。
+`entry` 在非 root unit（被 `#link` 进来的库）里没有程序入口含义，**允许存在但不参与选择**——一个库可以有"建议入口"，那是文档，不是控制流。
+
+### 3.7 返回类型：定义处推断，声明处必填
+
+| 文件 | 规则 |
+|---|---|
+| `.hermes`（定义） | `-> Type` 可省略；省略时由**所有** `return` 表达式统一（unify）得到。无法统一 → `E4021`，列出每个 `return` 的类型与位置 |
+| `.hermes`（定义，写了 `-> Type`） | 推断结果必须与它相同，否则 `E3014` |
+| `.h`（签名） | `-> Type` **必填**。没有体就没有东西可推断，头文件不能靠猜 |
+
+推断结果写进 IR 的 `workflows[].returns`，也是 `hermes header` 生成 `-> Type` 的来源。
+
+`return` 表达式的类型不能是 **tuple**（`E4022`）：元组只能被立即解构，不能存储、不能跨块传递、不能进 JSON。允许从 workflow 返回元组会让"返回值"变成语言里唯一能把元组带出 `parallel` 的通道，而 `parallel` 的元组语义（§5.2）明确禁止这件事。
+
+---
+
+## 4. 类型系统（设计裁决 Q5）
+
+### 4.1 类型集合（封闭，无用户定义类型）
+
+| 类型 | 表示 | 用途与禁止 |
+|---|---|---|
+| `string` | UTF-8 字节串 | 通用文本 |
+| `int` | **int64** | 计数、状态码、金额分值。选 64 位因为与 Go 预算账本同为 int64，避免"编译期过、运行期溢出" |
+| `float` | binary64 | 分数、温度、阈值。**禁止进入金额/预算路径**（D-010.1） |
+| `bool` | — | 条件 |
+| `json` | 动态 JSON | 逃逸口（§4.5） |
+| `cost` | int64 @ 1e-6 USD | 金额（§4.3） |
+| `T[]` | 数组 | 元素为 `BaseType`；**不支持嵌套数组**（`T[][]` → `E4003`，schema 的 `items` 只生成一层） |
+| `struct S` | 具名记录 | 字段顺序进入 schema 字节（§8.3） |
+| `HttpResult<T>` | 内置 `{ int status; T body; json headers; }` | 仅由 `tool.call` + `allow_status` 产生（§5.6） |
+| `Tuple(T1..Tk)` | 仅由 `parallel` 产生 | **不可命名、不可存储、不可跨块传递**；只能立即解构 |
+
+**没有**：`null` 类型（可空用 `T?` 字段）、`any`（用 `json`）、具名 tuple、函数类型、`unit`（`return` 必须带值）。
+
+### 4.2 可空性
+
+只有 **struct 字段**可空（`Type?`）。变量、参数、返回值都不可空。
+
+- `auto x = s.opt;`（`s.opt` 为 `string?`）→ `E4004`："可空字段必须显式收窄"。
+- Phase 1 无 `null` 字面量，故**无收窄语法**。因此规则是：**可空字段只能用于插值与 `json.encode`**，不能参与算术或作参数。
+- 这条限制很小（可空字段主要表达"模型可省略此字段"），却让空指针类问题在语言层消失。Phase 2 加 `null` 字面量与 `if (x != null)`。
+
+### 4.3 `cost`：为什么是 micro-USD 而非 8 位小数（§12.2 的偏差项）
+
+| 项 | 值 |
+|---|---|
+| 表示 | int64，1 单位 = 1e-6 USD |
+| 字面量 | `$` + 十进制，≤6 位小数；`$1.5` = 1,500,000 |
+| 范围 | ±9.22e12 USD，远超任何预算 |
+| 算术 | `cost ± cost → cost`；`cost * int → cost`；`cost / int → cost`（向零截断）；`cost + int` → `E4005` |
+| 精度 | 结果不足 1 单位的余数**向零截断**，`explain` 标注（不四舍五入：四舍五入会让"最坏情况总花费"可能超预算上界） |
+| 与账本 | 直接就是 ARCH §5.4 的 micro-USD，**零转换、零舍入** |
+
+**理由**：若用 8 位小数（1e-8），每个值进预算账本时都要缩放+舍入，而这个舍入点正是 D-010.1 要消灭的漏洞。6 位对 token 单价完全够（典型 15 USD/Mtok ⇒ 每 token 15 µUSD）。若确需 8 位，应新增 `decimal`（Phase 2 任意精度），而不是把 `cost` 改成 int128。
+
+### 4.4 运算类型规则（含刻意禁止项）
+
+| 运算 | 允许 | 禁止（编译错 + 码） |
+|---|---|---|
+| `+ - * /` | `int⊗int→int`、`float⊗float→float`、`cost±cost`、`cost*int`、`cost/int` | `int + float`（`E4006`，**无隐式提升**：隐式提升与金额漏洞同源）；`string + string`（`E4007`，改用插值）；`cost + float`（`E4008`） |
+| `%` | 仅 `int` | 其他（`E4009`） |
+| `== !=` | 同类型；`json⊗json` | 跨类型（`E4010`）；`float == float` 允许但 `W4001` |
+| `< <= > >=` | `int`/`float`/`cost`/`string`（UTF-8 字节序） | `bool`/`json`/`struct`（`E4011`） |
+| `! && \|\|` | `bool` | 其他（`E4012`，无 truthiness） |
+
+### 4.5 `json` 逃逸口的静态/动态边界
+
+| 允许 | 语义 |
+|---|---|
+| `auto j = input;` | `input` 的类型**恒为**签名里声明的 `S`（D-014.6），因此 `j` 是 struct、`j.field` 是**静态检查**的字段访问。要动态视图必须显式 `json.encode` 再 `json.decode`——没有隐式通道。v3.0 的"未声明 `input` 即 `json`"已废除（`E3023`） |
+| `j.field` / `j["field"]` | 结果仍是 `json`；运行时不存在 → `ContractError` |
+| `json.encode(x)` | 任意可编码类型 → `string`（canonical JSON，规则见 ARCH §5.3） |
+| `json.decode(s)` | `string` → `json`；非法 → `ContractError` |
+| `json.as_int/​as_string/as_bool/as_float(j)` | 显式窄化，失败 → `ContractError`（带 `expect`/`got`） |
+| 插值 `{j}` | 运行时是 string → **原样文本**（不加引号）；其余 → canonical JSON 文本 |
+
+| 禁止 | 原因 |
+|---|---|
+| `json` 参与算术 | 类型不安全，必须显式 `json.as_int` |
+| `json` 作 `catch` 类型 | 无意义 |
+| 隐式 `json → string` | 必须 `json.as_string` 或插值（插值是唯一的隐式通道，且只用于文本生产） |
+
+**这条边界的意义**：程序里**只有一个地方**能引入运行时类型错误——`json.as_*` 与 `json` 字段访问。每处都在 IR 里标记为 `dyn_site`、trace 里也标记，所以"线上那个 ContractError 从哪来"永远一眼可定位。
+
+### 4.6 struct → JSON Schema 映射表（Q5 后半）
+
+| HermesScript | 生成的 JSON Schema | 备注 |
+|---|---|---|
+| `string` | `{"type":"string"}` | |
+| `int` | `{"type":"integer"}` | **不是** `number`：`grammar.py` 的 `_INT` 与 `_NUM` 是两个节点 |
+| `float` | `{"type":"number"}` | |
+| `bool` | `{"type":"boolean"}` | |
+| `cost` | `{"type":"integer","x-hermes-unit":"micro_usd"}` | 不用 string（模型会输出 `"1.20"`/`"￥1.2"` 变体）；不用 number（精度）。`x-` 扩展键不被 `grammar.py` 当作已知关键字，故不会触发它的拒绝逻辑 |
+| `json` | `{}`（any） | 若后端不接受空 schema，降级为 7 类型 union（§8.4） |
+| `T[]` | `{"type":"array","items":<T>}` | |
+| 嵌套 `struct S` | `{"$ref":"#/$defs/S"}`，`S` 挂在根 `$defs` | `grammar.py` 只支持**本地** `$def` 引用 |
+| `T?` | `{"anyOf":[{"type":T},{"type":"null"}]}`，且字段名**仍进 `required`** | OpenAI strict 与 `to_strict_json_schema` 的形状；把可选字段移出 `required` 会被 OpenAI 拒绝 |
+| `@enum("a","b")`（仅 `string`） | `{"type":"string","enum":["a","b"]}` | §4.7 |
+| `@pattern("^INV-[0-9]{6}$")`（仅 `string`） | `{"type":"string","pattern":"..."}` | 走 `internal/schema/pattern.go` 的 RE2 子集翻译（ARCH §5.6 的差异归一仍有效） |
+| `@max/@min/@maxLen/@format` | **不支持 → `E4013`** | `grammar.py` 明确拒绝这些关键字；生成一个上游会拒的 schema 比不生成更坏（build 绿、运行红） |
+
+**根 schema 与 `$defs` 命名（四条）**
+
+**①** 每个 `model.generate<T>` 的 `<T>` 生成一份完整 schema 文档，作为 `response_format` 发出。三种情形要分清：
+
+| 写法 | 发 `response_format` | 返回类型 | 诊断 |
+|---|---|---|---|
+| `model.generate<Intent>(...)` | 是，`schema(Intent)` | `Intent` | — |
+| `model.generate<json>(...)` | 否（`{}` 不是有约束的 schema） | `json` | `W4002`：无输出结构约束，按 D-007 做事后校验 |
+| `model.generate(...)`（无类型实参） | 否 | **`string`**（原始文本，引擎不做任何解析） | `W4002` |
+
+无类型实参返回 `string` 而不是 `json` 是刻意的：没有 schema 时**没有任何理由相信输出是合法 JSON**，把它标成 `json` 会让每个字段访问都变成运行期 `ContractError`，而那正是强类型要消灭的东西。想要动态视图就写 `<json>`，那是显式声明"我知道它可能不是 JSON"。
+
+**②** `$defs` 键 = struct **非限定名**。
+
+**③** 两个不同文件的 struct 同名 → **编译错 `E4014`**，给出两处定义位置并建议改名。**不自动加前缀**：schema 字节进请求哈希，自动改名会让"改 A 文件导致 B 工作流请求哈希变化"，同时破坏缓存与可重现性。
+
+**④** `$defs` 键顺序 = 类型表 id 升序（声明顺序）；字段顺序 = 声明顺序。
+
+### 4.7 注解（唯一的元数据通道）
+
+```h
+export struct Invoice {
+    string id;                              // → {"type":"string"}
+    string currency @enum("USD","CNY");
+    string code     @pattern("^INV-[0-9]{6}$");
+}
+```
+
+注解写在**字段名之后、分号之前**（`Field = Type Ident ["?"] {Annotation} ";"`，§3.1）。v3.0 的示例误写成 `string currency; @enum(...);`（分号在注解前），与产生式矛盾——已按产生式修正：一个字段只有一个终结分号，`fmt` 才能在不理解注解的情况下安全重排。
+
+注解只能出现在字段上、只能作用于 `string`（`@enum`/`@pattern`）、参数只能是字面量。**注解不改变类型**，只改变生成的 schema。注解集合封闭（未知注解 → `E4015` 并列出全部合法注解）。
+
+### 4.8 `input` 的类型就是 HTTP 请求契约（D-014.6）
+
+`hermes serve` 的 API 契约不是另写一份 OpenAPI 文档，而是**从 `input` 的类型生成**：
+
+| 项 | 规定 |
+|---|---|
+| 请求体 | `SupportInput` 的**实例本身**：`{"text":"...","user_id":"u_1"}`。**不**嵌在 `"input"` 键下 |
+| 生成的 schema | 与 §4.6 完全同一套映射与同一份字节稳定性规则（§8.3）；根 schema = `schema(SupportInput)` |
+| `required` | 所有**非** `T?` 字段。可选字段仍进 `required`、类型写成 `anyOf[T,null]`（§4.6） |
+| 无 `input` 参数 | 请求体必须是 `{}`；非空 → 运行期 `ContractError`（HTTP 400） |
+| `input: json` | 允许（逃逸口），请求体任意 JSON，但打 `W5005`："入口没有结构契约，`hermes serve` 无法为你生成文档，也无法在入口挡住畸形请求" |
+| 生成时机 | **编译期**，随 IR 一起落进 `.hbc` 的 `schemas`。运行期只读不算 |
+
+**为什么不嵌一层 `{"input": {...}}`**：`hermes run --input file.json` 读的文件与 HTTP 请求体必须**字节同形**。若 CLI 读 `{"text":...}` 而 HTTP 收 `{"input":{"text":...}}`，则"本地测试通过"与"线上可用"验的不是同一个东西——而 `input.json` 与请求体同形，是能用同一个 fixture 跑通两条路径的唯一方式。
+
+**为什么在编译期生成而不是运行期**：运行期生成意味着 `serve` 用来校验的 schema 与它对外宣称的文档来自两条代码路径，二者会漂移；而漂移的表现是"文档说必填、实际不校验"，这比没有文档更坏。编译期生成让二者是**同一份字节**。
+
+---
+
+## 5. 求值语义
+
+### 5.1 基本规则
+
+| 规则 | 内容 |
+|---|---|
+| E-1 | 语句按出现顺序求值。`let` 在初始化表达式求值**完成后**绑定名字 |
+| E-2 | 参数求值顺序 = **签名声明顺序**（不是书写顺序）。命名参数可乱序书写，但求值按声明顺序 ⇒ trace 里同一次调用的 span 顺序在所有调用点一致 |
+| E-3 | **参数表达式必须纯**（`E5001`）：参数位置不允许 `model.generate`/`tool.call`/`json.decode` |
+| E-4 | `if`/`match` 恰好执行一条分支；条件必须 `bool` |
+| E-5 | `retry(n, delay=D) { B }` 最多执行 `n+1` 次 |
+| E-6 | `try { B } catch (T e) { C }` 至多匹配一个 catch（按书写顺序，第一个类型匹配者胜出） |
+| E-7 | `parallel { ... return [e1..ek]; }` 值为长度 k 的元组，与调用侧 `auto [a1..ak]` **按位置**配对 |
+
+**E-3 的理由**：参数里的嵌套调用会让三件事同时失去确定性——(a) 预算预留顺序（父调用的预留必须发生在其依赖的子调用之前，嵌套则无法在预留前知道要预留多少）；(b) trace 树（父 span 早于子 span 开始，但父请求体依赖子结果 ⇒ 区间重叠，时间线失去意义）；(c) 静态上界（"一次调用"内部还藏调用）。**所以先把子调用 `let` 出来。**
+
+### 5.2 `parallel` 完整语义（设计裁决 Q3）
+
+#### 作用域
+- 独立词法作用域；体内 `let` **不泄漏**（`E5002`）。
+- 体外变量在体内**可见且只读**（一切不可变，天然无竞态）。
+- 体内无赋值 ⇒ 不存在"分支 A 改了、分支 B 看到"。
+
+#### 元组配对
+- `parallel` 值类型 = `Tuple(T1..Tk)`，`Ti` 为体内 `return` 数组第 i 元素类型。
+- `auto [a1..am] = parallel {...}`：**`m` 必须等于 `k`**，否则 `E5003`（编译期——两个长度都是静态常量）。
+- `k == 0`（`return [];`）合法，调用侧须 `auto [] = ...`。
+- 丢弃某值写 `_`：`auto [order, _] = parallel {...}`。
+
+#### 并发上限
+三者最小值，前两个是编译期常量：
+
+```
+effective_concurrency = min( k,                     // 静态分支数
+                             backend.max_parallel,  // backend 声明，默认 8
+                             policy.bulkhead )      // 运行期配置
+```
+
+`k` 静态 ⇒ §6 的 `max_concurrency` 上界可算。`k > backend.max_parallel` 时编译期 `W5001`（"分支数超过 backend 并发上限，实际并发 N"）——**不报错**，工作流仍正确，只是部分串行化。
+
+#### 错误传播（这条决定 trace 形状与预算行为）
+
+**快速失败 + 确定性选择 + 全部收尸。**
+
+1. 任一分支失败 → 立即 `cancel` 其余分支的 `context`。
+2. 等待**所有**分支真正结束（不许"抛错就返回"，否则 goroutine/子进程泄漏，违反 ARCH R-NF-04）。
+3. 抛出的错误 = **失败分支中索引最小者**；其余失败挂 `.suppressed[]`。
+4. 被取消的分支 span = `cancelled`（不是 `failed`，也不是 `ok`）。
+5. 同时有失败与取消时，`parallel` 节点 span = `failed`，归因取索引最小失败分支。
+
+**为什么按索引而非到达顺序**：到达顺序依赖调度 ⇒ 同一输入两次运行会报不同的错 ⇒ replay 与 live 不一致，trace 的 `failure` 字段失去可比性。按索引是纯函数。代价是"可能报一个不是根因的错"，用 `suppressed[]` 弥补——审计者能看到全部失败。
+
+#### 预算行为（与 ARCH INV-1 的接缝）
+
+`parallel` 在**启动任何分支前**，把 k 个分支的估算上界**一次性全部预留**（all-or-nothing）。任一预留失败 → 一个分支都不启动，抛 `BudgetError`。
+
+- 代价：预留量 = 各分支上界之和，实际用量可能远小于此（短分支提前完成）；差额在 `Settle` 归还。
+- 为什么必须原子：否则出现"分支 1 已在跑、分支 2 预留失败"的中间态；要么杀掉分支 1（浪费已花的钱），要么让分支 2 无预留执行（违反 INV-1）。两者都不可接受。
+
+#### 嵌套
+
+| 项 | 规则 |
+|---|---|
+| 允许嵌套 | 是 |
+| 深度上限 | **4**（`E5004`） |
+| 静态分支积上限 | **256**（`E5005`）——所有路径上 `k` 之积的最大值。它同时是 `max_concurrency` 上界与预留扇出上界，必须有硬顶 |
+| `parallel` 内 `retry` | 允许；幂等证明（§5.7）跨层级生效 |
+| `retry` 内 `parallel` | 允许；此时 `parallel` 的**每个分支**都要满足幂等要求（整块会重入） |
+
+### 5.3 `if` / `match`
+
+- `if` 条件必须 `bool`；`else if` 链按顺序求值，首个为真者执行。
+- `match` 主表达式的类型决定臂的合法性：Phase 1 只允许 **`string` 或 `json`** 作主表达式（`E4019` 其他类型），臂为字符串字面量；`_` 必须有（`E4018`）；重复字面量 → `E4020`。
+- `match` 臂内必须 `return`（因为 `match` 是语句且不产出值）。
+
+### 5.4 `try` / `catch`
+
+- 从内向外匹配；内层已捕获的错误不会传到外层。
+- **catch 体内允许 `return`**（v3.1 修订，理由见下）；也允许 `let`/`if`/`match`/`retry`/`parallel`/嵌套 `try`。
+- 捕获后若 catch 体没有 `return`，执行继续到 `try` 语句之后。
+- `catch (T e)` 里的 `e` 是一个**只读**结构值，字段按 §7.1 静态检查（`e.status` 只在 `HttpError` 上有；写成 `NetworkError` 上访问 `status` 就是 `E4016`）。
+
+**v3.1 撤销了 v3.0 的「catch 体内不能 return」。** v3.0 的理由是"catch 的职责是恢复；允许 `return` 会让控制流出现第二出口，trace 里 `try` 节点的父子关系与实际执行不符"。这个理由站不住：
+
+1. 同一套论证会让 `if`/`match` 分支里也不能 `return`——它们同样"只执行一条路径"。分支能 return，catch 就能 return，这不是新问题。
+2. **"降级答案"是最常见的恢复形式**：`catch (HttpError e) { if (e.status == 404) { return "订单不存在"; } }`。禁止它，等于要求作者在 catch 里"无值恢复"；而语言没有可变绑定、也没有从块里带值出来的语法，恢复出来的东西无处安放——结果是**错误处理根本写不出来**。这不是严格，是缺功能。
+3. 对 trace 无害：未被执行的 `return` 节点不产生 span，与未命中的 `if` 分支完全同构。`max_steps` 本来就是**上界**（§6.3），从不要求等于实际 span 数。
+
+**剩下的要求**：catch 里的 `return` 类型必须与 workflow 返回类型统一（`E4021`）；catch 体的 `return` 与 body 的 `return` 一起参与 §3.7 的推断。
+
+### 5.5 `retry`
+
+```
+attempt 1 → 失败 → sleep(delay_1) → attempt 2 → ... → attempt n+1
+```
+
+- 退避公式（**全抖动**，与 ARCH §5.7 的 `retry.go` 一致）：
+
+```
+cap_i   = min(delay_cap_ms, delay × 2^(i-1))     // delay_cap_ms 来自 policy，默认 8000
+sleep_i = uniform_int( 0, cap_i )                // 由引擎的可注入 RNG 产生（可复现）
+下界     = max(sleep_i, Retry-After 头 × 1000)    // 上游明确要求等更久时听上游
+```
+
+- 重试耗尽后抛**最后一次**的错误，并在其 detail 里带 `attempts = n+1`。
+- 只重试"可重试"类错误：`NetworkError`、`HttpError`(5xx/429/503/529)、`ModelError`(输出不合法)。`ContractError`/`CircuitOpenError` 不重试（重试不会改变结果）。
+- **`retry` 块的幂等前提由编译期证明**（§5.7）。
+
+### 5.6 `tool.call` 的契约（D-010.2）
+
+| 参数 | 必填 | 语义 |
+|---|---|---|
+| `url` | 是 | 字符串（可插值） |
+| `method` | 否（默认 `"GET"`） | **必须是 6 个字面量之一**：`"GET"`/`"HEAD"`/`"POST"`/`"PUT"`/`"PATCH"`/`"DELETE"`。非字面量 → `E2016`，字面量但不在集合内 → `E2017`（§3.3、D-014.7） |
+| `timeout` | 否 | 整数字面量，毫秒；默认取 policy |
+| `allow_status` | 否 | 整数字面量数组，如 `[404, 409]` |
+| `idempotent` | 否 | `true`/`false` 字面量 |
+| `idem_key` | 否 | 字符串（可插值），**必须纯**（§5.7） |
+| `header` | 否 | `json` 或 struct（生成 header） |
+| `body` | 否 | struct/`json`/`string` |
+
+**返回类型（这条是 D-010.2 的核心）**：
+
+| 情形 | 返回类型 | 非 2xx 的行为 |
+|---|---|---|
+| 无 `allow_status`（默认） | `T`（`<T>` 指定；未指定则为 `json`） | **抛 `HttpError`**，不返回业务值 |
+| 有 `allow_status = [404]` | `HttpResult<T>` = `{ int status; T body; json headers; }` | 列表内的状态码作为正常返回（`status` = 该码，`body` 尽力解析；解析失败为 `json` 空对象）；列表外仍抛 `HttpError` |
+
+**因此"订单不存在"必须写成捕获，不能写成字段比较**：
+
+```h
+try {
+    auto order = tool.call<OrderInfo>(url = "...", method = "GET");
+    auto msg = "订单 {order.order_id} 已找到";
+} catch (HttpError e) {
+    if (e.status == 404) { auto msg = "订单不存在，请核对订单号"; }
+}
+```
+
+`if (order.status == 404)` 在默认契约下**永远不成立**：404 时 `order` 根本没被绑定，执行流在 `tool.call` 那一行就跳走了。这也是 `HttpError` **必须**携带 `status` 字段的原因（§7.1）——否则"订单不存在"这个业务上最常见、最需要给用户一句人话的分支，在语言里根本写不出来。
+
+编译器对 `if (order.status == 404)` 只能发**启发式**警告 `W5004`，不能报错：它无法区分"业务字段恰好叫 `status`，且在 200 响应里等于 404"（罕见但类型上完全合法）与"作者误以为拿到了 HTTP 状态码"。这条松点如实登记在 §12.1 L3，不假装能静态判定。
+
+**为什么不做"自动把 404 当正常返回"**：那会让"HTTP 层失败"和"业务层返回"混在一个类型里，调用方永远无法确定 `order` 是"订单"还是"错误响应"。用类型区分（`T` vs `HttpResult<T>`）是唯一能让调用点自解释的做法。
+
+### 5.7 `retry` 幂等证明（设计裁决 Q8）
+
+**位置**：类型检查之后、codegen 之前的独立 pass（`native/cpp/check_idem.cpp`）。它需要类型信息（区分 `tool.call` 与其他调用）和词法嵌套关系（`retry` 块），但不需要 IR。
+
+**规则**：对**每一个** `retry` 节点 R，R 子树内（含更深层的 `retry`）的**每一个** `tool.call` 必须满足三者之一：
+
+| # | 条件 | 引擎行为 |
+|---|---|---|
+| ① | `idempotent = true` | 原样重发 |
+| ② | `idem_key = <纯表达式>` | 每次注入同名 `Idempotency-Key` 头 |
+| ③ | `method` ∈ {`GET`, `HEAD`} | 只读，天然幂等 |
+
+不满足 → `E5007`（§11.2 ④）。
+
+**`idem_key` 的表达式约束**：必须是**纯表达式**（`Pure(e)` 可判定）：
+
+```
+Pure(lit)                    = true
+Pure(input.path)             = true        // input 在一次 run 内固定
+Pure(x)  where x is a let-name whose init is Pure  = true
+Pure(model.generate(...))    = false       // 每次调用结果可能不同
+Pure(tool.call(...))         = false       // 响应可能不同
+Pure(arith/cmp/interp of Pure args) = true
+Pure(其他)                    = false
+```
+
+`idem_key` 不纯 → `E5009`："幂等键必须由输入决定；若由模型输出或工具响应决定，重试时键会变，去重失效"。
+
+**为什么放在编译期**：运行期无法知道"这个调用点了能不能安全重试"——它能拿到的只有 URL 和方法字符串，而服务端的幂等性是一个**声明性事实**，只能由作者声明或由方法语义推定。语言能拿到静态调用点，就该在 build 时判死，让"重试导致重复扣款"这类事故不可能上线（R-CB-06 的编译期化）。
+
+`model.generate` 在 retry 块内**视为可重入**（有预算预留保护，重试计费可核销），无需声明。
+
+---
+
+## 6. 编译期静态上界（设计裁决 Q7）
+
+无循环、无递归、无用户函数 ⇒ 控制流是结构化树（故必是 DAG）⇒ 以下四个量**可判定**，不是估算。
+
+### 6.1 递归定义（规范）
+
+记 `M`/`T`/`S`/`W` 为"最大模型调用数 / 最大工具调用数 / 最大执行步数 / 最大并发分支数"：
+
+```
+M(call_model)=1  T=0  S=1        M(call_tool)=0  T=1  S=1
+S(let)=1  S(return)=1  其他表达式：M=T=S=0
+
+seq        M=ΣM(c)   T=ΣT(c)   S=ΣS(c)   W=max W(c)
+if/match   M=max     T=max     S=max     W=max        （分支互斥）
+try        M=M(body)+max M(catch_i)   S=S(body)+max S(catch_i)
+           W=max(W(body), max W(catch_i))
+retry(n)   M=(n+1)×M(B)  T=(n+1)×T(B)  S=(n+1)×S(B)  W=W(B)   （顺序重入，不加并发）
+parallel   M=ΣM(Bi)  T=ΣT(Bi)  S=ΣS(Bi)  W=ΣW(Bi)
+```
+
+`workflow` 上界 = body 上界。块缺失 `return` 时仍按上述算——上界只需**不小于**真值。
+
+### 6.2 上界的四个去处
+
+| 上界 | 去处 | 违反时 |
+|---|---|---|
+| `max_model_calls` | 运行期预算预留的扇出上界（`parallel` 预留 = 分支 `M` × 单次 `max_tokens` 上界） | — |
+| `max_tool_calls` | 执行器并发子进程上界 ⇒ 决定 cgo 线程预算（ARCH §6.2） | — |
+| `max_steps` | trace 的 span 数上界 ⇒ trace 字节上界；可静态判定 `max_bytes` 是否够 | 不够时 `W6001` |
+| `max_concurrency` | 反压窗口静态上界 `min(上界, backend.max_parallel, policy.bulkhead)` | 不可能超过 |
+
+全部写入 `.hbc` 成员元数据（`bounds`），`hermes run` 读出直接用，**运行期不重算**。
+
+### 6.3 哪一条不是"可判定"而是"上界"
+
+> **prompt 字节长度（及由此推出的 token 数）不是可判定量，只能是上界。**
+> 因为插值 `{input.text}` 的长度由运行时输入决定。
+
+`economics.prompt_bytes_upper` 基于**声明的输入规模上限** `assumptions.input_bytes_upper`（默认 1 MiB）计算。算法、"为什么它是上界而非预测"的论证、以及 `cost_upper_micro_usd` 的公式见 `docs/IR.md` §6。
+
+**一句话**：本语言能给出的是**成本上界**（可证），不是**成本预测**（不可证）。宣传时必须写"上界"。用它做两件事是安全的：① 判断"这个工作流**理论上能不能**装进预算"；② 作为 `parallel` 预留的扇出上界。用它做"这次大概花多少钱"是错的。
+
+---
+
+## 7. 内置错误类型层级（设计裁决 Q9）
+
+### 7.1 层级（封闭、名义、单一根）
+
+```
+Error                      ← 唯一根；catch (Error e) 兜住全部可捕获者
+├── NetworkError           ← 连接失败/超时/对端重置（无 HTTP 响应）
+├── HttpError              ← 收到响应但状态码不被接受
+├── ModelError             ← 模型层失败（输出无法解析/不满足契约/上游模型错误）
+├── ContractError          ← 契约破裂（schema 校验失败、json.as_* 窄化失败、工具响应不符）
+├── CircuitOpenError       ← 熔断 open，请求未发出
+└── BudgetError            ← 预算不足（**唯一不可捕获**，见 7.3）
+```
+
+无用户自定义错误类型（无用户函数，无处声明），无多重继承，无包装语法。层级写死在编译器里，`catch (T e)` 的类型集合封闭。
+
+#### 7.1.1 每个错误类型携带的字段（`e.field` 的静态契约）
+
+`catch (T e)` 的 `e` 是只读结构值，字段访问与 struct 字段一样**静态检查**。这是 D-014 的直接要求：`catch (HttpError e) { if (e.status == 404) ... }` 必须写得出来，而它依赖 `HttpError` 有 `status`。
+
+| 类型 | 字段 | 说明 |
+|---|---|---|
+| `NetworkError` | `kind: string`（`timeout`/`refused`/`reset`/`dns`）、`url: string`、`elapsed_ms: int` | 无 HTTP 响应 |
+| `HttpError` | **`status: int`**、`url: string`、`method: string`、`body_prefix: string`（≤1 KiB，按 policy 脱敏）、`attempts: int` | 有响应但状态码未被接受 |
+| `ModelError` | `provider: string`、`model: string`、`kind: string`（`upstream`/`invalid_output`/`truncated`）、`status: int`（上游无状态码时为 0） | |
+| `ContractError` | `where: string`（`model_output`/`tool_body`/`json_narrow`）、`expect: string`、`got: string`、`path: string` | 契约破裂 |
+| `CircuitOpenError` | `provider: string`、`model: string`、`open_until_ms: int` | 请求未发出 |
+| `BudgetError` | `limit_micro_usd: int`、`spent_micro_usd: int`、`requested_micro_usd: int` | 不可捕获（§7.3），字段只为 trace 与 `--explain` |
+
+约束：
+
+1. **只读**：没有构造语法，`e.status = 500` 不成立（无赋值语句）。错误的产生权只属于引擎。
+2. **不可存**：`auto s = e.status;` 合法（`int` 是值类型）；`auto x = e;` → `E4023`——错误对象不能离开 `catch` 块，否则它的生命周期跨出了产生它的那次失败，trace 里"这个错误已被恢复"的判断会失效。
+3. **字段集合封闭**：新增字段是 `ir_version` 的 minor 变更；删除或改类型是 major（`IR.md` §10）。程序里访问不存在的字段 → `E4016`，与 struct 走同一条诊断路径。
+4. `body_prefix` 必须脱敏后截断（Authorization/Set-Cookie/长 token 按 policy 打码），且**永不进 trace 全文**——它进 trace 的是 `body_sha256` 与前缀。
+
+### 7.2 `catch` 匹配规则
+
+- `catch (T e)` 匹配 `T` 及**其所有子类型**。
+- 兄弟互不匹配：`catch (HttpError e)` **不会**接住 `NetworkError`。
+- 同一 `try` 内，若前一个 catch 的类型是后一个的父类型，后者不可达 → `E4002`（硬错）。不可达 catch 几乎必然是把顺序写反了，而它会让本该走专用分支的错误落到通用分支，静默降级。
+- `catch (Error e)` 捕获除 `BudgetError` 外全部。
+
+### 7.3 `BudgetError` 不可捕获（`E5006`）
+
+`catch (BudgetError e)` 编译失败。理由：预算是 **run 级**不变量（ARCH INV-1：`spent ≤ limit` 恒成立）。允许捕获即允许程序在预算耗尽后继续花钱，INV-1 当场失效——而 ARCH §5.4 整个账本设计（预留必须先于请求）就是为保证这条。预算耗尽的正确语义是**run 以 partial 结果 halt**（退出码 3，ARCH §7.2），由引擎决定，不由被编排的程序决定。
+
+替代做法：把大 workflow 拆成多个 workflow，由外层调度器按预算分别发起。
+
+### 7.4 到 PRD 6 值归因闭集的映射
+
+映射在**引擎侧**（`internal/errs/table.go`），不在语言侧——语言只负责把错误**分类正确**。判定顺序**从上到下，首个命中者胜**（顺序敏感：429 既是 4xx 又是容量）：
+
+| 错误类型 | 附加条件 | Attribution | Subtype | 计熔断 |
+|---|---|---|---|---|
+| `CircuitOpenError` | — | `circuit` | — | ❌ |
+| `BudgetError` | — | `budget` | — | ❌ |
+| `HttpError` | status = 429 | `policy` | `quota` | ❌ |
+| `HttpError` | status ∈ {503, 529} | `policy` | `capacity` | ❌ |
+| `HttpError` | status ∈ {502, 504} | `transport` | `timeout` | ✅ |
+| `HttpError` | 其他 4xx | `upstream_contract_drift` | — | ✅ |
+| `HttpError` | 其他 5xx | `transport` | — | ✅ |
+| `NetworkError` | — | `transport` | `timeout`/`refused` | ✅ |
+| `ModelError` | 输出不满足 schema / 无法解析 | `model_contract_violation` | — | ❌ |
+| `ModelError` | 上游拒绝（模型不存在等） | `upstream_contract_drift` | — | ✅ |
+| `ContractError` | 工具响应体不符 | `upstream_contract_drift` | — | ✅ |
+| `ContractError` | `json.as_*` 窄化失败 | `model_contract_violation` | — | ❌ |
+
+> `catch` 捕获错误**不改写** trace 里已记录的归因：该 span 仍是 `status=failed` + 原归因，父 span 可以 `ok`。审计者因此能看到"这里失败过但被恢复了"，而不是"什么都没发生"。这是 R-TR-03 契约证据的一部分。
+
+---
+
+## 8. backend、precision 与 schema 编码（设计裁决 Q10）
+
+### 8.1 `precision` 映射
+
+| HermesScript | 上游 `tier` | `response_format` | 语义 |
+|---|---|---|---|
+| `"exact"` | `exact` | `{"type":"json_schema","json_schema":{"name":T,"strict":true,"schema":S}}` | 逐位一致（约束解码，非法字符不可生成） |
+| `"fast"` | `tolerance` | 同上 | 结构受约束，数值/字符串不保证逐位一致 |
+| `"perf"` | `speed` | 同上 | 同上，优先吞吐 |
+
+上游的 tier 集合恰为 `(exact, tolerance, speed)`，故是 1:1 映射，不是发明新词。
+
+`precision` 必须是字符串字面量（`E2014`），因为它参与静态上界与 build 报告。
+
+### 8.2 不支持约束解码的 backend 上 `exact` 的降级（必须显式）
+
+| 情形 | 行为 |
+|---|---|
+| `kind = "homonoia"` 且 `supports_tier = true` | `exact` 正常 |
+| 其他 backend + `exact` + 未声明 `exact_fallback` | **编译错 `E5008`** |
+| 其他 backend + `exact_fallback = "fast"` | 降级为 `fast`；build 打 `W5002`；trace 记 `precision.effective="fast"` 与 `precision.degraded_from="exact"` |
+| 其他 backend + `fast`/`perf` | 正常；若连 `response_format` 都不支持则 `constraint.mode="post_hoc"` 并打 `W5002` |
+
+`E5008` 文案见 §11.2 ⑧ 之后（同码族）。核心："不许静默降级"——静默降级比报错更坏，因为用户会以为拿到了强约束。
+
+### 8.3 schema 字节稳定性（六条）
+
+生成的 schema 会进入请求体 ⇒ 其字节进入 `request_sha256`。为保证同一源码永远生成同一字节：
+
+1. 键序固定：`type` → `properties` → `required` → `additionalProperties`，`$defs` 在根末尾。
+2. `properties` 内字段顺序 = struct **声明顺序**。
+3. `$defs` 键顺序 = 类型 id 升序。
+4. 无多余空白（canonical JSON，复用 ARCH §5.3）。
+5. `additionalProperties: false` **总是**生成（OpenAI strict 要求；`grammar.py` 支持）。
+6. 可选字段仍进 `required`，类型写成 `anyOf[T, null]`（§4.6）。
+
+### 8.4 `{}` 的降级
+
+`json` 字段生成 `{}`（空 schema = any）。若后端不接受空 schema，降级为显式 7 类型 union：
+
+```json
+{"type":["object","array","string","integer","number","boolean","null"]}
+```
+
+降级是 **build 期决定**（`--probe` 结果或 `backend.schema_any = "union"` 显式声明），**不写进 `.hbc`**（D-012）；运行期读配置现算。默认 `union`——因为它是**确定能工作**的那个；拿运行期稳定性换 schema 体积不划算。
+
+### 8.5 `backend`：声明/定义分离 + `env()` 与 `auth` 子句（D-014.4、D-023 末节）
+
+| 位置 | 写法 | 含义 |
+|---|---|---|
+| `.h` | `export backend homonoia;` | **声明**：这个 unit 对外承诺有一个叫 `homonoia` 的 backend。没有地址 |
+| `.hermes` | `backend homonoia = env("HOMONOIA_URL", "http://127.0.0.1:8080");` | **定义**：地址来自环境变量，缺省走本机 |
+| `.hermes` | `backend homonoia = env("HOMONOIA_URL", "http://127.0.0.1:8080") auth env("HOMONOIA_KEY");` | **定义 + 密钥来源**：`auth` 子句只给变量名。地址有本地默认，密钥没有默认值（D-023 末节） |
+| `.hermes` | `backend local = "http://127.0.0.1:11434";` | 定义且字面量（仅用于确实不该变的场景，如本机固定端口） |
+| 两处都没有 | — | backend 不存在 → `E3007` |
+
+规则：
+
+1. **`env()` 的第二参数必填且必须是字符串字面量**（`E3018`）。空串是有语义的：表示"必须由外部设置，没有默认值"，此时缺变量在 `run` 起跑前失败（退出码 2，`E_ENV_MISSING`），**报错发生在花第一分钱之前**。
+2. **地址里不允许出现凭据**：`"http://user:pass@host"` → `E3019`（"凭据不进源码：源码要进 git、进归档、进审计"）。凭据由引擎侧 policy 注入 header。
+3. 定义的 backend 若在 `.h` 里没有对应声明 ⇒ 它是**私有** backend，仅本 unit 可用（合法，常见于只在本文件里用的本地模型）。反之声明了没有定义、也没有 `#link` 提供 ⇒ 链接期 `E_LINK_UNRESOLVED`。
+4. **求值时机**：`hermes run` 启动时读一次；解析结果写进 trace 的 `backend.resolved`，只记 `scheme + host + port`，不记 userinfo、不记 query。
+5. **密钥来源是 `auth` 子句，不是地址的一部分**：`auth` 位只接受 `env(名)` **单实参**（`E2018`），地址位是**两**参（`E3018`）——**元数按位置定**，这是两个错误码分家的根据（禁默认值的理由写在 §3.1 注 8，本节只管规则与产物）。产物侧：密钥值**不进 IR、不进 `.hbc`、不进签名产物**；trace 只记 `env` 变量名，不记值、不记头长度（D-023 末节 1、4）。`auth` 与字面量地址可以同时出现——地址来源与密钥来源是两件正交的事。
+
+**为什么必须分离（三个都成立才叫理由）**
+
+1. **硬编码地址的库无法分发**：`.hbc` 给别人用时，`127.0.0.1:8080` 是**我的**机器，不是他的。
+2. **离线与零费用要是默认行为**：不设任何变量就走本机默认 backend，这是 D-007"不依赖外部服务"能在部署层成立的前提。若地址必须由命令行给，忘给就崩，人会写死一个地址来"省事"——那才是真正的不可重现。
+3. **默认值必须是字面量，才能静态审计**：审计者不需要执行任何东西、不需要知道环境，就能回答"这个 workflow 在没设变量时会把用户数据发到哪个主机"。若默认值可以是表达式，这个问题就只能靠跑一遍回答，而"跑一遍"在审计场景里是不允许的。
+
+### 8.6 `entry` 与 `--workflow` 的解析顺序
+
+见 §3.6。这里只补一条与 backend 相关的：`entry` workflow 的 `backend` 参数默认值在 `.h` 与 `.hermes` 上必须一致（`E3014`），因为它是"不指定时用哪个 backend"的唯一声明——两处不一致时，`hermes run` 与 `hermes serve` 可能选到不同的 backend，而这件事没有任何运行期信号能暴露。
+
+---
+
+## 9. include 与三种文件（设计裁决 Q6，已按 D-013 修订）
+
+### 9.1 三种文件的分工 + `#include` 只吃接口（D-014.1）
+
+见 §1.1 表。一句话记住：**`#include` 回答"它长什么样"，`#link` 回答"它的代码在哪"。**
+
+| 写法 | 结果 |
+|---|---|
+| `#include "models/order.h"` | 取声明。**唯一合法的 include 目标** |
+| `#include <std/net.h>` | 取内置标准库的声明 |
+| `#include "models/order.hermes"` | **`E3015`**："不能包含实现文件。要引入它的实现请写 `#link "models/order"`，只需要它的类型请包含 `.h`" |
+| `#link "models/order"` | 取实现（`models/order.hbc`），并把它记进 `requires` |
+| `#link <std/net>` | 取内置实现（`stdlib.hbc` 的 `net` 成员） |
+
+不存在"按字面找、找不到回落 `.hermes`"的规则，也**不再**允许 `#include "x.hermes"` 内联实现（v3.0 曾允许，v3.1 废除）。理由不是洁癖，是两个只有 `#link` 能给出的性质：
+
+1. **接口可见、实现可替换**：`.h` 是类型信息，`.hbc` 是代码。源码不在手上时，前者能给你、后者能给你——但只有分开，才能"只给前者"（写集成测试、做代码审阅）或"只给后者"（分发到生产）。
+2. **依赖是源码里的事实**：`#include "x.hermes"` 把实现拉进当前 unit，于是"这个 unit 依赖什么"只能靠读全部源码才知道；`#link` 把依赖写成一行声明，编进 `.hbc` 的 `requires`，链接器据此校验版本（§9.5），`hermes ar t` 一眼列出。
+
+若 `#include "x.h"` 找不到，错误必须列出：尝试过的每个路径 + **"若你要的是实现，请写 `#link "x"`"**——因为这是 v3.0 迁移过来的人 100% 会踩的一脚。
+
+### 9.2 搜索路径（include 与 link 是两套，不共用）
+
+| 形式 | 搜索顺序 |
+|---|---|
+| `#include "..."` | ① 当前文件所在目录；② `-I` 目录（按命令行顺序）；③ 项目根（entry 文件所在目录）。**不搜索**系统目录、不读环境变量、不联网 |
+| `#include <std/...>` | **只**查内置 `stdlib.hbc` 随附的 `.h`（`go:embed` 进二进制）。找不到 → `E3001`，消息列出全部可用模块 |
+| `#link "mod"` | ① `-L` 目录（按命令行顺序）；② 项目根；解析为 `<dir>/mod.hbc`。找不到 → `E_LINK_NOT_FOUND`，列出尝试路径与 `hermes ar t` 能看到的候选 |
+| `#link <std/net>` | **只**查内置 `stdlib.hbc` 的成员表。找不到 → `E3001` |
+
+两套路径刻意不共用：include 找 `.h`（可能来自源码树），link 找 `.hbc`（一定来自构建产物）。共用会让"我在源码树里改了 `.h` 但链接的是三天前构建的 `.hbc`"变成默认行为——那是 C 里 `-l` 顺序问题的翻版。
+
+安全约束：include 路径分量禁止 `.`/`..`（`E1009`）；link 模块名禁止 `.`/`..`/绝对路径/`.hbc` 后缀（`E1010`）；符号链接按解析后真实路径去重；IR 里记录**相对 include root 的 POSIX 相对路径**与**相对 link root 的模块名**（可重现构建要求）。
+
+### 9.3 循环与重复
+
+- **include-once 语义**（不是 C 的文本包含）：键 = 解析后绝对真实路径，重复 include 是 no-op。
+- 循环 → `E3002`，打印**完整环** `a.h → b.h → c.h → a.h`，每跳带行号。
+- 深度上限 32（`E3003`）；模块数上限 256（`E3004`）。环检测用迭代 DFS + 显式栈 + 三色标记（不用递归，避免深链爆栈；前端 `-fno-exceptions` 下栈溢出无法捕获）。
+- **`#link` 重复是 no-op**（按解析后的模块标识去重），且 `#link` 不参与 include 的环检测——它是另一个图（链接图），环形依赖留给链接器报 `E_LINK_CYCLE`（`IR.md` §9）。
+- `#link` 的**传递性**：A link B、B link C ⇒ A 的 `requires` 含 B 与 C（闭包），但 A 的**类型可见性**不含 C 的声明——要用 C 的类型，A 必须自己 `#include "c.h"`。这正是"实现可传递、声明不传递"的分离，与 C 的 `-l` + `#include` 一致。
+
+### 9.4 各文件的语法限制
+
+| 文件 | 允许的顶层声明 | 违反 |
+|---|---|---|
+| `.hermes`（entry） | `#include`、`#link`、`[export] struct`、`backend` 定义、带体 `workflow` | — |
+| `.h` | `#include`、`[export] struct`、`backend` 声明（无地址）、**`workflow` 签名**（`-> Type;`，无体） | 带体 → `E3005`；语句 → `E3006`；`#link` → `E3017`；`backend x = ...` → `E3020` |
+
+`workflow` 签名的语义作用：**链接期校验**。若某 `.h` 声明 `export workflow support_bot(input: SupportInput, backend = homonoia) entry -> string;` 而链接进来的 `.hbc` 里同名 workflow 的返回类型/参数/`entry` 标记不同，链接失败（`E_LINK_SIG_MISMATCH`，`IR.md` §9.3）。它不是可调用接口（语言无跨 workflow 调用），而是"分发到没有源码的环境"时的接口契约。
+
+### 9.5 `requires`：链接器据以校验版本的表（D-014.3）
+
+每一条 `#link` 在 `.hbc` 的 unit 元数据里留一条记录：
+
+| 字段 | 例 | 校验规则 |
+|---|---|---|
+| `spec` | `<std/net>` / `models` | 原样保留，供 `hermes ar t` 打印 |
+| `kind` | `std` / `local` | `std` 只在本编译器版本内解析 |
+| `abi_version` | `1` | 必须与消费者**完全相等**，否则 `E_LINK_ABI_MISMATCH` |
+| `ir_version` | `1` | 主版本必须相同，minor 允许更高（前向兼容，`IR.md` §10） |
+| `member_sha256` | `ab12…` | 被 link 的 member 的字节哈希；与归档实际内容不符 → `E_LINK_TAMPERED` |
+
+**版本约束是推导出来的，不是写出来的**：`#link` 的语法里**没有**版本号（D-014 没给，我也不加）。理由是加版本号会立刻产生"声明 `>=2` 但实际需要 `>=3`"这类无法验证的谎话，而 `abi_version` 必须严格相等、`ir_version` 主版本必须相同这两条，已经能把"版本错配"这一类事故全部挡住。真正需要细粒度约束时（Phase 2 的语义化版本范围），再加语法。
+
+---
+
+## 10. IR（设计裁决 Q4，详见 `docs/IR.md`）
+
+**结论：确认团队负责人的判断，并加强为"IR 与 trace 树同构"。**
+
+- 无循环/递归/用户函数 ⇒ 控制流是**结构化树**（故是 DAG，无回边）。
+- 因此 IR **不是** CFG：无基本块、无 φ 节点、无 SSA。`if`/`match` 是分支+汇聚，`parallel` 是显式 fork/join。
+- IR 每个节点在运行期**恰好对应一个 span**（`parallel` fork 对应 1 父 + k 子）。因此 **trace 形状在编译期就已知**，`max_steps` 就是 span 数上界。
+- IR 是**扁平节点数组 + id 引用**（不是嵌套 JSON）：便于 diff/审阅/增量工具；id 引用让 `let` 绑定的值被多处引用（真 DAG 而非树）。
+- 每个节点**必带 source map**（`loc:{m,l,c,el,ec}`，m = 模块索引）。这是"IR 可独立审计"的硬要求（Q12）。
+- IR 顶层是 **unit 列表**（D-013）：每个 unit 有自己的名字、导出符号集、DAG、source map；`types` 与 `economics` 的归属见 IR.md §3。
+- 每个 unit 还带三项 v3.1 元数据：**`exports`**（符号表，来自 `export`，§3.5）、**`requires`**（来自 `#link`，§9.5）、**`entry`**（默认入口名，可空，§3.6）。三项都是**语法事实**——`hermes ar t` 打印它们，链接器只读它们，不读源码。
+- `input` 类型生成的请求 schema 与 `model.generate<T>` 的输出 schema 走同一套映射（§4.6/§4.8），都存在 `schemas` 表里，按 `schema_sha256` 去重；生成的字节稳定性规则见 §8.3。
+- **私有声明进 IR 但不进 `exports`**：它们的节点仍在 DAG 里（私有 workflow 可以被 `entry` 选中；私有 struct 被导出的签名引用），只是不被符号表列出，链接期不可见、可被死代码剥离（`IR.md` §9.4）。
+
+---
+
+## 11. 诊断质量（设计裁决 Q11）
+
+### 11.1 诊断结构
+
+所有诊断（错误/警告/note）同一形状，C++ 前端产出、Go 渲染：
+
+```json
+{"severity":"error|warning|note",
+ "code":"E4016",
+ "message":"struct Intent 没有字段 \"oder_id\"",
+ "line":27,"col":24,"end_line":27,"end_col":31,
+ "module":"support.hermes",
+ "why":"...",
+ "fix":["...","..."],
+ "notes":[{"module":"support.hermes","line":14,"col":8,"message":"struct Intent 在此声明"}],
+ "docs":"docs/LANGUAGE.md#7.4"}
+```
+
+**硬要求（验收项）**：`message` 必须是一句**可独立读懂**的话（禁止 "invalid token" 这类无主语短语）；`fix` 至少一条；跨文件问题时 `notes` 必须指回定义处。
+
+### 11.2 十一条真实诊断（逐字，可直接作为测试断言）
+
+#### ① 未声明字段 `E4016`
+
+```
+error[E4016]: struct Intent 没有字段 "oder_id"
+  --> support.hermes L27:31
+   |
+27 |                 url = "https://api.internal.com/orders/{intent.oder_id}",
+   |                                                        ^^^^^^^ 未声明
+   |
+note: struct Intent 在此声明
+  --> support.hermes L14:8
+   |
+14 | struct Intent {
+   |        ^^^^^^
+   = 为什么: 强类型的意义就是拼错的字段在 build 时红，而不是在线上把 "{undefined}" 发进 URL。
+   = 怎么改: struct Intent 的字段是 action, order；你要的大概是 intent.order.order_id
+```
+
+#### ② 类型不匹配 `E4017`
+
+```
+error[E4017]: 类型不匹配：期望 string，得到 int?
+  --> support.hermes L31:24
+   |
+31 |         prompt = "订单 {order.note} 已创建",
+   |                        ^^^^^^^^^^^ 类型是 string?
+   = 为什么: 可空字段 string? 不能直接插值——"没说"和"空字符串"是两件事，
+             直接插值会把 null 写成 "null" 发进 prompt，而模型会把它当字面量。
+   = 怎么改（二选一）:
+     ① 让模型必填该字段（把它从 T? 改成 T，并在 schema 里进 required）
+     ② 先在工具侧补默认值：让 .h 里声明 string note; 而不是 string? note;
+```
+
+#### ③ `match` 缺兜底 `E4018`
+
+```
+error[E4018]: match 缺少兜底分支 "_"
+  --> support.hermes L35:5
+   |
+35 |     match (intent.action) {
+   |     ^^^^^ 有 2 个分支，无 "_"
+36 |         case "refund": { return "退款"; },
+37 |         case "logistics": { return "查物流"; }
+38 |     }
+   |
+   = 为什么: intent.action 的类型是 string，取值集合不受 struct 约束（模型能输出任何字符串）。
+             没有 "_" 时"两个分支都没命中"的路径无定义——那是未定义行为唯一的入口。
+   = 怎么改:
+     match (intent.action) {
+         case "refund": { return "退款"; },
+         case "logistics": { return "查物流"; },
+         default: { return "未知操作：{intent.action}"; }
+     }
+   = 参考: docs/LANGUAGE.md §3.1 MatchArm（"_" 是必选产生式）
+```
+
+#### ④ `retry` 内有非幂等调用 `E5007`
+
+```
+error[E5007]: 重试块内的工具调用无法证明幂等
+  --> support.hermes L44:19
+   |
+44 |         auto pay = tool.call(url = "https://api.internal.com/pay",
+   |                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+45 |                                 method = "POST");
+   |
+note: 该调用在 retry(2) 内，最坏执行 3 次
+  --> support.hermes L43:5
+   |
+43 |     retry(2, delay = 1000) {
+   |     ^^^^^
+   = 为什么: POST 在重试时会重复提交。运行期无法判断"这个调用能不能安全重试"——
+             幂等性是声明性事实。语言能拿到静态调用点，所以在这里判死，
+             而不是让线上出现重复扣款。
+   = 怎么改（三选一）:
+     ① 上游确实幂等: method = "POST", idempotent = true
+     ② 让引擎注入幂等键: method = "POST", idem_key = "{input.user_id}"
+        （idem_key 必须只由 input 决定，不能含模型输出或工具响应——否则重试时键会变）
+     ③ 方法本身只读: method = "GET"
+   = 参考: docs/LANGUAGE.md §5.7 / DECISIONS.md D-010.3
+```
+
+#### ⑤ `parallel` 元组长度不匹配 `E5003`
+
+```
+error[E5003]: parallel 返回 2 个值，但左侧解构了 3 个名字
+  --> support.hermes L28:14
+   |
+28 |         auto [order, history, user] = parallel {
+   |              ^^^^^ 1  ^^^^^^^ 2  ^^^^ 3（多余）
+   |
+note: parallel 块在 L48:13 返回 2 个值
+  --> support.hermes L48:13
+   |
+48 |             return [o, h];
+   |                     ^   ^ 共 2 个
+   = 为什么: 元组按位置配对，两侧长度都是静态常量，不等一定是写错了。
+             若允许运行期报错，就会"跑到第 3 个才失败"，前面两次调用白花钱。
+   = 怎么改: 删掉第 3 个名字，或在 parallel 体内再取一个值：return [o, h, u];
+```
+
+#### ⑥ 未知 backend `E3007`
+
+```
+error[E3007]: workflow 引用了未声明的 backend "hononoia"
+  --> support.hermes L9:26
+   |
+ 9 | workflow support_bot(input: SupportInput, backend = hononoia) entry {
+   |                                                    ^^^^^^^^ 未声明
+   |
+note: 本 unit 已声明的 backend: homonoia
+  --> support.h L11:16
+   |
+11 | export backend homonoia;
+   |                ^^^^^^^^
+   = 为什么: backend 必须在同一 unit 内可见（本文件或 #include 进来的 .h 里的声明）。
+             若拼错时"自动回落到默认 backend"，你会以为走了本机 backend，实际走了别处。
+             backend 有声明但没有定义时，报的是链接期的 E_LINK_UNRESOLVED，不是这里。
+   = 怎么改（二选一）:
+     ① backend = homonoia                          —— 改拼写
+     ② 在 support.h 里加 export backend hononoia;   —— 确实要新增一个
+        并在 support.hermes 里给它地址: backend hononoia = env("HONONOIA_URL", "http://127.0.0.1:8080");
+```
+
+#### ⑦ `<std/...>` 不存在 `E3001`
+
+```
+error[E3001]: 找不到内建标准模块 <std/vect.h>
+  --> support.hermes L1:1
+   |
+ 1 | #include <std/vect.h>
+   | ^^^^^^^^^^^^^^^^^^^^^ 未找到
+   |
+   = 为什么: <...> 只解析随二进制内置的标准库（stdlib.hbc + 其 .h），
+             不搜索文件系统、不联网——这是"零费用可重现"的要求。
+   = 可用的标准模块（本版本）:
+       <std/net.h>      tool.call 能力声明 + NetworkError / HttpError
+       <std/model.h>    model.generate 能力 + ModelError / ContractError
+       <std/json.h>     json.encode / json.decode / json.as_*
+       <std/runtime.h>  BudgetError / CircuitOpenError（默认已隐式包含与隐式链接）
+     实现由 #link 取: #link <std/net> / #link <std/model>
+   = 怎么改: 若你要的是项目内的文件，用引号形式: #include "lib/vect.h"
+   = 注意: 写成 <std/net.hermes> 会得到 E3015（不能 include 实现文件），不是 E3001。
+```
+
+#### ⑨ `#include` 了实现文件 `E3015`
+
+```
+error[E3015]: 不能包含实现文件
+  --> support.hermes L1:1
+   |
+ 1 | #include "models/order.hermes"
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ .hermes 是实现文件
+   |
+   = 为什么: #include 只给声明（类型信息），实现必须走 #link。
+             允许 include 实现会让"这个 unit 依赖谁的代码"只能靠通读源码才知道，
+             也就无法替换实现——而"接口可见、实现可替换"正是 .hbc 存在的理由。
+   = 怎么改（二选一）:
+     ① 只要 OrderInfo 这个类型:  #include "models/order.h"
+     ② 还要它的实现:            #include "models/order.h" + #link "models/order"
+   = 参考: docs/LANGUAGE.md §9.1 / DECISIONS.md D-014.1
+```
+
+#### ⑩ 用了内建但没 `#link` `E3016`
+
+```
+error[E3016]: 使用了 tool.call，但本 unit 没有 #link <std/net>
+  --> support.hermes L16:17
+   |
+16 |                 auto o = tool.call<OrderInfo>(
+   |                         ^^^^^^^^^ 需要 <std/net> 的实现
+   |
+note: 声明已经有了，缺的是实现
+  --> support.h L4:1
+   |
+ 4 | #include <std/net.h>
+   | ^^^^^^^^^^^^^^^^^^^^ 只提供类型，不提供实现
+   |
+   = 为什么: #include 给声明，#link 给实现。少了 #link，编出来的 .hbc 在链接期
+             才会缺符号，而那时诊断里已经看不到你写的这一行。编译期报出来代价最小。
+   = 怎么改: 在 support.hermes 顶部的指令区加一行
+     #link <std/net>
+```
+
+#### ⑪ `input` 参数没写类型 `E3023`
+
+```
+error[E3023]: input 参数必须写类型
+  --> support.h L17:24
+   |
+17 | export workflow support_bot(input, backend = homonoia) entry -> string;
+   |                                 ^^^^^ 没有类型
+   |
+   = 为什么: input 的类型同时就是这个 workflow 的 HTTP 请求契约——hermes serve 的
+             API schema 由它生成。没有类型时 input.text 无法校验、请求体也无法生成
+             schema：强类型从入口第一行就漏了，后面再严也没用。
+   = 怎么改:
+     export struct SupportInput { string text; string user_id; }
+     export workflow support_bot(input: SupportInput, backend = homonoia) entry -> string;
+   = 参考: docs/LANGUAGE.md §4.8 / DECISIONS.md D-014.6
+```
+
+#### ⑧ `precision` 非法值 `E2014`
+
+```
+error[E2014]: precision 必须是字面量 "exact" / "fast" / "perf"
+  --> support.hermes L13:37
+   |
+13 |         prompt = "...", precision = "fastest"
+   |                                     ^^^^^^^^^ 不是合法值
+   = 为什么: precision 决定解码模式，也参与成本上界计算（IR economics），
+             必须是编译期常量；拼错若回落到默认值，你会以为拿到了 exact。
+   = 怎么改: precision = "fast"     （三个合法值: exact / fast / perf）
+   = 参考: docs/LANGUAGE.md §8.1
+```
+
+### 11.3 诊断质量门禁（验收项）
+
+1. 全部诊断经 `schemas/diag.schema.json` 校验。
+2. 上表 11 条逐字进 `tests/compiler/diagnostics_golden.txt`，CI 逐字比对（`message`/`fix` 改动必须显式改 golden，防退化）。
+3. 每个诊断码必须在附录 A 索引中出现（防"有码无文档"）。
+4. `hermes build` 默认遇 error 即停；`--keep-going` 最多报 50 条再停（防噪声洪水）。前端因此必须**可恢复解析**（`-fno-exceptions` 下本来也只能如此）。
+
+---
+
+## 12. 边界、已知松点与偏差
+
+### 12.1 已知语义松点
+
+| # | 松点 | 为什么接受 | 何时收紧 |
+|---|---|---|---|
+| L1 | ~~`input` 未声明类型时是 `json`~~ **（v3.1 已关闭）** | D-014.6 把 `input` 的类型变成必填，`input.text` 从此静态检查 | 已收紧：`E3023`（§3.1 注 6） |
+| L2 | `{j}` 插值 `json` 时走"string 原样、其余 canonical JSON"的动态规则 | 否则 `{input.text}` 输出带引号的 `"hi"`，与直觉相反 | Phase 2 加 `json.as_string` 强制 |
+| L3 | `if (order.status == 404)` 默认契约下永不成立，但编译器只能发**启发式**警告 | 无法区分"业务字段恰好叫 status 且在 200 响应里等于 404"（类型上合法）与"作者误以为拿到了 HTTP 状态码"。**这里必须承认判定不了，不能假装判定** | 已打 `W5004`（可 `--deny-warnings` 升级）。彻底解决要靠类型分层：把响应体与状态码放进同一个值（`HttpResult<T>`），而 `allow_status` 已经提供了那个类型 |
+| L4 | 字符串不能跨行、不能 `+` 拼接 | 换行有语义会让未闭合字符串吞掉整个文件；`+` 拼接会诱导在代码里拼 prompt | Phase 2 加 `"""` |
+| L5 | 无可空收窄（`if (x != null)`） | 无 `null` 字面量；可空字段只用于插值与编码已够 | Phase 2 |
+| L6 | ~~`catch` 体内不能 `return`~~ **（v3.1 已关闭）** | v3.0 的理由（"trace 父子关系会不符"）站不住：`if`/`match` 也只走一条路径。禁止它会让错误恢复无值可产出 | 已收紧：允许 `return`（§5.4）。`E2012` 保留但不再触发 |
+| L7 | 未使用的 `let` 绑定不产生诊断 | 没有 liveness 分析；而 `parallel` 分支常是"为了副作用而取值"（HTTP 调用本身要发生），逼作者写 `_` 反而丢位置信息。上界不受影响（由 fork 宽度决定） | Phase 2：加 `--warn-unused`，默认关 |
+| L8 | `#link` 语法里没有版本约束 | 加版本号会立刻出现"声明 `>=2` 实际需要 `>=3`"这类无法验证的谎话；`abi_version` 严格相等 + `ir_version` 主版本相同已能挡住全部实际事故（§9.5） | Phase 2：语义化版本范围，需配套"约束可验证"的方案 |
+| L9 | workflow 返回类型在 `.hermes` 里是推断的 | 用户语法参考本就没有返回类型，强制写是无谓破坏；而 `.h` 里必填、且与推断比对，所以**对外契约仍是显式的** | Phase 2：可选 `--require-return-type` |
+
+### 12.2 与 DECISIONS 的偏差（唯一一处，需签字）
+
+**D-010.1 的文字内部矛盾**："`cost`（定点，int64 微单位，8 位小数）"——int64 微单位 = 6 位小数；8 位需 int64@1e-8 或 int128。本文按 **6 位（micro-USD）**落地，理由见 §4.3。
+
+- 若坚持 8 位：必须同时把 ARCH §5.4 的账本单位从 micro-USD 改为 1e-8 USD，并重审 `max_micro_usd ≤ 1e15` 上限（1e15 × 1e-8 = 1e7 USD，偏小）。**不建议**：钱在账本里多一次缩放，就是 D-010.1 想消灭的那个漏洞。
+- 需要：团队负责人签字确认按 6 位落地，或明确要求改 8 位。
+
+### 12.3 Phase 2 预留（不做，但留好接口）
+
+| 项 | 预留 |
+|---|---|
+| `for`/`while` | `max_steps` 从常量变为"Σ + 循环上界乘法"，需要 `@bound(n)` |
+| 用户函数 | 泛型消歧退化到 speculative parse（§3.4 D3）；调用图从树变图，幂等证明需跨过程 |
+| `decimal` | `cost` 保持 int64；`decimal` 单独类型，不进账本 |
+| `null` 字面量 | `T?` 收窄语法 |
+| 多行字符串 | `"""..."""` |
+| 与部署描述文件的互操作 | **不做**：`.hermes` 是编排 DAG，部署描述文件描述"起什么进程、怎么连"，两者正交。语言层不增加任何部署描述语法 —— 在 Hermes 里再实现一份，只会养出与真实部署必然分叉的第二个事实源 |
+
+### 12.4 本规范在 D-014 之上补的 11 条裁决（需复核）
+
+D-014 定了 7 处，但每处落地都会遇到它没回答的边界。下面是我补的裁决，逐条给"不这么做会更差"的理由。**这些是本规范里唯一需要你签字的部分**（其余都是 D-014/D-010/D-011 的直接落地）。
+
+| # | 裁决 | 若反过来做，会坏在哪 |
+|---|---|---|
+| 1 | `#link` 只允许在 `.hermes`（`E3017`） | 允许写在 `.h`，则每个 include 该头文件的人都继承了一个他没选择的链接依赖；`#include` 与 `#link` 的分工当场作废 |
+| 2 | `#link` 不带版本约束 | 加上版本号就是"无法验证的承诺"：没人能在编译期证明"这段代码只需要 >=2"，而错配的两种真实形态（abi 不等、ir 主版本不等）已由严格比较挡住 |
+| 3 | 用了内建却没 `#link` ⇒ **编译期** `E3016` | 留到链接期报，诊断里只剩符号名，看不到写错的那一行；而"编译期能早报的错不该留到链接期"是 T08 的门禁原则 |
+| 4 | `.h` 的 workflow 签名 `-> Type` 必填，`.hermes` 可省（推断） | 两边都可省 ⇒ 头文件里的返回类型只能靠猜，等于契约缺一角；两边都必填 ⇒ 与用户语法参考冲突，且定义处是重复信息 |
+| 5 | `entry` 必须落在符号表里（`E3024`） | `hermes run` 按名字从符号表解析入口，非导出的 entry 会让"明明标了 entry 却找不到入口"变成运行期谜题 |
+| 6 | `catch` 内允许 `return`（撤销 v3.0 L6） | 语言没有可变绑定，恢复出来的值无处安放 ⇒ 错误处理不可写；且原理由对 `if`/`match` 同样成立，会推出荒谬结论 |
+| 7 | workflow 名是**标识符**（D-014 示例隐含） | 保留字符串字面量会让符号表同时接受带引号与不带引号两种拼写，`E_LINK_*` 的符号名出现二义 |
+| 8 | `.h` 里**允许**非 `export` 声明（内部头文件） | 强制 `.h` 全部 export，则"两个 `.hermes` 共享一个私有类型"只能靠复制定义，而复制会让 ODR 检查失去意义 |
+| 9 | `struct` 名在整 unit 内唯一（含私有） | 私有 struct 可以重名 ⇒ `$defs` 键（非限定名）出现二义 ⇒ 生成的 schema 二义 ⇒ 请求哈希不稳定 |
+| 10 | 请求体是 input 类型的**实例本身**，不嵌 `{"input":…}` | 嵌一层后 CLI 的 `--input` 文件与 HTTP 体不同形，本地测试与线上验的不是同一件事 |
+| 11 | `model.generate` 无类型实参返回 `string`（不是 `json`） | 返回 `json` 等于承认"没有 schema 也能拿到结构化结果"，每个字段访问都变成潜在 `ContractError`——正是强类型要消灭的东西 |
+
+---
+
+## 附录 A：诊断码索引
+
+| 码段 | 类别 | 内容 |
+|---|---|---|
+| `E1001`–`E1008` | 词法 | 编码/BOM/长度/保留名/浮点/金额/字符串/转义 |
+| `E1009`–`E1010` | 路径与指令 | include 路径穿越（`.`/`..`）/ `#link` 模块名不合法（含 `.hbc` 后缀、绝对路径） |
+| `E2001`–`E2015` | 语法 | 括号/类型实参/提前 return/参数纯性/precision 字面量/retry 字面量 |
+| `E2016`–`E2017` | 语法 | **`method` 不是字面量 / 不在 6 个合法方法内**（D-014.7） |
+| `E2018` | 语法 | **`auth` 子句的右值不是 `env(名)` 单实参形式**（D-023 末节：密钥不许有默认值） |
+| `E3001`–`E3010` | 模块 | std 不存在/循环/深度/模块数/`.h` 限制/未知 backend |
+| `E3012` | 可见性 | 同一符号 `export` 两次（声明 + 定义都写了） |
+| `E3013` | 契约 | `input` 的类型没有 `export` |
+| `E3014` | 契约 | 声明与定义不一致（返回类型/参数/`entry`/`backend` 默认值） |
+| `E3015` | 指令 | `#include` 了 `.hermes`（实现文件），应用 `#link` |
+| `E3016` | 指令 | 用了 `tool.call`/`model.generate`/`json.*` 但没 `#link` 对应 std |
+| `E3017` | 指令 | `#link` 出现在 `.h` 里 |
+| `E3018` | backend | `env()` 的实参不是字符串字面量（含默认值缺失） |
+| `E3019` | backend | backend 地址含凭据（`user:pass@`） |
+| `E3020` | backend | `.h` 里写了 backend **定义**（带地址），只能写声明 |
+| `E3021`–`E3022` | entry | 本 unit 没有 `entry` / 有多个 `entry`（均需 `--workflow`） |
+| `E3023` | entry | `input` 参数没写类型（D-014.6） |
+| `E3024`–`E3025` | entry | `entry` 未进符号表 / `--workflow` 指定的名字不存在 |
+| `E4001`–`E4020` | 类型 | 返回缺失/可空/算术/比较/注解/字段/重复 struct 名/match 主表达式 |
+| `E4021`–`E4023` | 类型 | 各 `return` 类型无法统一 / `return` 了 tuple / 错误对象逃出 `catch` |
+| `E5001`–`E5009` | 语义 | 不纯参数/作用域/元组长度/嵌套上限/预算不可捕获/幂等/精度降级/idem_key 不纯 |
+| `E6001`–`E6003` | 上界 | 扇出积超限/步数超限/预算不可覆盖 |
+| `W3013` | 警告 | 私有 `workflow` 恒为死代码（语言无跨 workflow 调用）：要么 `export`，要么删 |
+| `W4001`–`W4002` | 警告 | 浮点相等 / `model.generate` 无类型实参（无输出约束） |
+| `W5001`–`W5002` | 警告 | 并发超 backend / 精度降级 |
+| `W5004`–`W5005` | 警告 | HTTP 状态码比较（启发式，§12.1 L3）/ `input: json`（入口无结构契约） |
+| `W6001` | 警告 | trace 上界可能超 `max_bytes` |
+| `E_LINK_*` | 链接 | 由 Go 链接器产出（`ARCH` §5.10、`IR.md` §9） |
+
+**已废弃的码（不复用，防止旧 golden 与新含义撞车）**：
+
+| 码 | 原含义 | 废弃原因 |
+|---|---|---|
+| `E2012` | catch 体内不允许 `return` | v3.1 撤销（§5.4），catch 体与普通块同权 |
+| `W5003` | `input` 未声明类型 | v3.1 改为硬错 `E3023`（D-014.6） |
+
+## 附录 B：`hermes fmt` 的语义（明确降级）
+
+`fmt` **不做** AST 重排（不做"把 `if` 拆行、把长调用折行"这类重写）。它做**token 流规范化**：
+
+| 做 | 不做 |
+|---|---|
+| 统一 4 空格缩进（按 `{`/`(`/`[` 深度） | 折行/合并行 |
+| 运算符两侧单空格、逗号后单空格 | 重排声明顺序 |
+| `;` `{` 前无空格 | 删/改注释内容（只调整其行内位置） |
+| 行尾统一 `\n`，去行尾空白，文件末尾恰好一个 `\n` | 改写字符串内容（含插值） |
+| 保留所有注释 | 重排 `struct` 字段 |
+| **指令区规范化**：`#` 顶格；`#include` 全部在前、`#link` 全部在后（各保持原有相对顺序）；`#link` 的 `;` 前不留空格 | 不展开 include、不改 `<>`/`""` 形式、不规范化模块名/路径 |
+
+指令区排序是 v3.1 新增的**唯一**一处"重排"：它是**两个不相交的稳定分区**（include 之间、link 之间各自保序），所以幂等性仍是构造性的——第二次格式化的输入已经是"include 全在前、link 全在后"，分区不再变化。而声明与注释的保序重排做不到这个保证，这也是它仍然不做的原因。
+
+**幂等性的形式化保证**：`fmt` 的输出经词法分析得到的 token 序列与原 token 序列**恒等**（含注释与位置关系），而 `fmt` 是"token 序列 + 缩进深度"的纯函数 ⇒ `fmt(fmt(x)) == fmt(x)` 必然成立，不依赖测试。测试仍然写，但它验证的是实现、不是定理。
+
+**为什么现在不做 AST 级格式化**：AST 级格式化需要在 AST 上保留注释的**全部**位置信息（前置/后置/行尾/独立行），并在重排时重新分配——这是大约 400 行的细节工程，且它的失败模式（注释跑到错的地方）比"不格式化"更糟。Phase 2 再做。Phase 1 的 `fmt` 已经是"两次输出字节相等"可验收的，R-HF-01 不会开天窗。
+
+## 附录 B：`memory` / `vector`（存储内建，D-035）
+
+四个内建，两个保留命名空间。它们是**求值即副作用**的调用，可以出现在 `let` 右侧，
+也可以直接作为语句（`exprstmt`）。
+
+| 调用 | 返回 | 语义 |
+|---|---|---|
+| `memory.get(key = s)` | 任意 JSON 或 `null` | 键不存在返回 `null`，**不是错误** |
+| `memory.put(key = s, value = v)` | `bool` | 原子写（临时文件 + rename） |
+| `vector.put(id = s, text = s)` | `bool` | 调 `/v1/embeddings` 后存向量与原文 |
+| `vector.query(text = s, k = n)` | 数组 `[{id, text, score}]` | 余弦相似度，按分数降序，同分按 id |
+
+**存储位置是部署事实，不是语法**：`hermes run --store <dir>`、`serve --store <dir>`，
+或环境变量 `HERMES_STORE`。不用这些内建的 workflow 不会被要求配存储 —— 惰性打开。
+
+**为什么不做成声明**：声明会把部署参数写进源码，而 `backend` 用 `env()` 注入正是为了
+让产物可分发。存储是同一类事实，所以走同一条路（运行时配置）。
+
+**上界**：一次存储操作记 1 个 span；`vector.put` / `vector.query` 各记 1 次模型调用
+（embedding 也是一次模型调用，要算钱）。
+
+**embeddings 的地址**：优先用 workflow 的默认 backend（地址与鉴权都从它来），
+否则回落到 `HERMES_EMBED_URL` / `GATEWAY_URL`。模型名默认 `text-embedding-3-small`，
+可用 `HERMES_EMBED_MODEL` 覆盖。
+
+
+## 附录 C：`match` 的臂（D-036）
+
+臂接受**字符串或整数**字面量，必须与主语同类型（`E4019`）：
+
+```hermes
+match (order.status) {
+    case 200: { return "ok"; }
+    case 404: { return "not found"; }
+    default:  { return "error"; }
+}
+```
+
+- **同类型才比较**：拿字符串臂去匹配整数永远不命中，而那种静默不匹配要到运行期
+  才表现为"走了 default"。所以类型不一致在编译期就报错。
+- **default 的判定是 `is_nullable`**，不是"字面量为空"。这一点改过一次：
+  整数臂没有字面量，用"空"判定会把每个整数臂都当成 default。
+- IR 里字符串臂写 `lit`、整数臂写 `num`，两者都没有才是 default 臂
+  （见 `schemas/ir.schema.json` 的 `matchArm`）。
+
+
+## 附录 D：分号规则（对齐 C++）
+
+| 构造 | 分号 | 说明 |
+|---|---|---|
+| `#include` / `#link` | **不带** | 预处理指令，与 C++ 的 `#include <x>` 一致 |
+| `let` / `return` / 表达式语句 | **必须** | 与 C++ 的语句一致 |
+| `struct` / `workflow` / `backend` / `tool` 定义 | 不带 | 块结构，与 C++ 的函数定义一致 |
+
+`#link <std/net>;` 仍然能编，但会报 **`W2003` 警告**（clang 对
+`#include <x>;` 也是警告：*extra tokens at end of #include directive*）。
+警告不阻塞构建 —— 这是"能编，但建议改"的表达方式。

@@ -1,0 +1,51 @@
+%% Hermes v3.1 两条主链路（与 docs/ARCH.md §1.2、§5.9、IR.md §7 对应）
+%% ① 编译期：.hermes + .h → IR → .hbc + sealed
+%% ② 运行期：.hbc → 校验 → 解析依赖 → 执行 → trace
+
+sequenceDiagram
+    autonumber
+    actor U as 用户
+    participant CLI as hermes CLI (Go)
+    participant P as libhermes_parser (C++)
+    participant IR as internal/ir (Go)
+    participant AN as internal/analyze (Go)
+    participant AR as internal/archive (Go)
+    participant SE as internal/seal (Go)
+
+    Note over U,SE: ① hermes build examples/support_bot/support.hermes
+    U->>CLI: build support.hermes -o build/support_bot.hbc
+    CLI->>CLI: 读文件字节（全部 IO 在 Go 侧）
+    CLI->>P: hm_parse(bytes, path, entry_name, opts)  [cgo, 无 IO]
+    activate P
+    P->>P: lexer（STRING/NORMAL 双模式）+ parser（`#include` 只吃 .h、`#link` 单 token）
+    P->>P: include 图（include-once / 环检测 / E3015 实现文件）
+    P->>P: 类型检查（E3016 缺 #link、E3013 input 未 export、E3012 重复 export）
+    P->>P: check_idem（method 字面量 → readonly）+ bounds + economics
+    P->>P: schema_gen（model 输出 schema + input 请求 schema）
+    P->>P: codegen（AST → 扁平节点数组 + loc + requires[]）
+    P->>P: canonical json_write（不透明输出，null 结尾）
+    P-->>CLI: {ir_bytes, diags[], entry_name, requires[]}
+    deactivate P
+    CLI->>CLI: C.GoBytes 拷贝 → hm_parse_free（Go 内存永不跨边界）
+    CLI->>IR: Load(ir_bytes)  %% V-1..V-11 图不变量
+    IR-->>CLI: Doc（只读）
+    CLI->>AN: Analyze(Doc, policy)  %% 默认零网络（D-012）
+    AN-->>CLI: build-report.json（E6003 / E5008 / warnings）
+    CLI->>AR: Write(unit IR) → support_bot.hbc
+    AR->>AR: index（canonical，含 requires[] 与每成员 ir_sha256）
+    CLI->>SE: Seal(index, source_bytes, manifest)
+    SE->>SE: Sign("hermes.hbc.v1\0" ‖ index) + Sign("hermes.sealed.v1\0" ‖ manifest ‖ source)
+    SE-->>CLI: footer 写入两个产物（两次 rename，顺序不可交换）
+    CLI-->>U: 退出 0；support_bot.hbc + dist/support_bot.sealed.hermes
+
+    Note over U,AR: ② hermes run build/support_bot.hbc --input input.json
+    U->>CLI: run（省略 --workflow，靠 entry）
+    CLI->>AR: Reader.Open(support_bot.hbc)
+    AR->>AR: magic → 段边界 → index_sha256 → 验签 → 逐成员 ir_sha256
+    AR->>IR: Load(member IR)
+    IR-->>AR: Doc
+    CLI->>CLI: 选入口：--workflow > 唯一 is_entry > E3021/E3022
+    CLI->>CLI: 解析 backend.addr（env("HOMONOIA_URL", default)）→ 记 trace.backend.resolved
+    CLI->>CLI: 校验 requires[] 的 abi_version（严格相等）/ ir_version
+    CLI->>CLI: engine.Run(Doc, workflow, input.json, budget)
+    CLI-->>U: 退出 0 + trace.json（span 树与 IR 同构，len(spans) <= bounds.max_spans）

@@ -1,0 +1,182 @@
+%% Hermes IR 数据结构（v3.1，与 docs/IR.md §2–§6、docs/ARCH.md §3.2 一一对应）
+%% 权威定义在 docs/IR.md。本文件只是可视化，字段增减以 IR.md 为准。
+classDiagram
+    direction LR
+
+    class Doc {
+        +int ir_version = 1
+        +Unit unit
+        +Compiler compiler
+        +TypeDef[] types
+        +Backend[] backends
+        +Tool[] tools
+        +SchemaDoc[] schemas
+        +Workflow[] workflows
+        +Exports exports
+        +ImportRef[] imports
+        +RequireItem[] requires
+        +DiagCounts diag_counts
+        +map~string,RawMessage~ Extra
+    }
+
+    class Unit {
+        +string name
+        +string entry_path
+        +int language_version
+        +Module[] modules
+        +string source_sha256
+        +__init__(name, entry_path)
+        +moduleAt(int m) Module
+    }
+
+    class Module {
+        +string path
+        +string sha256
+        +bool builtin
+    }
+
+    class RequireItem {
+        +string spec  %% "<std/net>" | "models"
+        +string kind  %% std | local
+        +int abi_version  %% 必须完全相等
+        +int ir_version   %% 主版本相等且 <=
+        +string member_sha256
+        +bool implicit
+        +validate(consumerABI, consumerIR) error
+    }
+
+    class Workflow {
+        +string name  %% 标识符
+        +bool exported
+        +bool is_entry
+        +string backend
+        +TypeExpr input  %% nil = 无 input
+        +TypeExpr returns
+        +Param[] params
+        +int root  %% 根节点 id（必为 seq）
+        +Node[] nodes
+        +Var[] vars
+        +Bounds bounds
+        +Economics economics
+        +InterpDep[] interp_deps
+        +Loc loc
+        +nodeAt(int id) Node
+    }
+
+    class Node {
+        +int id
+        +string k  %% 20 种
+        +Loc loc
+        +int[] kids
+        +int var
+        +int e
+        +int c
+        +int then
+        +int[] branches
+        +int join_k
+        +map Args
+    }
+
+    class Var {
+        +int id
+        +string name
+        +TypeExpr t
+        +int decl
+        +int scope
+    }
+
+    class Bounds {
+        +int max_steps
+        +int max_spans
+        +int max_model_calls
+        +int max_tool_calls
+        +int max_concurrency
+        +int max_retry_expansion
+    }
+
+    class Economics {
+        +Assumptions assumptions
+        +int64 prompt_bytes_upper
+        +int64 tokens_in_upper
+        +int64 tokens_out_upper
+        +int64 model_calls_upper
+        +int64 cost_upper_micro_usd
+        +string pricing_source
+        +bool overflow
+    }
+
+    class Backend {
+        +string name
+        +string kind
+        +Addr addr  %% 存「来源」，不存解析结果
+        +string model
+        +bool supports_tier
+        +bool supports_response_format
+        +int max_parallel
+        +bool exported
+        +Loc decl_loc
+        +Loc def_loc
+    }
+
+    class Addr {
+        +string src  %% env | literal
+        +string env
+        +string default
+        +string value
+        +resolve(getenv) string
+    }
+
+    class SchemaDoc {
+        +string id
+        +string root
+        +map json
+    }
+
+    class Exports {
+        +string[] workflows
+        +string[] types
+        +string[] backends
+        +string[] tools
+    }
+
+    class ImportRef {
+        +string sym
+        +string kind
+        +Loc loc
+    }
+
+    class TypeDef {
+        +int id
+        +string name
+        +int module
+        +Field[] fields
+        +string sha256
+    }
+
+    class Loc {
+        +int m
+        +int l
+        +int c
+        +int el
+        +int ec
+    }
+
+    Doc *-- Unit
+    Doc *-- "0..*" TypeDef
+    Doc *-- "0..*" Backend
+    Doc *-- "0..*" SchemaDoc
+    Doc *-- "0..*" Workflow
+    Doc *-- Exports
+    Doc *-- "0..*" ImportRef
+    Doc *-- "0..*" RequireItem
+    Unit *-- "1..*" Module
+    Workflow *-- "1..*" Node
+    Workflow *-- "0..*" Var
+    Workflow *-- Bounds
+    Workflow *-- Economics
+    Workflow *-- Loc
+    Node *-- Loc
+    Var *-- Loc
+    Backend *-- Addr
+    TypeDef *-- Loc
+    ImportRef *-- Loc

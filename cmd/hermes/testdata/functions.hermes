@@ -1,0 +1,37 @@
+// functions.hermes —— 2.0.0 函数 golden：非递归、递归、运行期深度上限。
+//
+// 它守四件事：
+//   ① functions[] 是 unit 级表（不是塞在 workflow 里的）；
+//   ② 递归由**调用图**判定（fib → fib、down → down），不是靠名字猜；
+//   ③ 调用点生成 call_fn，参数按位置；
+//   ④ 引擎按新作用域执行：fib(10)=55，down(100000) 在 512 层停下。
+
+int double_it(int x) {
+    return x * 2;
+}
+
+int fib(int n) {
+    if (n < 2) { return n; }
+    return fib(n - 1) + fib(n - 2);
+}
+
+int down(int n) {
+    if (n <= 0) { return 0; }
+    return down(n - 1);
+}
+
+export workflow main() entry -> int {
+    int a = double_it(20);
+    int b = fib(10);
+    return a + b;
+}
+
+export workflow deep() -> int {
+    return down(100000);
+}
+
+// mild 只调用非递归函数：它必须保持**静态**上界（unbounded 不出现）。
+// 这是"编译期展开"最直接的验收：产物里没有 call_fn。
+export workflow mild() -> int {
+    return double_it(20);
+}

@@ -1,0 +1,108 @@
+name: CI
+
+# 为什么要有这个文件：一个 Go + Rust + C++ 的项目没有 CI 徽章，路过的人会默认
+# "它大概编不过"。而"能编"这件事，不该由每个读者自己花十分钟验证。
+#
+# 红线：构建只用 clang / libc++，不碰 GNU 工具链与 libstdc++。
+# 所以 Linux 上一个必做的事是显式指定 CC/CXX —— 不指定就会静默用 gcc。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  macos:
+    name: macOS (arm64)
+    runs-on: macos-14
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: false
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      # build.sh 故意用 `cargo build --offline`（构建过程不联网、可复现）。
+      # 代价是新机器上没有 crate 缓存，所以 CI 先预热一次：
+      # 联网只发生在 CI 的这一步，构建脚本本身仍然一次都不下载。
+      - name: Prime cargo cache
+        run: cargo fetch --manifest-path native/rust/Cargo.toml
+
+      - name: Build
+        run: bash scripts/build.sh
+        env:
+          CC: clang
+          CXX: clang++
+
+      - name: Test (unit + guards, with -race)
+        run: go test -race ./...
+
+      - name: C++ frontend acceptance
+        run: bash tests/compiler/run.sh
+
+      - name: Release package layout
+        run: bash scripts/release.sh
+
+  linux:
+    name: Linux x86_64 (experimental)
+    # **experimental 是如实标记，不是免责**：这条 job 从未在真机上验证过。
+    # Linux 静态链 glibc 的路径被 D-033 主动拒绝，musl 那条路也没实测。
+    # 等它真的绿了，把 continue-on-error 去掉 —— 在那之前，红了不阻塞主干，
+    # 但会留下记录。
+    continue-on-error: true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: false
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install clang + libc++ (never gcc)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang libc++-dev libc++abi-dev llvm
+          clang --version
+          clang++ --version
+
+      - name: Prime cargo cache
+        run: cargo fetch --manifest-path native/rust/Cargo.toml
+
+      - name: Build (clang only)
+        run: bash scripts/build.sh
+        env:
+          CC: clang
+          CXX: clang++
+          AR: llvm-ar
+          CGO_CC: clang
+
+      - name: Test (unit + guards, with -race)
+        run: go test -race ./...
+        env:
+          CC: clang
+          CXX: clang++
+
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          echo "== toolchain =="
+          clang --version | head -2 || true
+          ar --version | head -1 || true
+          cargo --version || true
+          go version || true
+          echo "== build dir =="
+          ls build 2>/dev/null | head -20 || true
+
+      - name: Report Linux status
+        if: always()
+        run: |
+          echo "Linux 从未在真机验证过；这条 job 的结论是数据点，不是承诺。"

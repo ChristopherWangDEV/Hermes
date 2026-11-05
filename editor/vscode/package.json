@@ -1,0 +1,64 @@
+{
+  "name": "hermes-vscode",
+  "displayName": "Hermes",
+  "description": "HermesScript 语言支持：语法高亮、诊断、补全、悬停、大纲（由 hermes lsp 提供）",
+  "version": "1.2.1",
+  "publisher": "hermes",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:hermes",
+    "workspaceContains:**/*.hermes"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "hermes",
+        "aliases": [
+          "HermesScript",
+          "hermes"
+        ],
+        "extensions": [
+          ".hermes",
+          ".h"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "hermes",
+        "scopeName": "source.hermes",
+        "path": "./syntaxes/hermes.tmLanguage.json"
+      }
+    ],
+    "configuration": {
+      "title": "Hermes",
+      "properties": {
+        "hermes.serverPath": {
+          "type": "string",
+          "default": "",
+          "description": "hermes 可执行文件路径。留空则依次查找：扩展自带的 server/、PATH。"
+        },
+        "hermes.trace.server": {
+          "type": "string",
+          "enum": [
+            "off",
+            "messages"
+          ],
+          "default": "off",
+          "description": "把语言服务器收发的消息打到输出面板，用于排查插件问题。"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "package": "vsce package --no-dependencies"
+  }
+}

@@ -1,0 +1,41 @@
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hermes_sdk"
+version = "1.2.1"
+description = "Client SDK for the Hermes agent orchestration runtime: in-process via ctypes, or over HTTP. Zero dependencies."
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "Apache-2.0" }
+authors = [{ name = "Chris" }]
+keywords = ["hermes", "agent", "orchestration", "workflow", "llm", "runtime"]
+dependencies = []
+
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: Apache Software License",
+  "Operating System :: MacOS :: MacOS X",
+  "Operating System :: POSIX :: Linux",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3 :: Only",
+  "Typing :: Typed",
+  "Topic :: Software Development :: Libraries",
+]
+
+[project.urls]
+Homepage = "https://github.com/ChristopherWangDEV/Hermes"
+Source = "https://github.com/ChristopherWangDEV/Hermes"
+Documentation = "https://github.com/ChristopherWangDEV/Hermes/blob/main/packages/README.md"
+Issues = "https://github.com/ChristopherWangDEV/Hermes/issues"
+
+# 零运行时依赖：只用标准库。SDK 引第三方库，就把那棵依赖树带进了每个使用者的构建。
+# （与 tests/guard/sdk_redline_test.go 一起守：那里检查这里必须写着 dependencies = []）
+
+[tool.setuptools.packages.find]
+include = ["hermes*"]
+
+[tool.setuptools.package-data]
+hermes = ["py.typed"]

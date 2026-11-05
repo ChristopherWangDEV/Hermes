@@ -1,0 +1,13 @@
+#link <std/model>
+
+export struct Intent {
+    string action;
+}
+
+export workflow gen() entry -> string {
+    auto i = model.generate<Intent>(
+        prompt = "classify: {input.text}",
+        precision = "exact"
+    );
+    return "ok";
+}

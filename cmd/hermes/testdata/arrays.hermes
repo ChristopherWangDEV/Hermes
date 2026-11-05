@@ -1,0 +1,8 @@
+export struct S {
+    string[] tags;
+    int count;
+}
+
+export workflow w() entry -> string {
+    return "ok";
+}

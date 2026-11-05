@@ -1,0 +1,46 @@
+# Hermes 原生层导出符号清单（唯一的 ABI 真相源之一，另一半是 native/include/hermes_abi.h）
+#
+# 用途：scripts/build.sh 与 tests/guard/guards_test.go 会把真实的
+#       build/libhermes_native.a 里的 hm_* 符号和这份清单做**双向** diff：
+#         · 少一个 → 功能缺失（链接期才炸，或者更糟：运行期才炸）
+#         · 多一个 → 有人给原生层偷偷加了职责，本项目的语言分工已被腐蚀
+#
+# 排序：LC_ALL=C sort。名字已去掉 Mach-O 的前导下划线，因此 Linux 也能直接用。
+#
+# ---- Rust（16 个：4 件事 + 1 个调试钩子） ----
+#   版本/初始化        4 : hm_abi_version hm_abi_build_id hm_runtime_init hm_runtime_shutdown
+#   敏感缓冲           5 : hm_sensitive_{new,len,read,locked,free}
+#   只读视图           4 : hm_view_{new,slice,borrow,free}
+#   哈希链             2 : hm_chain_{hash,final}
+#   调试钩子（T03）    1 : hm_debug_peek
+#
+# ---- C / 汇编（8 个） ----
+#   计数器             3 : hm_cycle_{now,freq,arch}
+#   进程督导           5 : hm_spawn hm_spawn_cancel hm_spawn_wait hm_spawn_res_free hm_spawn_free
+#
+# 合计 24 个。
+
+hm_abi_build_id
+hm_abi_version
+hm_chain_final
+hm_chain_hash
+hm_cycle_arch
+hm_cycle_freq
+hm_cycle_now
+hm_debug_peek
+hm_runtime_init
+hm_runtime_shutdown
+hm_sensitive_free
+hm_sensitive_len
+hm_sensitive_locked
+hm_sensitive_new
+hm_sensitive_read
+hm_spawn
+hm_spawn_cancel
+hm_spawn_free
+hm_spawn_res_free
+hm_spawn_wait
+hm_view_borrow
+hm_view_free
+hm_view_new
+hm_view_slice

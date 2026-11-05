@@ -1,0 +1,41 @@
+Hermes
+Copyright 2026 The Hermes Authors
+
+This product is licensed under the Apache License, Version 2.0.
+
+Scope of this license
+---------------------
+
+This license covers **the Hermes project only** — the compiler, runtime, CLI,
+standard library, generated headers, editor extensions and client SDKs that
+live in this repository.
+
+It does NOT cover:
+
+  - Homonoia, or any other sibling project. They are separate works with their
+    own terms; nothing here grants rights to them.
+  - Third-party services you connect Hermes to (model providers, gateways).
+  - Data, prompts, workflow sources or binaries produced by you with Hermes.
+    Your output is yours; the Apache-2.0 grant is about Hermes itself.
+
+Third-party components linked into the build
+--------------------------------------------
+
+  Rust crates (MIT OR Apache-2.0):
+    - sha2
+    - zeroize
+
+  Go: standard library only (BSD-3-Clause). No third-party Go modules;
+      `go list -m all` prints exactly one line: hermes.
+
+  C/C++: our own code, compiled with clang and libc++ (Apache-2.0 WITH
+      LLVM-exception). GNU toolchain and libstdc++ are not used.
+
+  Apple frameworks linked by `hermes compile` on macOS (system libraries, not
+  distributed with Hermes): CoreFoundation, Security, libSystem.
+
+Development-time tools (git, ar, python3) are never distributed with Hermes.
+
+The Hermes runtime ships no GPL/MPL/LGPL code. `scripts/check_toolchain.sh`,
+`tests/guard/redline_test.go` and `tests/guard/license_sweep_test.go` enforce
+that mechanically, not by convention.

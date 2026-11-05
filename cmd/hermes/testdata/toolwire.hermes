@@ -1,0 +1,15 @@
+#link <std/net>
+
+export struct Query {
+    string q;
+}
+
+export workflow f(input: Query) entry -> Query {
+    auto r = tool.call<Query>(
+        url = "https://api.example.com/search",
+        method = "POST",
+        header = input,
+        body = input
+    );
+    return r;
+}

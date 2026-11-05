@@ -1,0 +1,31 @@
+[package]
+name = "hermes-core"
+version = "0.1.0"
+edition = "2021"
+publish = false
+# 闭源商用。第三方依赖仅 sha2（MIT OR Apache-2.0）与 zeroize（Apache-2.0 OR MIT）。
+license = "LicenseRef-Proprietary"
+
+[lib]
+name = "hermes_core"
+# staticlib 用于静态链接进 libhermes_native.a（Go 侧唯一消费方式）；
+# cdylib 只给 hermes doctor 做 "原生库可加载" 检查用。
+crate-type = ["staticlib", "cdylib"]
+
+[dependencies]
+# A 组依赖白名单（PRD §8.1）：只有这两个，不许再加。
+# default-features = false 把 sha2 的 std 依赖压到最小，供应链面最小化。
+sha2 = { version = "0.10", default-features = false }
+zeroize = { version = "1.8", default-features = false, features = ["alloc"] }
+
+[profile.release]
+opt-level = 3
+# 可重现性（R-OPS-05）：单 codegen unit + LTO 让符号顺序与内联决策稳定。
+codegen-units = 1
+lto = true
+# panic = abort：函数体内禁止 panic 路径；真的 panic 时直接 abort 而不是
+# 跨 FFI 边界 unwind（跨边界 unwind 是未定义行为）。
+panic = "abort"
+strip = "debuginfo"
+overflow-checks = false
+incremental = false
