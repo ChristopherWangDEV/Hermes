@@ -1,0 +1,12 @@
+#link <std/model>
+
+export backend h : openai = env("HERMES_TEST_URL", "");
+
+export struct Intent {
+    string action;
+}
+
+export workflow live(backend = h) entry -> string {
+    auto i = model.generate<Intent>(prompt = "classify", precision = "exact");
+    return "done";
+}

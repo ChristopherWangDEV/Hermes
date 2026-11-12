@@ -1,0 +1,5 @@
+#include "types.h"
+#link native "math" from "math_tool.h"
+export workflow probe() entry -> int {
+    return imul(6, 7);
+}

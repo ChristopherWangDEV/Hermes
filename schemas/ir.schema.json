@@ -1,0 +1,2985 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hermes.local/schemas/ir.schema.json",
+  "title": "Hermes IR v1",
+  "description": "IR.md §2–§6 在机器上的投影。本文只表达**形状**；图不变量（V-1…V-12）表达不了，由 internal/ir/validate.go 在加载期跑（IR.md §12 结尾）。\n\n两条刻意的宽松：\n① 未知属性一律放行（不写 additionalProperties:false）。IR.md §10 要求消费者容忍未知字段，否则 minor 兼容会变成静默丢字段。真正拦未知字段的是加载器的 Extra 机制。\n② 唯二的例外是 backend.auth 与 addr/auth 的分支：那里 additionalProperties:false 是**安全属性**——密钥块里出现 default 就等于允许\"没配也能跑\"（D-023 末节），必须拒绝而不是容忍。\n\n检验顺序与 IR.md 一致：先形状（本文），再图不变量（V-1…V-12）。不要试图把 V-3（无环）塞进 JSON Schema——它只会得到一个又慢又难读的 schema。",
+  "type": "object",
+  "required": [
+    "ir_version",
+    "unit",
+    "compiler",
+    "types",
+    "backends",
+    "tools",
+    "schemas",
+    "workflows",
+    "exports",
+    "imports",
+    "requires",
+    "diag_counts"
+  ],
+  "properties": {
+    "ir_version": {
+      "type": "integer",
+      "const": 1,
+      "description": "IR schema 的 major。见 IR.md §10：加字段不改此值，改字段语义才 +1。"
+    },
+    "unit": {
+      "$ref": "#/$defs/unit"
+    },
+    "compiler": {
+      "$ref": "#/$defs/compiler"
+    },
+    "types": {
+      "type": "array",
+      "description": "类型表独立于 workflow（D-013）：ODR 合并在类型层发生。id 从 1 递增，按声明顺序分配（决定 $defs 键序）。",
+      "maxItems": 4096,
+      "items": {
+        "$ref": "#/$defs/typeDef"
+      }
+    },
+    "backends": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/backend"
+      }
+    },
+    "tools": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/tool"
+      }
+    },
+    "schemas": {
+      "type": "array",
+      "description": "已生成的 JSON Schema 原文。存原文而不是运行期现算，是因为它要进请求体、进 request_sha256、并且审计者要能复核（IR.md §3.5）。",
+      "items": {
+        "$ref": "#/$defs/schemaDoc"
+      }
+    },
+    "workflows": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/workflow"
+      }
+    },
+    "functions": {
+      "type": "array",
+      "description": "unit 级函数表（2.0.0）。跨 workflow 可见，因此不能塞进某一份 workflow。没有函数时**整个键不出现**——否则 1.x 的 golden 字节会变。",
+      "items": {
+        "$ref": "#/$defs/function"
+      }
+    },
+    "exports": {
+      "$ref": "#/$defs/exports"
+    },
+    "imports": {
+      "type": "array",
+      "description": "符号级依赖。链接器只读 exports/imports，不读 workflows 内部（解耦）。",
+      "items": {
+        "$ref": "#/$defs/importRef"
+      }
+    },
+    "requires": {
+      "type": "array",
+      "description": "模块级依赖（#link 的落地）。与 imports 的区别：imports 管 \"能不能解析到符号\"，requires 管 \"链接谁、版本对不对\"。一个 #link 可以带来零个 imports。",
+      "items": {
+        "$ref": "#/$defs/requireItem"
+      }
+    },
+    "diag_counts": {
+      "$ref": "#/$defs/diagCounts"
+    }
+  },
+  "$defs": {
+    "loc": {
+      "type": "object",
+      "description": "源码位置。P-2：每个节点必须带它，缺失即编译器内部错误。l≥1、el≥l、m<len(modules) 这三条范围检查由加载器做（V-6）——JSON Schema 表达不了跨字段不等式。",
+      "required": [
+        "m",
+        "l",
+        "c",
+        "el",
+        "ec"
+      ],
+      "properties": {
+        "m": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "unit.modules 的下标。"
+        },
+        "l": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "起始行（1-based）。"
+        },
+        "c": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "起始列（1-based）。"
+        },
+        "el": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "结束行。"
+        },
+        "ec": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "结束列（指向末字符之后）。"
+        }
+      }
+    },
+    "module": {
+      "type": "object",
+      "description": "被展开的源文件。数组下标即 loc.m 的值域。",
+      "required": [
+        "path",
+        "builtin",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "相对 include root 的 POSIX 路径。**不含绝对路径**——源码树挪个位置产物就变了，可重现性当场失效。"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "该模块源码字节的哈希。**内置模块也有它**（T42 起 stdlib 是 go:embed 的真实源码，不是一张内存表）—— 没有字节就没有哈希，而没有哈希就说不清 requires 依赖的是哪份字节（IR.md §9.5）。"
+        },
+        "builtin": {
+          "type": "boolean",
+          "description": "true = 内置 stdlib 成员（#include <std/*>），false = 磁盘上的源文件。"
+        }
+      }
+    },
+    "unit": {
+      "type": "object",
+      "description": "一份 IR = 一个 unit（一次 hermes build 的产物单元）。.hbc 装若干 unit。",
+      "required": [
+        "name",
+        "entry_path",
+        "modules",
+        "language_version"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9_.-]{1,64}$",
+          "description": "entry 文件名去扩展名。同一归档内唯一。"
+        },
+        "entry_path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "相对 include root 的 POSIX 路径。"
+        },
+        "modules": {
+          "type": "array",
+          "minItems": 1,
+          "description": "按 include 到达顺序（深度优先、先序）。#link 的模块**不在**里面——它不是被编译的源码。",
+          "items": {
+            "$ref": "#/$defs/module"
+          }
+        },
+        "source_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "sha256(按 modules 顺序的 (path\\0bytes))，**只含 builtin=false 的模块**。只在 sealed 产物里出现；成员 IR 里没有，所以不是 required。"
+        },
+        "language_version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "语言版本（= LANGUAGE.md 的 major）。与 compiler.parser_abi 是两条独立的轴，不要顺手一起改（ARCH §11 的六轴）。"
+        }
+      }
+    },
+    "compiler": {
+      "type": "object",
+      "description": "前端版本。**不含时间戳、不含主机名**——否则同一源码在两台机器上产出不同字节（D-012）。",
+      "required": [
+        "name",
+        "version",
+        "parser_abi"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "examples": [
+            "hermes-parse"
+          ]
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1
+        },
+        "parser_abi": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "hm_parse_version() 的值。与 ir_version 无关。"
+        },
+        "opt": {
+          "type": "string",
+          "description": "优化档（T33 的 economics/上界计算档位）。可省略 = 默认档。它进 IR 是因为上界随档位变化，审计者要能回答\"这份上界是哪个档算的\"。"
+        }
+      }
+    },
+    "typeExpr": {
+      "description": "类型表达式。递归但深度受限（LANGUAGE §4.1：元素只能是 BaseType，不支持嵌套数组）。",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/typeBase"
+        },
+        {
+          "$ref": "#/$defs/typeArray"
+        },
+        {
+          "$ref": "#/$defs/typeStruct"
+        },
+        {
+          "$ref": "#/$defs/typeHttpResult"
+        },
+        {
+          "$ref": "#/$defs/typeTuple"
+        }
+      ]
+    },
+    "typeBase": {
+      "type": "object",
+      "required": [
+        "k"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "k": {
+          "description": "基础类型名。浮点类型只有 `double`（IEEE-754 binary64）；没有 32 位 `float`。",
+          "enum": [
+            "string",
+            "int",
+            "double",
+            "bool",
+            "json",
+            "cost",
+            "char",
+            "short",
+            "long"
+          ]
+        }
+      }
+    },
+    "typeArray": {
+      "type": "object",
+      "description": "元素只能是 BaseType（不支持嵌套数组）。",
+      "required": [
+        "k",
+        "of"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "k": {
+          "const": "array"
+        },
+        "of": {
+          "$ref": "#/$defs/typeBase"
+        }
+      }
+    },
+    "typeStruct": {
+      "type": "object",
+      "description": "id 是 types[] 下标（0 起，声明顺序分配）。",
+      "required": [
+        "k",
+        "id"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "k": {
+          "const": "struct"
+        },
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "typeHttpResult": {
+      "type": "object",
+      "description": "仅由 tool.call + allow_status 产生。",
+      "required": [
+        "k",
+        "of"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "k": {
+          "const": "httpresult"
+        },
+        "of": {
+          "$ref": "#/$defs/typeExpr"
+        }
+      }
+    },
+    "typeTuple": {
+      "type": "object",
+      "description": "仅由 parallel 产生；不可命名、不可存储（IR.md §3.1）。",
+      "required": [
+        "k",
+        "of"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "k": {
+          "const": "tuple"
+        },
+        "of": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/typeExpr"
+          }
+        }
+      }
+    },
+    "annotation": {
+      "type": "object",
+      "required": [
+        "name",
+        "args"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "enum": [
+            "enum",
+            "pattern"
+          ]
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "字符串字面量。enum → 取值集合；pattern → 正则。"
+        }
+      }
+    },
+    "field": {
+      "type": "object",
+      "required": [
+        "n",
+        "t",
+        "opt",
+        "ann"
+      ],
+      "properties": {
+        "n": {
+          "type": "string",
+          "minLength": 1
+        },
+        "t": {
+          "$ref": "#/$defs/typeExpr"
+        },
+        "opt": {
+          "type": "boolean",
+          "description": "是否为可选字段（决定 schema 的 required 列表）。"
+        },
+        "ann": {
+          "type": "array",
+          "description": "注解列表。**空数组不是省略**：IR.md §3.1 的样例里每个字段都有 ann 键，哪怕是 []。恒写出来是为了让\"没有注解\"与\"忘了生成\"在 diff 里可区分。",
+          "items": {
+            "$ref": "#/$defs/annotation"
+          }
+        },
+        "loc": {
+          "$ref": "#/$defs/loc",
+          "description": "可选：字段级位置。有它时诊断能指到字段而不是整个 struct。"
+        }
+      }
+    },
+    "typeDef": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "module",
+        "loc",
+        "fields",
+        "sha256"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "unit 内唯一，从 1 递增，按声明顺序分配。"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "description": "非限定名。跨 unit 同名 ⇒ 链接期走 ODR（IR.md §9.2）。"
+        },
+        "module": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "声明所在模块下标。"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "fields": {
+          "type": "array",
+          "description": "声明顺序 —— 它决定生成的 JSON Schema 的键序，也决定 sha256，所以顺序本身是契约。",
+          "items": {
+            "$ref": "#/$defs/field"
+          }
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "sha256(canonical_json({\"name\":…,\"fields\":[…]}))，**不含 id/module/loc**。ODR 比较用它，所以它必须与位置无关。"
+        },
+        "exported": {
+          "type": "boolean",
+          "description": "是否出现在 exports.types 里。省略 = false。"
+        }
+      }
+    },
+    "addr": {
+      "description": "地址的**来源**，不是解析后的地址（D-014.4）。把解析结果写进 IR，同一份源码在两台机器上就会产出不同字节。",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "src",
+            "env",
+            "default"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "src": {
+              "const": "env"
+            },
+            "env": {
+              "type": "string",
+              "minLength": 1
+            },
+            "default": {
+              "type": "string",
+              "description": "字面量默认值，可为 \"\" 表示\"必须外部设置\"。"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "src",
+            "value"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "src": {
+              "const": "literal"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        }
+      ]
+    },
+    "auth": {
+      "type": "object",
+      "description": "密钥来源（D-023 末节）。与 addr 同形状但有两条差别，都是安全属性：① src 只有 env，没有 literal——密钥字面量没有安全的落盘方式，写进 IR 就写进了 .hbc 与签名产物；② 没有 default——给了默认就等于允许\"没配也能跑\"，那只会在运行期变成一个 401，把\"忘了配密钥\"伪装成\"上游拒绝我\"。additionalProperties:false 在这里是刻意的：见得到 default 键即 E_IR_BAD_AUTH。",
+      "required": [
+        "src",
+        "env"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "src": {
+          "const": "env"
+        },
+        "env": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "backend": {
+      "type": "object",
+      "required": [
+        "name",
+        "kind",
+        "addr"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "openai",
+            "anthropic",
+            "ollama",
+            "homonoia",
+            "custom"
+          ]
+        },
+        "model": {
+          "type": "string"
+        },
+        "addr": {
+          "$ref": "#/$defs/addr"
+        },
+        "auth": {
+          "$ref": "#/$defs/auth"
+        },
+        "supports_tier": {
+          "type": "boolean",
+          "description": "声明值，可来自 .h 手写或 hermes header 生成。**probe 的实测结果不进 IR**（D-012），只在 build 时比对并发 warning。"
+        },
+        "supports_response_format": {
+          "type": "boolean"
+        },
+        "exact_fallback": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "schema_any": {
+          "type": "string"
+        },
+        "max_parallel": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "exported": {
+          "type": "boolean"
+        },
+        "decl_loc": {
+          "$ref": "#/$defs/loc",
+          "description": ".h 里的声明位置。"
+        },
+        "def_loc": {
+          "$ref": "#/$defs/loc",
+          "description": ".hermes 里的定义位置。只有 def_loc 时说明该 backend 是私有的。"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "exported": {
+                "const": true
+              }
+            },
+            "required": [
+              "exported"
+            ]
+          },
+          "then": {
+            "required": [
+              "decl_loc",
+              "def_loc"
+            ],
+            "description": "IR.md §12：exported == true 时两个 loc 都必填。导出的 backend 必然既有声明又有定义。"
+          }
+        }
+      ]
+    },
+    "urlTemplatePart": {
+      "description": "URL 模板的一段：字面文本，或一个已解析的字段路径。**不是字符串拼接**——把它做成结构化 parts，是为了让运行期不必重新解析 URL 模板，也让审计者能直接看出 URL 依赖了哪些字段。",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "lit"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "lit": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "path"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "idem": {
+      "type": "object",
+      "required": [
+        "mode"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "mode": {
+          "enum": [
+            "readonly",
+            "idem_true",
+            "idem_key",
+            "none"
+          ],
+          "description": "编译期事实（check_idem.cpp 算），运行期只读不算。readonly 的正确性完全建立在 method 是编译期已知的只读方法上；none = 调用点没有任何幂等证明，不可安全重试。给未证明的调用贴 readonly 是一份说谎的 IR，会直接导致重复扣款。"
+        },
+        "key": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/urlTemplatePart"
+          }
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "mode": {
+                "const": "idem_key"
+              }
+            },
+            "required": [
+              "mode"
+            ]
+          },
+          "then": {
+            "required": [
+              "key"
+            ]
+          },
+          "else": {
+            "not": {
+              "required": [
+                "key"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "tool": {
+      "type": "object",
+      "required": [
+        "name",
+        "method",
+        "url_template",
+        "allow_status",
+        "timeout_ms",
+        "idem",
+        "decl_loc"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "method": {
+          "enum": [
+            "GET",
+            "HEAD",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ],
+          "description": "恒为 6 个字面量之一，且**省略时上游已在 codegen 里折叠成 GET**——IR 里不存在\"method 待定\"。这不是格式约定：idem.mode=readonly 的正确性完全建立在\"编译期已知这是只读方法\"上；若 method 可以是运行期表达式，readonly 就只是一个注释，retry 包着 POST 也拦不住。"
+        },
+        "url_template": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/urlTemplatePart"
+          }
+        },
+        "allow_status": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 599
+          },
+          "description": "非空时该 tool 的返回类型是 httpresult<T>。"
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "idem": {
+          "$ref": "#/$defs/idem"
+        },
+        "decl_loc": {
+          "$ref": "#/$defs/loc"
+        }
+      }
+    },
+    "schemaDoc": {
+      "type": "object",
+      "required": [
+        "id",
+        "root",
+        "json"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "minLength": 1,
+          "description": "**名字**，不是下标。它是 struct 的非限定名（LANGUAGE §4.8），也是她的请求契约名：hermes serve 直接取这份字节，文档与校验是同一份。引用它的地方（call_model.schema）用的是数组下标，两者靠这份 id 关联。"
+        },
+        "root": {
+          "type": "string",
+          "minLength": 1,
+          "description": "json 的根 $ref 目标名。"
+        },
+        "json": {
+          "type": "object",
+          "description": "原样嵌入的 JSON Schema 字节，参与 canonical 化（V-8：重新 canonical 化后必须与这里字节相等）。键序与 $defs 顺序由 LANGUAGE §8.3 定死。"
+        }
+      }
+    },
+    "var": {
+      "type": "object",
+      "required": [
+        "id",
+        "name",
+        "t",
+        "decl",
+        "scope"
+      ],
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "description": "必须能在源文件里 grep 到——trace 的 span_id 规则依赖它（R-TR-01）。**允许重名**：内层同名遮蔽是两个绑定（各占一个槽位、各有自己的 decl 节点），身份只看 id；按名字反查会在遮蔽处读到另一层。"
+        },
+        "t": {
+          "$ref": "#/$defs/typeExpr"
+        },
+        "decl": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "声明该变量的 let 节点 id（V-5 的一端）。input 不在 vars[] 里，所以这里没有 -1 的情况。"
+        },
+        "scope": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "作用域 seq 节点 id。"
+        }
+      }
+    },
+    "bounds": {
+      "type": "object",
+      "description": "**派生字段**：前端算出、加载期必须复算比对。不复算的后果不是\"数字不好看\"，而是伪造的 bounds 能绕过执行上限（安全问题）。",
+      "required": [
+        "max_steps",
+        "max_spans",
+        "max_model_calls",
+        "max_tool_calls",
+        "max_concurrency",
+        "max_retry_expansion"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "max_steps": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_spans": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "运行期断言 len(spans) ≤ 它。代数见 IR.md §5.1。"
+        },
+        "unbounded": {
+          "type": "boolean",
+          "description": "为 true 时 max_steps / max_spans / max_model_calls / max_tool_calls **都不是真正的上界**：递归调用的深度、未知循环的迭代次数、以及 `max_steps = unlimited` 的 agent 步数都无法静态定界（前端仍会写数字，但那只是「跑一遍直线代码」的量）。运行期的闸是调用深度上限与循环/agent 步数硬上限，不是这几个数字。"
+        },
+        "max_model_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_tool_calls": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_concurrency": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "max_retry_expansion": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "economics": {
+      "type": "object",
+      "description": "**上界，不是预测**（IR.md §6.1）。任何\"预估成本\"的实现都是在猜：插值长度由运行时输入决定。",
+      "required": [
+        "assumptions",
+        "prompt_bytes_upper",
+        "tokens_in_upper",
+        "tokens_out_upper",
+        "model_calls_upper",
+        "pricing_source"
+      ],
+      "properties": {
+        "assumptions": {
+          "type": "object",
+          "required": [
+            "input_bytes_upper",
+            "tokens_per_byte_milli",
+            "max_tokens_default"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "input_bytes_upper": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "tokens_per_byte_milli": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "千分之 token/字节。用整数而不是浮点：这是 P-1 的直接后果。"
+            },
+            "max_tokens_default": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        },
+        "prompt_bytes_upper": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tokens_in_upper": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "tokens_out_upper": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "model_calls_upper": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cost_upper_micro_usd": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "**pricing_source=unknown 时必须省略，而不是写 0**——写 0 会被误读成\"免费\"。"
+        },
+        "pricing_source": {
+          "enum": [
+            "declared",
+            "builtin",
+            "unknown"
+          ]
+        },
+        "overflow": {
+          "type": "boolean",
+          "description": "true = 乘算超 int64 且已省略成本；build 必须失败（E6003），说明上界不可靠。"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "pricing_source": {
+                "const": "unknown"
+              }
+            },
+            "required": [
+              "pricing_source"
+            ]
+          },
+          "then": {
+            "not": {
+              "required": [
+                "cost_upper_micro_usd"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "interpDep": {
+      "type": "object",
+      "description": "插值依赖（LANGUAGE I-5）：本节点的 prompt 依赖哪些字段路径。编译期静态可见，所以 hermes explain 无需运行就能打印。",
+      "required": [
+        "node",
+        "paths"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "node": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "paths": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "minLength": 1
+            }
+          }
+        }
+      }
+    },
+    "param": {
+      "type": "object",
+      "description": "workflow 的其余参数默认值。v 是**已折叠的常量**，不是表达式——运行期不该再求值一次。",
+      "required": [
+        "n",
+        "v"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "n": {
+          "type": "string",
+          "minLength": 1
+        },
+        "v": {
+          "$ref": "#/$defs/constValue"
+        }
+      }
+    },
+    "constValue": {
+      "description": "已折叠的常量。浮点常量用位模式对象 `{\"k\":\"double\",\"bits\":\"<16 位小写 hex>\"}`（P-1）：bits 是 ASCII 字符串，绝不放 JSON 数字。",
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "v"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "k": {
+              "const": "string"
+            },
+            "v": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "v"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "k": {
+              "const": "int"
+            },
+            "v": {
+              "type": "integer"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "v"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "k": {
+              "const": "backend"
+            },
+            "v": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "k",
+            "v"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "k": {
+              "const": "bool"
+            },
+            "v": {
+              "type": "boolean"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "description": "double 常量（IEEE-754 binary64 位模式）。",
+          "required": [
+            "k",
+            "bits"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "k": {
+              "const": "double"
+            },
+            "bits": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{16}$",
+              "description": "IEEE-754 binary64 的位模式，big-endian 数值十六进制：math.Float64bits(x) 的 uint64 用 %016x 格式化。必须是字符串——JSON 数字会同时破坏 V-7 扫描、canonical 的 ErrFloat 与签名链。pattern 是端序/宽度唯一机器可执行契约。"
+            }
+          }
+        }
+      ]
+    },
+    "elifArm": {
+      "type": "object",
+      "required": [
+        "c",
+        "body"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "c": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "body": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "matchArm": {
+      "type": "object",
+      "required": [
+        "body"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "lit": {
+          "type": "string",
+          "description": "字符串臂的字面量；default 臂两者都没有。"
+        },
+        "body": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "num": {
+          "type": "integer",
+          "description": "整数臂的字面量（与 lit 互斥）。"
+        }
+      }
+    },
+    "catchArm": {
+      "type": "object",
+      "required": [
+        "t",
+        "v",
+        "body"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "t": {
+          "type": "string",
+          "minLength": 1,
+          "description": "错误类型名。LANGUAGE 只有一层继承（Error 为根），所以 E4002 可以完整判定。"
+        },
+        "v": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "绑定异常到哪个**变量**（不是节点 id）。"
+        },
+        "body": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "interpPart": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "lit"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "lit": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "required": [
+            "path"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "path": {
+              "type": "array",
+              "minItems": 1,
+              "items": {
+                "type": "string",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      ]
+    },
+    "attemptCtx": {
+      "type": "object",
+      "description": "**编译期算好的**：让运行期不必回溯\"我在第几层 retry 里\"，也让 trace 能直接标 attempt=2/3。它同时是幂等证明与上界乘法的落点。",
+      "required": [
+        "retry_node",
+        "attempt_index_upper"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "retry_node": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "attempt_index_upper": {
+          "type": "integer",
+          "minimum": 1
+        }
+      }
+    },
+    "modelArgs": {
+      "type": "object",
+      "required": [
+        "prompt",
+        "precision",
+        "max_tokens",
+        "temperature"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "prompt": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "节点 id（string 类型）。"
+        },
+        "precision": {
+          "enum": [
+            "exact",
+            "fast"
+          ]
+        },
+        "max_tokens": {
+          "type": "integer",
+          "minimum": -1,
+          "description": "-1 = 取 policy。"
+        },
+        "temperature": {
+          "type": "string",
+          "description": "**字符串**（P-1 无浮点）。0.8 写成 \"0.8\"。"
+        }
+      }
+    },
+    "toolArgs": {
+      "type": "object",
+      "required": [
+        "url",
+        "method",
+        "timeout_ms",
+        "allow_status",
+        "header",
+        "body",
+        "idem_key"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "url": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "节点 id。"
+        },
+        "method": {
+          "enum": [
+            "GET",
+            "HEAD",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ]
+        },
+        "timeout_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "allow_status": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 100,
+            "maximum": 599
+          }
+        },
+        "header": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "body": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        },
+        "idem_key": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "node": {
+      "description": "21 种节点，判别键是 k。每个节点都必须带 loc（P-2）与 id（id == 数组下标，V-1）。\n\n关于 tuple 解构的三种形态（IR.md §4.2）：**B（destructure）是 codegen 唯一写出的规范形**；A（let.vars）与 C（parallel.bind）只为读兼容第三方 IR 而存在。写方唯一是\"同源码 ⇒ 同字节\"的前提；读方宽容是\"别人的 IR 也能读\"的前提。两者不冲突，但也不能反过来——若三种都能写出，同一份程序就有三种字节表示，哈希链与 golden 比对当场失效。\noneOf 的每个分支都用 const 钉死 k，所以\"k 不认识\"会表现为无分支匹配，而不是静默按通用节点放行。",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/nodeSeq"
+        },
+        {
+          "$ref": "#/$defs/nodeDecl"
+        },
+        {
+          "$ref": "#/$defs/nodeIf"
+        },
+        {
+          "$ref": "#/$defs/nodeMatch"
+        },
+        {
+          "$ref": "#/$defs/nodeParallel"
+        },
+        {
+          "$ref": "#/$defs/nodeRetry"
+        },
+        {
+          "$ref": "#/$defs/nodeTry"
+        },
+        {
+          "$ref": "#/$defs/nodeFallback"
+        },
+        {
+          "$ref": "#/$defs/nodeReturn"
+        },
+        {
+          "$ref": "#/$defs/nodeNop"
+        },
+        {
+          "$ref": "#/$defs/nodeDestructure"
+        },
+        {
+          "$ref": "#/$defs/nodeLit"
+        },
+        {
+          "$ref": "#/$defs/nodeVar"
+        },
+        {
+          "$ref": "#/$defs/nodeField"
+        },
+        {
+          "$ref": "#/$defs/nodeIndex"
+        },
+        {
+          "$ref": "#/$defs/nodeBinop"
+        },
+        {
+          "$ref": "#/$defs/nodeUnop"
+        },
+        {
+          "$ref": "#/$defs/nodeInterp"
+        },
+        {
+          "$ref": "#/$defs/nodeCallModel"
+        },
+        {
+          "$ref": "#/$defs/nodeCallTool"
+        },
+        {
+          "$ref": "#/$defs/nodeCallJSON"
+        },
+        {
+          "$ref": "#/$defs/nodeCallFn"
+        },
+        {
+          "$ref": "#/$defs/nodeCast"
+        },
+        {
+          "$ref": "#/$defs/nodeAgent"
+        },
+        {
+          "$ref": "#/$defs/nodeStoreOp"
+        },
+        {
+          "$ref": "#/$defs/nodeExprStmt"
+        },
+        {
+          "$ref": "#/$defs/nodeArrayLit"
+        },
+        {
+          "$ref": "#/$defs/nodeLen"
+        },
+        {
+          "$ref": "#/$defs/nodeAt"
+        },
+        {
+          "$ref": "#/$defs/nodeFor"
+        },
+        {
+          "$ref": "#/$defs/nodeBreak"
+        },
+        {
+          "$ref": "#/$defs/nodeContinue"
+        },
+        {
+          "$ref": "#/$defs/nodeAssign"
+        },
+        {
+          "$ref": "#/$defs/nodeWhile"
+        },
+        {
+          "$ref": "#/$defs/nodeCallNative"
+        }
+      ]
+    },
+    "varBindingList": {
+      "type": "array",
+      "description": "解构绑定的变量表下标序列，**位置即元组下标**（LANGUAGE §5.2 / E-7）。\n每个元素是 vars[] 下标，或 **JSON null = `_` 丢弃位**。\n刻意不用哨兵整数：-1 已经表示 input 了（let.var / var.var），再造一个 -2 只会让两种哨兵在代码里互相冒充，而它们的含义完全不同。",
+      "items": {
+        "type": [
+          "integer",
+          "null"
+        ],
+        "minimum": 0
+      }
+    },
+    "nodeSeq": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "kids"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "seq"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "kids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "顺序块。空块合法。**不产生 span**。"
+        }
+      }
+    },
+    "nodeDecl": {
+      "type": "object",
+      "description": "声明绑定（2.0.0 从 `let` 改名）。`decl` 对应源码的 `auto`，`const:true` 对应 `const auto`。**可变性只用 `const` 表达**：2.0.0 不再有 `mut` 字段 —— 「缺字段 = 可变」会让\"忘了写\"和\"故意可变\"长得一样。",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "var",
+        "e",
+        "const"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "decl"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "var": {
+          "type": "integer",
+          "description": "单绑定的变量表下标；**-1 = input**（隐式根变量，不在 vars[] 里）。这个哨兵是 V-2 必须放行的唯一特例。\n与 vars **互斥**：同时出现是歧义形状，加载期直接拒绝。"
+        },
+        "vars": {
+          "$ref": "#/$defs/varBindingList",
+          "description": "A 形态：`decl` 的 A 形态 `[a, b] = …`。**读兼容用**——codegen 只写 B（destructure），写 A 形状的只可能是别家的 IR。"
+        },
+        "e": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "const": {
+          "type": "boolean",
+          "description": "true = 不可再赋值（源码 `const auto`）。始终写出，不省略。"
+        }
+      }
+    },
+    "nodeIf": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "c",
+        "then"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "if"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "c": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "then": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "elifs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/elifArm"
+          }
+        },
+        "else": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0
+        }
+      }
+    },
+    "nodeMatch": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "subj",
+        "arms",
+        "default"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "match"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "subj": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "arms": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/matchArm"
+          }
+        },
+        "default": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "**必填**。match 被匹配的是字符串，\"全覆盖\"无法静态证明，所以没有 default 就是错（E4018）。"
+        }
+      }
+    },
+    "nodeParallel": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "branches",
+        "join",
+        "join_k",
+        "max_par"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "parallel"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "branches": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        },
+        "join": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "按位置配对的元组元素表达式（D-031）。只有 join_k 是不够的：join_k=2 与 [o,h]、[h,o]、[x,y] 都相容，执行器无从知道该装什么。"
+        },
+        "join_k": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "join 的元数，必须等于 len(join)。保留它是因为反序列化方不必先解析数组就能知道元数。"
+        },
+        "max_par": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "同时存活分支数上界。"
+        },
+        "bind": {
+          "$ref": "#/$defs/varBindingList",
+          "description": "C 形态：绑定直接挂在 parallel 上。**读兼容用**——codegen 只写 B。"
+        }
+      }
+    },
+    "nodeRetry": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "n",
+        "delay_ms",
+        "body"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "retry"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "n": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 16,
+          "description": "重试次数上限（LANGUAGE §6.1）；上界代数按 (n+1) 放大。"
+        },
+        "delay_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "body": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "nodeTry": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "body",
+        "catches"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "try"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "body": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "catches": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/catchArm"
+          }
+        }
+      }
+    },
+    "nodeFallback": {
+      "type": "object",
+      "description": "fallback（2.0.0）：错误边界，**不是异常**。先求 main；失败（C ABI 状态码 err != 0）时改求 body 并取它的返回值。与 try 同构但**是表达式**（产出一个值），所以 main 单独占一个槽位而不是塞进 kids —— kids 的语义是语句序列。全程零栈展开：失败一直是返回值。预算按 main + body **相加**计（主路径可能已花掉一部分才失败），不取 max。",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "main",
+        "body"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "fallback"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "main": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "body": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "nodeDestructure": {
+      "type": "object",
+      "description": "**B 形态 = codegen 唯一写出的规范形。** 把 parallel 的 k 元组按位置绑定到 k 个变量（LANGUAGE §5.2 / E-7）：vars[i] 接元组第 i 个元素，null 位是 `_`。\n为什么要一个独立节点而不是给 let 加字段：`let` 的语义是\"绑定一个值\"，解构是\"绑定 k 个位置\"，合并会让 let 出现两种形状，而\"同一个概念两种形状\"正是本项目反复出问题的地方（call_model.args 与 call_json.args 就是被迫延迟解析的活例子）。",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "vars",
+        "e"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "destructure"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "vars": {
+          "$ref": "#/$defs/varBindingList"
+        },
+        "e": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "被解构的值。按语言规则它**必然是 parallel 节点**（元组只能由 parallel 产生），加载期校验这一点。"
+        }
+      }
+    },
+    "nodeReturn": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "e"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "return"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "e": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "nodeNop": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "nop"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        }
+      }
+    },
+    "nodeLit": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "t",
+        "v"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "lit"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "t": {
+          "description": "double 是 v2.0.0 起唯一的浮点类型；float 保留为旧标签形态，由 E4029 三道纵深防线拦截。",
+          "enum": [
+            "int",
+            "float",
+            "double",
+            "bool",
+            "string",
+            "cost"
+          ]
+        },
+        "v": {
+          "description": "P-1 的落点：double 的 v 是位模式对象 `{\"k\":\"double\",\"bits\":\"<16 位小写 hex>\"}`，cost 的 v 是整数 micro-USD，int 是 int64，bool 是 true/false，string 是字符串。**这里不能出现 JSON 数字带小数点或指数**——V-7 扫 .eE、canonical 遇 json.Number 带小数点即 ErrFloat，签名链也要求字节唯一。",
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "object",
+              "description": "double 位模式；bits 必须是 16 位小写 hex 字符串，绝不是 JSON 数字。",
+              "required": [
+                "k",
+                "bits"
+              ],
+              "additionalProperties": false,
+              "properties": {
+                "k": {
+                  "const": "double"
+                },
+                "bits": {
+                  "type": "string",
+                  "pattern": "^[0-9a-f]{16}$"
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "nodeVar": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "var"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "var"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "var": {
+          "type": "integer",
+          "description": "vars[] 下标；**-1 = input**。"
+        }
+      }
+    },
+    "nodeField": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "of",
+        "name"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "field"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "of": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1
+        }
+      }
+    },
+    "nodeIndex": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "of",
+        "key"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "index"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "of": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "key": {
+          "type": "string",
+          "description": "j[\"k\"] 的 key。**必须是字面量**——运行期才知道 key 的索引会让静态类型检查失效。"
+        }
+      }
+    },
+    "nodeBinop": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "op",
+        "l",
+        "r"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "binop"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "op": {
+          "enum": [
+            "add",
+            "sub",
+            "mul",
+            "div",
+            "mod",
+            "eq",
+            "ne",
+            "lt",
+            "le",
+            "gt",
+            "ge",
+            "and",
+            "or"
+          ]
+        },
+        "l": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "r": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "nodeUnop": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "op",
+        "e"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "unop"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "op": {
+          "enum": [
+            "neg",
+            "not"
+          ]
+        },
+        "e": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "nodeInterp": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "parts"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "interp"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "parts": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/interpPart"
+          },
+          "description": "path 已解析为字段路径。运行期不做字符串解析——插值的结构在编译期就定死了。"
+        }
+      }
+    },
+    "nodeCallModel": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "schema",
+        "args",
+        "attempt_ctx"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "call_model"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "schema": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 0,
+          "description": "schemas[] 下标；**null = 无约束**（返回 json）。必填而非省略，是为了让\"无约束\"是显式决定而不是忘记填。"
+        },
+        "args": {
+          "$ref": "#/$defs/modelArgs"
+        },
+        "attempt_ctx": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/attemptCtx"
+            }
+          ]
+        }
+      }
+    },
+    "nodeCallTool": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "tool",
+        "args",
+        "ret",
+        "attempt_ctx"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "call_tool"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "tool": {
+          "type": "string",
+          "minLength": 1,
+          "description": "**名字**引用（tools[] 是符号表），不是下标。"
+        },
+        "args": {
+          "$ref": "#/$defs/toolArgs"
+        },
+        "ret": {
+          "$ref": "#/$defs/typeExpr",
+          "description": "T 或 httpresult<T>。"
+        },
+        "attempt_ctx": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/attemptCtx"
+            }
+          ]
+        }
+      }
+    },
+    "nodeCallJSON": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "fn",
+        "args"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "call_json"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "fn": {
+          "type": "string",
+          "minLength": 1
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "**位置参数数组**。与 call_model/call_tool 的 args 是对象不同——同一个 JSON 键两种形态，这正是 types.go 里 Args 必须延迟解析的原因。"
+        }
+      }
+    },
+    "nodeCallFn": {
+      "type": "object",
+      "description": "**递归**函数调用（2.0.0）。非递归函数在 codegen 展开，产物里不会出现这个节点。与 call_json 同形（fn + 位置参数），但 fn 指向 functions[]。",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "fn",
+        "args"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "call_fn"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "fn": {
+          "type": "string",
+          "minLength": 1,
+          "description": "functions[] 里的函数名。名字而不是下标：函数表是 unit 级符号表。"
+        },
+        "args": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          },
+          "description": "**位置参数数组**，按形参声明顺序。"
+        }
+      }
+    },
+    "nodeCallNative": {
+      "type": "object",
+      "required": ["id","k","loc","fn","args","ret"],
+      "properties": {
+        "id": {"type":"integer"},
+        "k": {"const":"call_native"},
+        "loc": {"$ref":"#/$defs/loc"},
+        "fn": {"type":"string"},
+        "args": {"type":"array","items":{"type":"integer"}},
+        "arg_types": {"type":"array","items":{"$ref":"#/$defs/typeExpr"}},
+        "ret": {"$ref":"#/$defs/typeExpr"}
+      }
+    },
+    "nodeAgent": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "agent"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "agent"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "agent": {
+          "type": "object",
+          "required": [
+            "goal",
+            "tools"
+          ],
+          "additionalProperties": false,
+          "properties": {
+            "goal": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "给模型的初始指令（表达式节点）。"
+            },
+            "tools": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              },
+              "description": "按名字引用 tools[] —— 工具定义只该有一份。"
+            },
+            "max_steps": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "循环上界。**通常是常量**：这是允许循环的前提（D-034）。**可选**：键缺失表示「没有编译期上界」，即源码里写的是 `max_steps = unlimited` —— 那种情况下 workflow 的 bounds.unbounded 为 true，max_spans / max_model_calls / max_tool_calls 都不是真正的上界，运行期退回一个硬性迭代上限。前端在 unlimited 时**刻意省略整个键**（不写 null、也不写一个大数：写假上限会撞上 max_spans ≤ 64×max_steps+1）；此字段出现时仍然是 minimum 1。"
+            },
+            "backend": {
+              "type": "string"
+            },
+            "max_parallel_tools": {
+              "type": "integer",
+              "minimum": 1,
+              "description": "一轮里最多允许多少个并行 tool_call（默认 1）。上界随之变成 (1+K)×max_steps。"
+            }
+          }
+        }
+      }
+    },
+    "nodeCast": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "to",
+        "e"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "cast"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "to": {
+          "$ref": "#/$defs/typeExpr"
+        },
+        "e": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "function": {
+      "type": "object",
+      "description": "用户函数（2.0.0）。函数体与 workflow 共用节点/变量形状，但没有 bounds：调用点的上界由 workflow.bounds 负责。",
+      "required": [
+        "name",
+        "params",
+        "returns",
+        "root",
+        "nodes",
+        "vars",
+        "recursive"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 1
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/functionParam"
+          }
+        },
+        "returns": {
+          "$ref": "#/$defs/typeExpr"
+        },
+        "root": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "nodes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "vars": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/var"
+          }
+        },
+        "recursive": {
+          "type": "boolean",
+          "description": "编译期调用图事实：从该函数出发能沿调用边回到它自己。不是提示词，explain 直接读它。"
+        }
+      }
+    },
+    "functionParam": {
+      "type": "object",
+      "required": [
+        "n",
+        "t"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "n": {
+          "type": "string",
+          "minLength": 1
+        },
+        "t": {
+          "$ref": "#/$defs/typeExpr"
+        }
+      }
+    },
+    "workflow": {
+      "type": "object",
+      "required": [
+        "name",
+        "exported",
+        "is_entry",
+        "backend",
+        "input",
+        "returns",
+        "params",
+        "root",
+        "nodes",
+        "vars",
+        "bounds",
+        "economics",
+        "interp_deps",
+        "loc"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "pattern": "^[A-Za-z_][A-Za-z0-9_]*$",
+          "description": "**标识符**。跨 unit 同名 ⇒ 链接期错误（不是 ODR）。"
+        },
+        "exported": {
+          "type": "boolean",
+          "description": "决定它是否出现在 exports.workflows 里（V-9 双向一致）。"
+        },
+        "is_entry": {
+          "type": "boolean",
+          "description": "本 unit 的默认入口。**必须 exported=true**（E3024）。"
+        },
+        "backend": {
+          "type": "string",
+          "minLength": 1,
+          "description": "默认 backend 名（名字引用，不是下标）。"
+        },
+        "input": {
+          "description": "{\"k\":\"struct\",\"id\":N} 或 **null**（该 workflow 没有 input 参数）。{\"k\":\"json\"} 已不可能——input 的类型必填（E3023）。",
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/typeStruct"
+            }
+          ]
+        },
+        "returns": {
+          "$ref": "#/$defs/typeExpr"
+        },
+        "params": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/param"
+          },
+          "description": "其余参数的默认值（已折叠的常量）。input 不在里面。"
+        },
+        "root": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "根节点 id，**永远是 seq**（V-4）。v3.1 把 v1 的 entry 改名为 root：entry 现在是语言级标注（is_entry），同词两义会让审阅者与链接器都读错。"
+        },
+        "nodes": {
+          "type": "array",
+          "description": "扁平数组，**id == 下标**（V-1）。",
+          "items": {
+            "$ref": "#/$defs/node"
+          }
+        },
+        "vars": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/var"
+          }
+        },
+        "bounds": {
+          "$ref": "#/$defs/bounds"
+        },
+        "economics": {
+          "$ref": "#/$defs/economics"
+        },
+        "interp_deps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/interpDep"
+          }
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "security": {
+          "$ref": "#/$defs/securityPolicy"
+        }
+      }
+    },
+    "exports": {
+      "type": "object",
+      "description": "符号表。与各定义上的 exported 标量是同一事实的两份表示（V-9）。四个命名空间彼此独立：一个 workflow 和一个 type 可以同名。",
+      "required": [
+        "workflows",
+        "types",
+        "backends",
+        "tools"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "workflows": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "backends": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "importRef": {
+      "type": "object",
+      "required": [
+        "sym",
+        "kind",
+        "loc"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "sym": {
+          "type": "string",
+          "minLength": 1
+        },
+        "kind": {
+          "enum": [
+            "workflow",
+            "type",
+            "backend",
+            "tool"
+          ]
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        }
+      }
+    },
+    "requireItem": {
+      "type": "object",
+      "description": "D-014.3 + D-020：#link（或命令行 -l）的落地。链接器据此校验版本（IR.md §9.5）。",
+      "required": [
+        "spec",
+        "kind",
+        "abi_version",
+        "ir_version",
+        "origin"
+      ],
+      "properties": {
+        "spec": {
+          "type": "string",
+          "minLength": 1,
+          "examples": [
+            "<std/net>",
+            "models"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "std",
+            "local",
+            "native"
+          ]
+        },
+        "abi_version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "**必须完全相等**，不是 major 相等。"
+        },
+        "ir_version": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "主版本相等，且被链接方 ≤ 链接方。"
+        },
+        "origin": {
+          "enum": [
+            "source",
+            "cli"
+          ],
+          "description": "source = 源码 #link；cli = 命令行 -l/-L。--audit-strict 拒绝任何 cli 来源（含输入成员自带的 cli 传染）。必填：来源可审是 D-020 的全部意义。"
+        },
+        "member_sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "供应链的唯一硬证据：\"我要那个确切版本的实现\"，而不是\"我要某个叫这个名字的东西\"。"
+        },
+        "implicit": {
+          "type": "boolean",
+          "description": "true 只用于 <std/runtime>：错误类型与预算错误是语言的一部分，不可缺失，因此隐式 include + 隐式 link。"
+        },
+        "name": {
+          "type": "string"
+        },
+        "archive": {
+          "type": "string"
+        },
+        "header": {
+          "type": "string"
+        }
+      },
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "implicit": {
+                "const": true
+              }
+            },
+            "required": [
+              "implicit"
+            ]
+          },
+          "then": {
+            "description": "implicit 项可省略 member_sha256：它是编译器内建，不来自任何归档成员，没有\"哪份字节\"可言。"
+          },
+          "else": {
+            "required": [
+              "member_sha256"
+            ],
+            "description": "非 implicit 项必须给 member_sha256：声明了要链接一个库却不说要它的哪份字节，等于没声明（E_LINK_REQUIRES_INCOMPLETE）。"
+          }
+        }
+      ]
+    },
+    "diagCounts": {
+      "type": "object",
+      "description": "只统计，不含文案（文案走诊断通道，不进 IR）。",
+      "required": [
+        "error",
+        "warning"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "error": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "warning": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "nodeStoreOp": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "op",
+        "args"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "store_op"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "op": {
+          "enum": [
+            "memory.get",
+            "memory.put",
+            "vector.put",
+            "vector.query"
+          ]
+        },
+        "args": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "nodeExprStmt": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "e"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "exprstmt"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "e": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "nodeArrayLit": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "kids"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "array_lit"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "kids": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0
+          }
+        }
+      }
+    },
+    "nodeLen": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "e"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "len"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "e": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "nodeAt": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "of",
+        "i"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "at"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "of": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "被索引的数组"
+        },
+        "i": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "下标表达式"
+        }
+      }
+    },
+    "nodeFor": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "var",
+        "init",
+        "cond",
+        "body",
+        "delta"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "for"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "var": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "init": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "cond": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "body": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "delta": {
+          "type": "integer"
+        }
+      }
+    },
+    "nodeBreak": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "break"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        }
+      }
+    },
+    "nodeContinue": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "continue"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        }
+      }
+    },
+    "nodeAssign": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "var",
+        "e"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "assign"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "var": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "e": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "nodeWhile": {
+      "type": "object",
+      "required": [
+        "id",
+        "k",
+        "loc",
+        "c",
+        "body"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "k": {
+          "const": "while"
+        },
+        "loc": {
+          "$ref": "#/$defs/loc"
+        },
+        "c": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "body": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    },
+    "securityPolicy": {
+      "type": "object",
+      "required": [
+        "name",
+        "rules"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "rules": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/securityRule"
+          }
+        }
+      }
+    },
+    "securityRule": {
+      "type": "object",
+      "required": [
+        "effect",
+        "cap",
+        "values"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "effect": {
+          "enum": [
+            "allow",
+            "deny"
+          ]
+        },
+        "cap": {
+          "type": "string"
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

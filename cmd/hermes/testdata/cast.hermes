@@ -1,0 +1,3 @@
+export workflow f(input: json) entry -> int {
+    return json.as_int(input.total);
+}

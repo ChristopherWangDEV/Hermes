@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Hermes Windows 安装包定义（WiX 5）。
+
+  安装布局（与 macOS pkg / Linux deb 保持一致）：
+    %ProgramFiles%\Hermes\bin\hermes.exe
+    %ProgramFiles%\Hermes\include\hermes\*.h
+    %ProgramFiles%\Hermes\share\...
+  并把 bin 目录追加进系统 PATH。
+
+  LicenseRef：本文件只用于**打包**，不引入任何第三方代码到产物里；
+  WiX 自身许可是 MS-RL，与本项目的 Apache-2.0 兼容（不传染）。
+-->
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Package Name="Hermes"
+           Manufacturer="The Hermes Authors"
+           Version="2.0.0"
+           UpgradeCode="6f1c7a2e-3b9d-4e5a-9c21-8d4f0b7e5a13"
+           Scope="perMachine"
+           Compressed="yes">
+
+    <MajorUpgrade DowngradeErrorMessage="A newer version of Hermes is already installed." />
+    <MediaTemplate EmbedCab="yes" />
+
+    <!-- 控制面板里的产品图标（ICO，多尺寸）与安装界面的品牌资源。 -->
+    <Icon Id="HermesIcon" SourceFile="$(AssetsDir)\hermes-icon.ico" />
+    <Property Id="ARPPRODUCTICON" Value="HermesIcon" />
+    <Property Id="ARPNOREPAIR" Value="1" />
+
+    <!-- WiX 的标准 UI 变量：背景（493x312）与顶栏（164x312），必须是 BMP。 -->
+    <WixVariable Id="WixUIBackgroundBmp" Value="$(AssetsDir)\wix-bg.bmp" />
+    <WixVariable Id="WixUIBackgroundWizBmp" Value="$(AssetsDir)\wix-banner.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="$(AssetsDir)\wix-bg.bmp" />
+    <WixVariable Id="WixUIBannerBmp" Value="$(AssetsDir)\wix-banner.bmp" />
+
+    <ui:WixUI Id="WixUI_InstallDir" InstallDirectory="INSTALLFOLDER" xmlns:ui="http://wixtoolset.org/schemas/v4/wxs/ui" />
+
+    <!-- 让用户装完后能直接在任意终端里使用 hermes -->
+    <Feature Id="Main" Title="Hermes" Level="1">
+      <ComponentGroupRef Id="HermesFiles" />
+      <ComponentRef Id="PathEnv" />
+    </Feature>
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Hermes" />
+    </StandardDirectory>
+  </Package>
+
+  <Fragment>
+    <ComponentGroup Id="HermesFiles" Directory="INSTALLFOLDER">
+      <Files Include="$(PayloadDir)\**" />
+    </ComponentGroup>
+
+    <!-- 把 bin 追加到系统 PATH；卸载时移除。 -->
+    <Component Id="PathEnv" Directory="INSTALLFOLDER" Guid="*">
+      <Environment Id="PathEntry"
+                   Name="PATH"
+                   Value="[INSTALLFOLDER]bin"
+                   Permanent="no"
+                   Part="last"
+                   Action="set"
+                   System="yes" />
+      <RegistryValue Root="HKLM" Key="Software\Hermes" Name="installed" Type="integer" Value="1" KeyPath="yes" />
+    </Component>
+  </Fragment>
+</Wix>

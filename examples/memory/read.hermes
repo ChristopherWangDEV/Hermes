@@ -1,0 +1,11 @@
+// 读：换一个进程再跑，内容还在 —— 因为它是文件存储，不是进程内缓存。
+//   hermes run read.hbc --input in.json --store /tmp/hermes-store
+
+export struct Turn {
+    string user;
+    string text;
+}
+
+export workflow recall(input: Turn) entry -> json {
+    return memory.get(key = "user:{input.user}");
+}

@@ -1,0 +1,39 @@
+// support.hermes —— 实现（对应 C 的 .c）。编译入口就是本文件。
+//
+// 三件事只在这里做，不放在 support.h：
+//   ① #link：链接输入是 root unit 的选择，不由头文件强加给 include 者（D-014.3）
+//   ② backend 定义：地址走环境注入，硬编码地址的库无法分发（D-014.4）
+//   ③ workflow 体
+
+#include "support.h"
+
+// 声明来自 <std/*.h>，实现来自随二进制内置的 stdlib.hbc（go:embed，不读文件系统、不联网）
+#link <std/net>
+#link <std/model>
+
+// 未设 HOMONOIA_URL 时走本机——离线与零费用是默认行为，默认值必须是字面量（可静态审计）
+backend homonoia = env("HOMONOIA_URL", "http://127.0.0.1:8080");
+
+workflow support_bot(input: SupportInput, backend = homonoia) entry {
+    auto intent = model.generate<Intent>(
+        prompt = "识别用户意图：{input.text}",
+        precision = "exact"
+    );
+    match (intent.action) {
+        case "refund": {
+            auto [order, history] = parallel {
+                auto o = tool.call<OrderInfo>(
+                    url = "https://api.internal.com/orders/{intent.order.order_id}",
+                    method = "GET"
+                );
+                auto h = tool.call(url = "https://api.internal.com/history/{input.user_id}");
+                return [o, h];
+            };
+            return model.generate(
+                prompt = "根据订单金额 {order.amount}，生成退款话术。",
+                precision = "fast"
+            );
+        }
+        default: { return "抱歉，我无法处理该请求。"; }
+    }
+}

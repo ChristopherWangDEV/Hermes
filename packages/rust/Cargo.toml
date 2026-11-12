@@ -1,0 +1,9 @@
+[package]
+name = "hermes-sdk"
+version = "2.0.0"
+edition = "2021"
+license = "Apache-2.0"
+description = "Client SDK for the Hermes agent orchestration runtime (std only, no dependencies)"
+
+# 零依赖：只用标准库。SDK 引第三方库，等于把那棵依赖树带进每个使用者的构建里。
+[dependencies]

@@ -1,0 +1,23 @@
+// Hermes 演示：不需要网络、不需要 API key。
+//
+// 演示的是编译器与运行时能做什么，而不是"调一次模型"：
+// 类型、match 分派、字符串插值，以及"同一份源码能编成原生可执行文件"。
+
+export struct Ticket {
+    string title;
+    string priority;
+}
+
+export workflow triage(input: Ticket) entry -> string {
+    match (input.priority) {
+        case "urgent": {
+            return "urgent: {input.title}";
+        }
+        case "high": {
+            return "high: {input.title}";
+        }
+        default: {
+            return "normal: {input.title}";
+        }
+    }
+}
