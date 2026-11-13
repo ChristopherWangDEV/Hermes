@@ -510,6 +510,14 @@ type cGen struct {
 
 type retCtx struct{ res, lbl string }
 
+// derefOr 取一个可选字符串字段，nil 时返回兜底值。
+func derefOr(p *string, fallback string) string {
+	if p == nil {
+		return fallback
+	}
+	return *p
+}
+
 // exprOrFallback 求一个表达式槽：若是 fallback，先把它降成语句并返回临时值；
 // 否则就是普通表达式。fallback 只在这个位置（decl/assign/return 的值）支持，
 // 嵌在更深的表达式里会落到 emitExpr 的 default 报错。
@@ -732,6 +740,39 @@ func (g *cGen) emitStmt(b *strings.Builder, id, depth int) error {
 			return err
 		}
 		fmt.Fprintf(b, "%s}\n", p)
+	case "exprstmt":
+		// 表达式语句：只要副作用。void 函数内联后产出的是一个 seq
+		// （函数体的语句链），所以这里要分两种情形 —— 直接把 seq 当语句发，
+		// 否则求值后丢弃。
+		if n.E == nil {
+			return fmt.Errorf("backend(c): exprstmt without expression")
+		}
+		if e := g.byID[*n.E]; e != nil && e.K == "seq" {
+			return g.emitStmt(b, *n.E, depth)
+		}
+		e, err := g.emitExpr(n.E)
+		if err != nil {
+			return err
+		}
+		fmt.Fprintf(b, "%s{ Val hm_discard = %s; (void)hm_discard; }\n", p, e)
+	case "stop":
+		// workflow.stop(reason, data)：跳到 epilogue，data 成为返回值。
+		// 没有 data 时按"以默认结果收尾"处理 —— 声明了返回类型的 workflow
+		// 由 Sema 的 E4108 挡住类型不符的情形，这里不做二次猜测。
+		if n.Data != nil {
+			d, err := g.emitExpr(n.Data)
+			if err != nil {
+				return err
+			}
+			fmt.Fprintf(b, "%shm_result = %s;\n", p, d)
+		}
+		fmt.Fprintf(b, "%sgoto hm_done;\n", p)
+	case "mem_txn":
+		// 事务快照的存储层支持尚未实现（需要 store 的快照/回滚）。
+		// 明确拒绝而不是编成一个空操作 —— 空操作会让 rollback 静默失效。
+		return fmt.Errorf("backend(c): memory.%s is not supported by the AOT backend yet (use hermes run, or wait for 2.0.2)",
+			derefOr(n.Op, "?"))
+
 	case "emit":
 		return g.emitSignal(b, n, depth)
 	case "until":

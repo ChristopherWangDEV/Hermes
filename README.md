@@ -552,6 +552,90 @@ export workflow index(input: Doc, backend = embedder) entry -> json {
 Storage location is a **deployment fact**, not syntax: `hermes run --store <dir>` or
 `$HERMES_STORE`. Nothing is written until a workflow actually uses one of these builtins.
 
+### 14. Functions and `void`
+
+```hermes
+void log_it(string msg) {
+}
+
+export workflow main() entry -> string {
+    log_it("started");
+    return "done";
+}
+```
+
+`void` means "this returns nothing", and the compiler enforces it from the other side too:
+`auto x = log_it("y");` is a **compile error**, not a hole that surfaces as a missing field
+somewhere in the IR.
+
+### 15. Signals: `signal` / `on` / `emit`
+
+```hermes
+export signal BudgetExceeded;
+
+export workflow main() entry -> string {
+    auto hits = 0;
+    on BudgetExceeded {
+        hits = hits + 1;
+    }
+    emit(BudgetExceeded);
+    if (hits == 1) {
+        return "handled";
+    }
+    return "missed";
+}
+```
+
+A slot is **closure-converted**: `hits` is captured *by reference*, so the write inside the
+handler is visible to the caller when `emit` returns. Bubbling is **short-circuit** — the first
+slot that claims the signal stops it, and the claim is expressed as control flow (`goto`), not
+as a flag anyone can forget to check.
+
+`on` may bind at global, workflow or block scope; the innermost binding wins.
+
+### 16. Early exit: `stop`
+
+```hermes
+export workflow main() entry -> string {
+    auto ready = 0;
+    if (ready == 0) {
+        workflow.stop(reason: "not ready", data: "aborted");
+    }
+    return "ok";
+}
+```
+
+`stop` and `break` are **orthogonal by construction**: `break` leaves the innermost loop and can
+never cross a workflow boundary; `stop` ends the workflow and is illegal outside one. `data` must
+match the declared return type exactly — it is written straight into the return slot.
+
+### 17. Time and waiting: `sleep` / `until`
+
+```hermes
+export signal Ready;
+
+export workflow main() entry -> string {
+    sleep(10);
+    until(Ready) timeout(50);
+    return "done";
+}
+```
+
+`sleep(1.5s)` and `sleep(1500)` are the same thing — units are folded into milliseconds at
+compile time, so the runtime never asks "seconds or milliseconds?".
+
+`until` is **edge-triggered**: it waits for the *next* `emit`, so an emit that already happened
+does not satisfy it. `timeout(...)` bounds the wait; without one the compiler warns, because the
+cost model is step counts, not wall-clock time.
+
+All three of these (`sleep`, `until`, `emit ... to`) are rejected on bare-metal targets: they need
+a host OS. The PAL section of the generated C is where the platform difference lives — one branch
+per platform, not twenty `#if`s scattered through the backend.
+
+> **AOT only, for now.** `sleep` / `until` / `signal` / `on` / `emit` / `stop` are implemented in
+> the AOT backend (`hermes compile`). The development IR executor (`hermes run`) does not handle
+> these nodes yet — it says so explicitly instead of silently skipping them.
+
 A unit may hold **several** workflows; exactly one is the `entry`, and `hermes run --workflow`
 picks the rest. `hermes new` scaffolds a project with the * contract / implementation * split
 already in place:
@@ -1354,6 +1438,87 @@ export workflow support(input: Order, backend = gw) entry -> string {
   不存第二份要同步的副本；
 - 到达 `max_steps` 时模型还在要工具，是**错误**，不是"再试一次"。
 
+
+### 13. 函数与 `void`
+
+```hermes
+void log_it(string msg) {
+}
+
+export workflow main() entry -> string {
+    log_it("started");
+    return "done";
+}
+```
+
+`void` 的意思是"不返回值"，编译器还从另一侧把它钉死：`auto x = log_it("y");` 是
+**编译错误**，而不是一个直到 IR 装配期才以"缺字段"形态露头的洞。
+
+### 14. 信号：`signal` / `on` / `emit`
+
+```hermes
+export signal BudgetExceeded;
+
+export workflow main() entry -> string {
+    auto hits = 0;
+    on BudgetExceeded {
+        hits = hits + 1;
+    }
+    emit(BudgetExceeded);
+    if (hits == 1) {
+        return "handled";
+    }
+    return "missed";
+}
+```
+
+槽做了**闭包转换**：`hits` 是按**引用**捕获的，所以处理器里的写入在 `emit` 返回后
+对调用方可见。冒泡是**短路**的——第一个认领信号的槽就截断，而"认领"由控制流
+（`goto`）表达，不是一个谁都能忘记检查的标志位。
+
+`on` 可以绑在全局、workflow 或 block 作用域，最内层优先。
+
+### 15. 提前结束：`stop`
+
+```hermes
+export workflow main() entry -> string {
+    auto ready = 0;
+    if (ready == 0) {
+        workflow.stop(reason: "not ready", data: "aborted");
+    }
+    return "ok";
+}
+```
+
+`stop` 与 `break` **在构造上就正交**：`break` 只跳出最内层循环，永远不能穿过 workflow
+边界；`stop` 结束 workflow，且在 workflow 外不合法。`data` 必须与声明的返回类型严格
+一致——它会被直接写进返回位。
+
+### 16. 时间与等待：`sleep` / `until`
+
+```hermes
+export signal Ready;
+
+export workflow main() entry -> string {
+    sleep(10);
+    until(Ready) timeout(50);
+    return "done";
+}
+```
+
+`sleep(1.5s)` 与 `sleep(1500)` 是同一件事——单位在编译期就折算成毫秒，运行期不再问
+"这是秒还是毫秒"。
+
+`until` 是**边沿触发**：等的是**下一次** `emit`，所以已经发生过的 emit 不能让它立刻
+返回。`timeout(...)` 给等待加上界；不写会得到编译期警告，因为代价模型算的是步数，
+不是墙上时间。
+
+这三样（`sleep`、`until`、`emit ... to`）在裸机目标上会被拒绝：它们需要宿主 OS。
+平台差异只活在生成 C 的 PAL 段里——每个平台一个分支，而不是二十处散落的 `#if`。
+
+> **目前仅 AOT。** `sleep` / `until` / `signal` / `on` / `emit` / `stop` 已在 AOT 后端
+> （`hermes compile`）实现。开发期的 IR 执行器（`hermes run`）还不支持这些节点——
+> 它会明确报出来，而不是静默跳过。
 
 ---
 
