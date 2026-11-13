@@ -21,10 +21,15 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# 动态库扩展名按平台定：macOS 是 .dylib，Linux 是 .so。
+# 动态库扩展名按平台定：macOS 是 .dylib，其余（Linux 与各 BSD）是 .so。
+#
+# BSD 与 Linux 共用同一条构建路径：clang + libc++ + lld 在 FreeBSD / OpenBSD /
+# NetBSD / DragonFly 上都可用。**尚未在真机验证** —— 这条分支存在是为了让
+# "支持 BSD" 在脚本里成为可执行的路径，而不是一句宣传；真机验证排在后续版本。
 case "$(uname -s)" in
-  Darwin) SHLIB_EXT=".dylib" ;;
-  *)      SHLIB_EXT=".so" ;;
+  Darwin)  SHLIB_EXT=".dylib" ;;
+  FreeBSD|OpenBSD|NetBSD|DragonFly) SHLIB_EXT=".so" ;;
+  *)       SHLIB_EXT=".so" ;;
 esac
 cd "$ROOT"
 

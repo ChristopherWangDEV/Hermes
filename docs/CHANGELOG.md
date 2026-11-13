@@ -72,29 +72,36 @@ prelude：需要时以可选 prelude 引入，让"所有符号在链接期解析
 | Linux x86_64 | `hermes-2.0.0-linux-x86_64.tar.gz` | 全功能（含 C 嵌入库） |
 | Windows x64 | `hermes-2.0.0-windows-x64.zip` | CLI 全功能；**不含 C 嵌入库**（原因见下） |
 
-### Windows：为什么这个包不含 `libhermesrt.a`
-
-这是一个**受工具链约束的取舍**，不是遗漏。
+### Windows 的 C 嵌入：LLVM-MinGW
 
 Go 的 cgo 在构建运行时库（`-buildmode=c-archive`）时会先做一次
-**可重定位链接**（`link -r`）来生成探针对象 `_cgo_.o`。而：
+**可重定位链接**（`-r`）来生成探针对象 `_cgo_.o`：
 
-- LLVM 的 `lld-link` **不支持** `-r`（实测报 `subsystem must be defined`）；
-- 能满足它的只有 MSVC 的 `link.exe` 或 MinGW 的 GNU `ld`。
+- LLVM 的 `lld-link`（MSVC 目标）**不支持** `-r`；
+- 而 LLVM-MinGW 走的是 **GNU 味的 `ld.lld`**，它支持。
 
-本项目的红线是"编译只用 clang、不用 GNU、不用 MSVC 编译器"。既然
-`lld-link` 做不到、另外两个又被排除，Windows 上就不发布运行时库。
+所以 Windows 上能否提供 C 嵌入，取决于**用哪条工具链**，而不是平台本身：
 
-**影响**：Windows 上不提供"C 程序嵌 hermes 运行时"这条路径。CLI
-（`ir` / `run` / `build` / `serve` / `compile` / SDK）完整可用。
-`hermes doctor` 在 Windows 上把该项降级为 `warn`，并直接写明原因，而不是
-假装通过：
+| 构建路径 | 目标三元组 | 链接器 | C 嵌入库 |
+|---|---|---|---|
+| LLVM-MinGW | `x86_64-w64-windows-gnu` | `ld.lld`（GNU 味） | ✅ 有 |
+| 纯 LLVM | `x86_64-pc-windows-msvc` | `lld-link` | ❌ 跳过（温和降级） |
+
+**为什么是 LLVM-MinGW 而不是 GNU MinGW**：GNU MinGW 带 GCC 与
+`libstdc++`（GPL-3.0 WITH GCC Runtime Library Exception）。LLVM-MinGW 是
+Clang/LLVM + MinGW-w64 运行时 + **libc++**（Apache-2.0 WITH LLVM-exception），
+全程无 GCC。`scripts/build.ps1` 里的 libc++ 探针就是用来把两者分开的：
+探针失败 = 不是 LLVM-MinGW，拒绝使用。
+
+未检测到 LLVM-MinGW 时脚本**不报错**，而是只产 `hermes.exe` 并在
+`hermes doctor` 里给出开启方式：
 
 ```
-warn  runtime lib   not shipped on Windows (C embedding stays on macOS/Linux); CLI is fully functional
+warn  runtime lib   not built on Windows with the msvc target (lld-link has no -r).
+                    CLI is fully functional; to enable C embedding, build with LLVM-MinGW:
+                    set LLVM_MINGW_PATH, run `rustup target add x86_64-pc-windows-gnu`,
+                    then `pwsh -File scripts\build.ps1 -Toolchain gnu`
 ```
-
-C 嵌入能力保留在 macOS 与 Linux 两个平台上。
 
 ### 红线核对（可验证的事实）
 

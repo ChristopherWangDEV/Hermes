@@ -141,10 +141,18 @@ func checkClang() check {
 
 // runtimeLibRequired 说明这台机器上"运行时库"是不是必需项。
 //
-// Windows 上不发布 libhermesrt.a：Go 的 cgo 探针要求链接器支持可重定位链接
-// （-r），而 LLVM 的 lld-link 不支持，能满足它的只有 MSVC link.exe 或 MinGW 的
-// GNU ld —— 两者都在红线之外。于是 Windows 包只提供 CLI（hermes.exe），
-// C 嵌入能力留在 macOS / Linux。这里把它降级为 warn，而不是假装通过。
+// Windows 上它取决于构建时用的是哪条工具链，而不是平台本身好恶：
+//
+//	LLVM-MinGW（目标 x86_64-w64-windows-gnu）
+//	  clang 走 GNU 味的 ld.lld，**支持可重定位链接（-r）**，所以 Go 的
+//	  c-archive 能产出来 —— 此时 C 嵌入库是可用的，缺了就是真问题。
+//
+//	纯 LLVM（目标 x86_64-pc-windows-msvc）
+//	  lld-link 不支持 -r，cgo 探针过不去，于是只能出 CLI。此时降级为 warn，
+//	  并**明确告诉用户怎么开启**，而不是假装通过。
+//
+// 为什么不是 GNU MinGW：它带 GCC 与 libstdc++（GPL）。LLVM-MinGW 是
+// Clang/LLVM + MinGW-w64 运行时 + libc++，全程无 GCC —— 两者不能混为一谈。
 func runtimeLibRequired() bool {
 	return runtime.GOOS != "windows"
 }
@@ -161,7 +169,10 @@ func checkRuntimeLib() check {
 				note: "runtime library/header not found (release should ship lib/ and include/; in dev run scripts/build.sh first)"}
 		}
 		return check{name: "runtime lib",
-			note: "not shipped on Windows (C embedding stays on macOS/Linux); CLI is fully functional"}
+			note: "not built on Windows with the msvc target (lld-link has no -r). " +
+				"CLI is fully functional; to enable C embedding, build with LLVM-MinGW: " +
+				"set LLVM_MINGW_PATH, run `rustup target add x86_64-pc-windows-gnu`, " +
+				"then `pwsh -File scripts\\build.ps1 -Toolchain gnu`"}
 	}
 	return check{name: "runtime lib", ok: true,
 		note: lay.RuntimeLib + " + " + filepath.Base(lay.RuntimeHeader), required: true}
