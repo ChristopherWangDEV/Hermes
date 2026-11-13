@@ -139,22 +139,21 @@ func checkClang() check {
 	return check{name: "clang", ok: true, note: first, required: true}
 }
 
-// runtimeLibRequired 说明这台机器上"运行时库"是不是必需项。
+// readmeRuntimeNote 解释"为什么这里要求一个运行时库"。
 //
-// Windows 上它取决于构建时用的是哪条工具链，而不是平台本身好恶：
+// 三平台现在都产 libhermesrt.a：
 //
-//	LLVM-MinGW（目标 x86_64-w64-windows-gnu）
-//	  clang 走 GNU 味的 ld.lld，**支持可重定位链接（-r）**，所以 Go 的
-//	  c-archive 能产出来 —— 此时 C 嵌入库是可用的，缺了就是真问题。
+//	macOS / Linux   clang + ld64 / ld.lld，本来就能做可重定位链接
+//	Windows         LLVM-MinGW 的 GNU 味 ld.lld（MSVC 目标的 lld-link 不行，
+//	                所以 Windows 只用 LLVM-MinGW —— 见 scripts/build.ps1）
 //
-//	纯 LLVM（目标 x86_64-pc-windows-msvc）
-//	  lld-link 不支持 -r，cgo 探针过不去，于是只能出 CLI。此时降级为 warn，
-//	  并**明确告诉用户怎么开启**，而不是假装通过。
-//
-// 为什么不是 GNU MinGW：它带 GCC 与 libstdc++（GPL）。LLVM-MinGW 是
-// Clang/LLVM + MinGW-w64 运行时 + libc++，全程无 GCC —— 两者不能混为一谈。
-func runtimeLibRequired() bool {
-	return runtime.GOOS != "windows"
+// 既然每个平台都产它，缺了就是真问题，不该降级成 warn。Windows 上曾经
+// 降级过，那是因为当时用的是 MSVC 目标、根本产不出来；那条路径已经删除。
+func runtimeLibNote() string {
+	if runtime.GOOS == "windows" {
+		return "runtime library/header not found (a Windows build with LLVM-MinGW ships lib/ and include/; in dev run scripts\\build.ps1)"
+	}
+	return "runtime library/header not found (release should ship lib/ and include/; in dev run scripts/build.sh first)"
 }
 
 func checkRuntimeLib() check {
@@ -164,15 +163,7 @@ func checkRuntimeLib() check {
 	cwd, _ := os.Getwd()
 	lay := layout.Resolve(exe, cwd)
 	if lay.RuntimeLib == "" || lay.RuntimeHeader == "" || lay.IncludeDir == "" {
-		if runtimeLibRequired() {
-			return check{name: "runtime lib", required: true,
-				note: "runtime library/header not found (release should ship lib/ and include/; in dev run scripts/build.sh first)"}
-		}
-		return check{name: "runtime lib",
-			note: "not built on Windows with the msvc target (lld-link has no -r). " +
-				"CLI is fully functional; to enable C embedding, build with LLVM-MinGW: " +
-				"set LLVM_MINGW_PATH, run `rustup target add x86_64-pc-windows-gnu`, " +
-				"then `pwsh -File scripts\\build.ps1 -Toolchain gnu`"}
+		return check{name: "runtime lib", required: true, note: runtimeLibNote()}
 	}
 	return check{name: "runtime lib", ok: true,
 		note: lay.RuntimeLib + " + " + filepath.Base(lay.RuntimeHeader), required: true}

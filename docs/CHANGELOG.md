@@ -72,36 +72,47 @@ prelude：需要时以可选 prelude 引入，让"所有符号在链接期解析
 | Linux x86_64 | `hermes-2.0.0-linux-x86_64.tar.gz` | 全功能（含 C 嵌入库） |
 | Windows x64 | `hermes-2.0.0-windows-x64.zip` | CLI 全功能；**不含 C 嵌入库**（原因见下） |
 
-### Windows 的 C 嵌入：LLVM-MinGW
+### Windows：只用 LLVM-MinGW
 
 Go 的 cgo 在构建运行时库（`-buildmode=c-archive`）时会先做一次
 **可重定位链接**（`-r`）来生成探针对象 `_cgo_.o`：
 
-- LLVM 的 `lld-link`（MSVC 目标）**不支持** `-r`；
-- 而 LLVM-MinGW 走的是 **GNU 味的 `ld.lld`**，它支持。
+- MSVC 目标的 `lld-link` **不支持** `-r`，因此那条路径永远产不出 C 嵌入库；
+- **LLVM-MinGW** 走 GNU 味的 `ld.lld`，它支持。
 
-所以 Windows 上能否提供 C 嵌入，取决于**用哪条工具链**，而不是平台本身：
+既然 Windows 的完整形态必须包含 C 嵌入，就只保留能做到这一点的工具链：
 
-| 构建路径 | 目标三元组 | 链接器 | C 嵌入库 |
-|---|---|---|---|
-| LLVM-MinGW | `x86_64-w64-windows-gnu` | `ld.lld`（GNU 味） | ✅ 有 |
-| 纯 LLVM | `x86_64-pc-windows-msvc` | `lld-link` | ❌ 跳过（温和降级） |
+| 工具链 | 目标三元组 | 链接器 | `-r` | C 嵌入 |
+|---|---|---|---|---|
+| **LLVM-MinGW** | `x86_64-w64-windows-gnu` | `ld.lld` | ✅ | ✅ |
+| ~~MSVC 目标~~ | ~~`x86_64-pc-windows-msvc`~~ | ~~`lld-link`~~ | ❌ | 已删除 |
+| ~~GNU MinGW~~ | — | — | — | 红线禁止（libstdc++ 为 GPL） |
 
-**为什么是 LLVM-MinGW 而不是 GNU MinGW**：GNU MinGW 带 GCC 与
-`libstdc++`（GPL-3.0 WITH GCC Runtime Library Exception）。LLVM-MinGW 是
+**为什么不是 GNU MinGW**：它带 GCC 与 `libstdc++`。LLVM-MinGW 是
 Clang/LLVM + MinGW-w64 运行时 + **libc++**（Apache-2.0 WITH LLVM-exception），
-全程无 GCC。`scripts/build.ps1` 里的 libc++ 探针就是用来把两者分开的：
-探针失败 = 不是 LLVM-MinGW，拒绝使用。
+全程无 GCC。`scripts/build.ps1` 里的 libc++ 探针就是这个判据，由编译器
+自己回答：
 
-未检测到 LLVM-MinGW 时脚本**不报错**，而是只产 `hermes.exe` 并在
-`hermes doctor` 里给出开启方式：
+```c
+#if defined(__GLIBCXX__)
+#error libstdc++ in use (GPL)
+#endif
+#if !defined(_LIBCPP_VERSION)
+#error not libc++
+#endif
+```
 
-```
-warn  runtime lib   not built on Windows with the msvc target (lld-link has no -r).
-                    CLI is fully functional; to enable C embedding, build with LLVM-MinGW:
-                    set LLVM_MINGW_PATH, run `rustup target add x86_64-pc-windows-gnu`,
-                    then `pwsh -File scripts\build.ps1 -Toolchain gnu`
-```
+探针失败 = 不是 LLVM-MinGW = 拒绝构建。不看目录名字，只看编译器实际用哪个库。
+
+### Windows 构建前提
+
+1. 安装 LLVM-MinGW（`mstorsjo/llvm-mingw` 的 release，解压即用）
+2. `setx LLVM_MINGW_PATH <解压目录>`
+3. `rustup target add x86_64-pc-windows-gnu`
+4. `pwsh -File scripts\build.ps1`
+
+缺任何一项，脚本会在**开始编译之前**停下并给出上面这几步，而不是编到一半
+报一个看不懂的链接错误。
 
 ### 红线核对（可验证的事实）
 
