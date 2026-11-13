@@ -17,6 +17,7 @@
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <set>
 #include <string>
 #include <vector>
 
@@ -95,6 +96,8 @@ struct Parser {
   size_t i = 0;
   const char* filename;
   bool is_header;
+  // 用户自定义函数名（见 collect_user_fns_）。上下文关键字遇到同名函数就让位。
+  std::set<std::string> user_fns_;
   Arena& arena;
   DiagBag& diags;
 
@@ -275,6 +278,8 @@ struct Parser {
   // ---- 顶层 ----------------------------------------------------------------
   Node* parse_module() {
     if (arena.oom()) return nullptr;
+    // 先扫一遍用户函数名：上下文关键字遇到同名函数必须让位（见 collect_user_fns_）。
+    collect_user_fns_();
     Node* mod = new_node(Kind::Module, {1, 1, 1, 1});
     if (!mod) return nullptr;
     Node* head = nullptr, *tail = nullptr;
@@ -1088,6 +1093,41 @@ struct Parser {
   // 词法器把它们一律产出 IDENT（见 ast.h 的 Tok 注释）。这里只做**语法形状**
   // 判定；"用户自己定义了同名函数"这件事由 Sema 按"声明优先"规则裁决。
   // --------------------------------------------------------------------------
+  // ---- 用户函数名预扫描（上下文关键字的"声明优先"） ------------------
+  //
+  // 为什么需要在解析前就知道有哪些用户函数：`emit` / `stop` / `sleep` /
+  // `until` 是**上下文关键字**，词法器不把它们当保留字。于是 `emit(v);`
+  // 这种写法有两种可能：发信号，或者调用用户自己定义的 emit 函数。
+  //
+  // 正确语义是"用户声明优先"——但语法器是单遍的，看到 `emit(v);` 时后面
+  // 的函数定义还没解析到。所以先扫一遍 token 流，把顶层函数定义的名字记下来。
+  //
+  // 判据是 `<类型> 名字 (` 出现在花括号深度 0：这正是 C++ 风格函数定义的
+  // 开头。workflow 声明不匹配（它是 `workflow 名字 (`，没有类型 token），
+  // 所以不会被误收。extern 声明会匹配 —— 那是对的：extern 函数也是用户函数。
+  void collect_user_fns_() {
+    int depth = 0;
+    for (size_t j = 0; j + 2 < t.size(); ++j) {
+      const Token& a = t[j];
+      if (a.kind == Tok::LBRACE) { ++depth; continue; }
+      if (a.kind == Tok::RBRACE) { --depth; continue; }
+      if (depth != 0) continue;
+      const bool typeish = a.kind == Tok::TY_STRING || a.kind == Tok::TY_INT ||
+                           a.kind == Tok::TY_BOOL || a.kind == Tok::TY_FLOAT ||
+                           a.kind == Tok::TY_JSON || a.kind == Tok::TY_COST ||
+                           (a.kind == Tok::IDENT && a.text && std::strcmp(a.text, "void") == 0);
+      if (!typeish) continue;
+      if (t[j + 1].kind != Tok::IDENT || !t[j + 1].text) continue;
+      if (t[j + 2].kind != Tok::LPAREN) continue;
+      user_fns_.insert(t[j + 1].text);
+    }
+  }
+
+  // 这个名字是不是用户自己定义过。是 → 上下文关键字必须让位。
+  bool user_fn_(const char* name) const {
+    return name != nullptr && user_fns_.count(name) > 0;
+  }
+
   bool is_ident(const Token& tk, const char* name) const {
     return tk.kind == Tok::IDENT && tk.text != nullptr && std::strcmp(tk.text, name) == 0;
   }
@@ -1397,12 +1437,13 @@ struct Parser {
         // 判据只看语法形状，不看作用域；作用域裁决留给 Sema 的"声明优先"。
         if (is_ident(cur(), "on") && peek(1).kind == Tok::IDENT && peek(2).kind == Tok::LBRACE)
           return parse_on();
-        if (is_ident(cur(), "emit") && peek(1).kind == Tok::LPAREN &&
+        // 用户定义过同名函数 → 让位，交给表达式路径编成普通调用。
+        if (is_ident(cur(), "emit") && !user_fn_("emit") && peek(1).kind == Tok::LPAREN &&
             peek(2).kind == Tok::IDENT && peek(3).kind == Tok::RPAREN)
           return parse_emit();
-        if (is_ident(cur(), "stop") && peek(1).kind == Tok::LPAREN) return parse_stop();
-        if (is_ident(cur(), "sleep") && peek(1).kind == Tok::LPAREN) return parse_sleep();
-        if (is_ident(cur(), "until") && peek(1).kind == Tok::LPAREN) return parse_until();
+        if (is_ident(cur(), "stop") && !user_fn_("stop") && peek(1).kind == Tok::LPAREN) return parse_stop();
+        if (is_ident(cur(), "sleep") && !user_fn_("sleep") && peek(1).kind == Tok::LPAREN) return parse_sleep();
+        if (is_ident(cur(), "until") && !user_fn_("until") && peek(1).kind == Tok::LPAREN) return parse_until();
         // 语句以标识符开头时只有两种可能：`x++;` / `x--;` 或 `x = expr;`。
         if (peek(1).kind == Tok::INC || peek(1).kind == Tok::DEC) return parse_update();
         if (peek(1).kind == Tok::EQ) return parse_assign();
