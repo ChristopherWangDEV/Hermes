@@ -1,0 +1,14 @@
+export workflow loopy() entry -> string {
+    auto sum = 0;
+    auto i = 0;
+    while (i < 3) {
+        sum = sum + i;
+        i = i + 1;
+    }
+    for (auto j = 0; j < 4; j++) {
+        if (j == 2) { continue; }
+        if (j == 3) { break; }
+        sum = sum + j;
+    }
+    return "{sum}";
+}

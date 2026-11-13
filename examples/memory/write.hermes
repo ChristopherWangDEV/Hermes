@@ -1,0 +1,14 @@
+// 写：跑一次，把这句话记下来。
+//   hermes run write.hbc --input in.json --store /tmp/hermes-store
+
+export struct Turn {
+    string user;
+    string text;
+}
+
+export workflow chat(input: Turn) entry -> string {
+    // 第一次跑 prev 是 null —— 键不存在不是错误
+    auto prev = memory.get(key = "user:{input.user}");
+    memory.put(key = "user:{input.user}", value = input.text);
+    return input.text;
+}

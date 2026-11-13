@@ -1,0 +1,1948 @@
+{
+ "format": "lexii.rp",
+ "formatVersion": 1,
+ "id": "com.hermes.cli",
+ "name": "Hermes CLI",
+ "sourceLanguage": "en",
+ "targetLanguages": [
+  "zh-Hans"
+ ],
+ "entries": [
+  {
+   "key": "\n  It stopped — right after paying for step %d, not after reconciling a bill.\n",
+   "source": "\n  It stopped — right after paying for step %d, not after reconciling a bill.\n",
+   "translations": {
+    "zh-Hans": "\n  结果：停下了。而且是在**花掉第 %d 步的钱之后**立刻停的，不是跑完再对账。\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "   %d spans, %d failed\n",
+   "source": "   %d spans, %d failed\n",
+   "translations": {
+    "zh-Hans": "   %d 个 span，失败 %d 个\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "   (skipped: needs clang; `hermes doctor` explains)",
+   "source": "   (skipped: needs clang; `hermes doctor` explains)",
+   "translations": {
+    "zh-Hans": "   （跳过：需要 clang，`hermes doctor` 会说明）"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "   input  %s\n",
+   "source": "   input  %s\n",
+   "translations": {
+    "zh-Hans": "   输入 %s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "   output %v\n",
+   "source": "   output %v\n",
+   "translations": {
+    "zh-Hans": "   输出 %q\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "   workflow %q, %d nodes, upper bound max_steps=%d\n",
+   "source": "   workflow %q, %d nodes, upper bound max_steps=%d\n",
+   "translations": {
+    "zh-Hans": "   workflow %q，%d 个节点，上界 max_steps=%d\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "  %d model calls, %d tool calls — all within the bound\n",
+   "source": "  %d model calls, %d tool calls — all within the bound\n",
+   "translations": {
+    "zh-Hans": "  模型调用 %d 次，工具调用 %d 次，全部落在上界内\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "  Every turn the model asks for the same tool: it thinks it is making progress,",
+   "source": "  Every turn the model asks for the same tool: it thinks it is making progress,",
+   "translations": {
+    "zh-Hans": "  模型每一轮都要求调用同一个工具：它以为在推进，其实在原地打转。"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "  FAILED: it did not stop at the bound\n",
+   "source": "  FAILED: it did not stop at the bound\n",
+   "translations": {
+    "zh-Hans": "  实验失败：没有在上界处停下\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "  a release package should ship LICENSE / NOTICE / THIRD_PARTY_NOTICES.md / licenses/.",
+   "source": "  a release package should ship LICENSE / NOTICE / THIRD_PARTY_NOTICES.md / licenses/.",
+   "translations": {
+    "zh-Hans": "  发布包应当自带 LICENSE / NOTICE / THIRD_PARTY_NOTICES.md / licenses/。"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "  bounds (upper bounds, not expectations):",
+   "source": "  bounds (upper bounds, not expectations):",
+   "translations": {
+    "zh-Hans": "  bounds（上界，不是预期）："
+   },
+   "state": "draft"
+  },
+  {
+   "key": "  interp_deps (the interpretive semantics of these nodes is hashed; changing the evaluator requires regeneration):",
+   "source": "  interp_deps (the interpretive semantics of these nodes is hashed; changing the evaluator requires regeneration):",
+   "translations": {
+    "zh-Hans": "  interp_deps（这些节点的**解释语义**参与哈希，改解释器实现要重新生成）："
+   },
+   "state": "draft"
+  },
+  {
+   "key": "  this diagnostic is produced by the compiler with an inline why/fix; re-run the build to see it, or consult docs/LANGUAGE.md\n",
+   "source": "  this diagnostic is produced by the compiler with an inline why/fix; re-run the build to see it, or consult docs/LANGUAGE.md\n",
+   "translations": {
+    "zh-Hans": "  该诊断由编译器内联产出 why/fix：重跑构建即可看到，或查阅 docs/LANGUAGE.md\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "  truncated       true (this trace was cut by max_bytes: incomplete, but not tampered with)\n",
+   "source": "  truncated       true (this trace was cut by max_bytes: incomplete, but not tampered with)\n",
+   "translations": {
+    "zh-Hans": "  truncated true（这份 trace 曾被 max_bytes 截断，内容不完整但未被篡改）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": " (a compile-time constant, not a setting)",
+   "source": " (a compile-time constant, not a setting)",
+   "translations": {
+    "zh-Hans": "（写死在编译期，不是配置项）"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "%d missing, %d ghost, %d empty - run `hermes i18n export` to regenerate\n",
+   "source": "%d missing, %d ghost, %d empty - run `hermes i18n export` to regenerate\n",
+   "translations": {
+    "zh-Hans": "%d 缺 %d 幽灵 %d 空译 —— 跑 `hermes i18n export` 重新生成\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "%d required checks failed",
+   "source": "%d required checks failed",
+   "translations": {
+    "zh-Hans": "%d 项必需检查失败"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "%s is not PEM",
+   "source": "%s is not PEM",
+   "translations": {
+    "zh-Hans": "%s 不是 PEM"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "%s is not an Ed25519 private key",
+   "source": "%s is not an Ed25519 private key",
+   "translations": {
+    "zh-Hans": "%s 不是 Ed25519 私钥"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "%s is not an Ed25519 public key",
+   "source": "%s is not an Ed25519 public key",
+   "translations": {
+    "zh-Hans": "%s 不是 Ed25519 公钥"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "%s: %q is empty in %s\n",
+   "source": "%s: %q is empty in %s\n",
+   "translations": {
+    "zh-Hans": "%s: %q 在 %s 下是空的\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "%s: ghost key %q (no longer in source)\n",
+   "source": "%s: ghost key %q (no longer in source)\n",
+   "translations": {
+    "zh-Hans": "%s: 幽灵键 %q（源码里已没有）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "%s: missing key %q\n",
+   "source": "%s: missing key %q\n",
+   "translations": {
+    "zh-Hans": "%s: 缺少键 %q\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "1. source -> IR",
+   "source": "1. source -> IR",
+   "translations": {
+    "zh-Hans": "① 源码 → IR"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "1/5 structure   ok",
+   "source": "1/5 structure   ok",
+   "translations": {
+    "zh-Hans": "1/5 结构       ok"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "2. IR -> run",
+   "source": "2. IR -> run",
+   "translations": {
+    "zh-Hans": "② IR → 执行"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "2/5 signature   ok",
+   "source": "2/5 signature   ok",
+   "translations": {
+    "zh-Hans": "2/5 验签       ok"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "3. trace (what each step cost)",
+   "source": "3. trace (what each step cost)",
+   "translations": {
+    "zh-Hans": "③ trace（一步一步花了什么）"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "3/5 index       ok  index_sha256=%.16s\n",
+   "source": "3/5 index       ok  index_sha256=%.16s\n",
+   "translations": {
+    "zh-Hans": "3/5 索引        ok  index_sha256=%.16s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "4. same source -> a native executable",
+   "source": "4. same source -> a native executable",
+   "translations": {
+    "zh-Hans": "④ 同一份源码 → 原生可执行文件"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "4/5 same IR     ok  ir_sha256=%.16x\n",
+   "source": "4/5 same IR     ok  ir_sha256=%.16x\n",
+   "translations": {
+    "zh-Hans": "4/5 IR 同源     ok  ir_sha256=%.16x\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "5/5 same archive ok hbc_bytes=%d\n",
+   "source": "5/5 same archive ok hbc_bytes=%d\n",
+   "translations": {
+    "zh-Hans": "5/5 归档同源   ok  hbc_bytes=%d\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "An agent that will not stop on its own",
+   "source": "An agent that will not stop on its own",
+   "translations": {
+    "zh-Hans": "一个不会自己停下来的 agent"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "SHA256SUMS has no entry for %s\n",
+   "source": "SHA256SUMS has no entry for %s\n",
+   "translations": {
+    "zh-Hans": "SHA256SUMS 里没有 %s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "all checks passed",
+   "source": "all checks passed",
+   "translations": {
+    "zh-Hans": "全部通过"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "already up to date (%s)",
+   "source": "already up to date (%s)",
+   "translations": {
+    "zh-Hans": "已是最新（%s）"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "archive has no members",
+   "source": "archive has no members",
+   "translations": {
+    "zh-Hans": "归档里没有成员"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "cannot reach the release feed: %v\n",
+   "source": "cannot reach the release feed: %v\n",
+   "translations": {
+    "zh-Hans": "查不到发布信息（网络不通）：%v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "cannot read",
+   "source": "cannot read",
+   "translations": {
+    "zh-Hans": "读不了"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "checksum mismatch: got %s want %s\n",
+   "source": "checksum mismatch: got %s want %s\n",
+   "translations": {
+    "zh-Hans": "校验和不符：得到 %s，期望 %s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "checksum ok",
+   "source": "checksum ok",
+   "translations": {
+    "zh-Hans": "校验和通过"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "created %s/",
+   "source": "created %s/",
+   "translations": {
+    "zh-Hans": "已创建 %s/"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "current: %s",
+   "source": "current: %s",
+   "translations": {
+    "zh-Hans": "当前版本: %s"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "demo directory (--keep): %s\n",
+   "source": "demo directory (--keep): %s\n",
+   "translations": {
+    "zh-Hans": "演示目录（--keep）：%s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "doctor: all required checks passed",
+   "source": "doctor: all required checks passed",
+   "translations": {
+    "zh-Hans": "doctor: 全部必需检查通过"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "done. this executable does not depend on an installed hermes.",
+   "source": "done. this executable does not depend on an installed hermes.",
+   "translations": {
+    "zh-Hans": "完成。这个可执行文件不依赖已安装的 hermes。"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "downloading %s ...",
+   "source": "downloading %s ...",
+   "translations": {
+    "zh-Hans": "正在下载 %s ..."
+   },
+   "state": "draft"
+  },
+  {
+   "key": "failed_at  - (no failed step)\n",
+   "source": "failed_at  - (no failed step)\n",
+   "translations": {
+    "zh-Hans": "failed_at  —（没有失败步骤）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ar t: missing .hbc file\\n\\n",
+   "source": "hermes ar t: missing .hbc file\\n\\n",
+   "translations": {
+    "zh-Hans": "hermes ar t: 缺少 .hbc 文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ar x: -o needs a file\\n\\n",
+   "source": "hermes ar x: -o needs a file\\n\\n",
+   "translations": {
+    "zh-Hans": "hermes ar x: -o 需要文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ar x: cannot write %s: %v\\n",
+   "source": "hermes ar x: cannot write %s: %v\\n",
+   "translations": {
+    "zh-Hans": "hermes ar x: 写不出 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ar x: extracted %s (%d bytes)\\n",
+   "source": "hermes ar x: extracted %s (%d bytes)\\n",
+   "translations": {
+    "zh-Hans": "hermes ar x: 已拆出 %s（%d 字节）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ar x: need <file.hbc> <member>\\n\\n",
+   "source": "hermes ar x: need <file.hbc> <member>\\n\\n",
+   "translations": {
+    "zh-Hans": "hermes ar x: 需要 <file.hbc> <member>\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ar x: no member named %q\\n",
+   "source": "hermes ar x: no member named %q\\n",
+   "translations": {
+    "zh-Hans": "hermes ar x: 没有名为 %q 的成员\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ar: %s is not a usable archive: %v\\n",
+   "source": "hermes ar: %s is not a usable archive: %v\\n",
+   "translations": {
+    "zh-Hans": "hermes ar: %s 不是可用归档: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ar: cannot read %s: %v\\n",
+   "source": "hermes ar: cannot read %s: %v\\n",
+   "translations": {
+    "zh-Hans": "hermes ar: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: %v\n",
+   "source": "hermes build: %v\n",
+   "translations": {
+    "zh-Hans": "hermes build: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: -L needs a directory\n\n",
+   "source": "hermes build: -L needs a directory\n\n",
+   "translations": {
+    "zh-Hans": "hermes build: -L 需要目录\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: -k needs a key file\n\n",
+   "source": "hermes build: -k needs a key file\n\n",
+   "translations": {
+    "zh-Hans": "hermes build: -k 需要私钥文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: -o needs a file\n\n",
+   "source": "hermes build: -o needs a file\n\n",
+   "translations": {
+    "zh-Hans": "hermes build: -o 需要文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: cannot read %s: %v\n",
+   "source": "hermes build: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes build: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: cannot read key: %v\n",
+   "source": "hermes build: cannot read key: %v\n",
+   "translations": {
+    "zh-Hans": "hermes build: 读不到私钥: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: cannot write %s: %v\n",
+   "source": "hermes build: cannot write %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes build: 写不出 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: cannot write archive: %v\n",
+   "source": "hermes build: cannot write archive: %v\n",
+   "translations": {
+    "zh-Hans": "hermes build: 写归档失败: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: missing source file\n\n",
+   "source": "hermes build: missing source file\n\n",
+   "translations": {
+    "zh-Hans": "hermes build: 缺少源文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: sealing failed: %v\n",
+   "source": "hermes build: sealing failed: %v\n",
+   "translations": {
+    "zh-Hans": "hermes build: 封签失败: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: signing failed: %v\n",
+   "source": "hermes build: signing failed: %v\n",
+   "translations": {
+    "zh-Hans": "hermes build: 签名失败: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: wrote %s (%d bytes, %d members)\n",
+   "source": "hermes build: wrote %s (%d bytes, %d members)\n",
+   "translations": {
+    "zh-Hans": "hermes build: 已写入 %s（%d 字节，%d 个成员）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes build: wrote %s (%d bytes, key_id=%s)\n",
+   "source": "hermes build: wrote %s (%d bytes, key_id=%s)\n",
+   "translations": {
+    "zh-Hans": "hermes build: 已写入 %s（%d 字节，key_id=%s）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: %s does not report clang on --version; refusing\n",
+   "source": "hermes cc: %s does not report clang on --version; refusing\n",
+   "translations": {
+    "zh-Hans": "hermes cc: %s 的 --version 不是 clang，拒绝使用\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: %s is not a usable archive: %v\n",
+   "source": "hermes cc: %s is not a usable archive: %v\n",
+   "translations": {
+    "zh-Hans": "hermes cc: %s 不是可用归档: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: %s not found (the C header next to the runtime archive)\n",
+   "source": "hermes cc: %s not found (the C header next to the runtime archive)\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 找不到 %s（运行时库旁边的 C 头）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: --runtime-lib needs a path\n\n",
+   "source": "hermes cc: --runtime-lib needs a path\n\n",
+   "translations": {
+    "zh-Hans": "hermes cc: --runtime-lib 需要路径\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: --unit needs an .hbc\n\n",
+   "source": "hermes cc: --unit needs an .hbc\n\n",
+   "translations": {
+    "zh-Hans": "hermes cc: --unit 需要 .hbc\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: -o needs a file\n\n",
+   "source": "hermes cc: -o needs a file\n\n",
+   "translations": {
+    "zh-Hans": "hermes cc: -o 需要文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: IR is invalid (%d diagnostics)\n",
+   "source": "hermes cc: IR is invalid (%d diagnostics)\n",
+   "translations": {
+    "zh-Hans": "hermes cc: IR 不合格（%d 条诊断）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: cannot compile the %s as C: %v\n%s\n",
+   "source": "hermes cc: cannot compile the %s as C: %v\n%s\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 无法把 %s 编译成 C：%v\n%s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: cannot read %s: %v\n",
+   "source": "hermes cc: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: cannot read symbols: %v\n",
+   "source": "hermes cc: cannot read symbols: %v\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 读不到符号表: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: clang not found; Hermes never bundles a compiler\n",
+   "source": "hermes cc: clang not found; Hermes never bundles a compiler\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 找不到 clang，Hermes 从不内置编译器\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: compilation failed: %v\n%s\n",
+   "source": "hermes cc: compilation failed: %v\n%s\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 编译失败: %v\n%s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: keeping work dir %s (HERMES_CC_KEEP)\n",
+   "source": "hermes cc: keeping work dir %s (HERMES_CC_KEEP)\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 保留工作目录 %s（HERMES_CC_KEEP）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: link line: %s %s\n",
+   "source": "hermes cc: link line: %s %s\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 链接命令行：%s %s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: need <src.c|src.cpp> --unit <unit.hbc>\n\n",
+   "source": "hermes cc: need <src.c|src.cpp> --unit <unit.hbc>\n\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 需要 <src.c|src.cpp> --unit <unit.hbc>\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: produced %s, symbols verified\n",
+   "source": "hermes cc: produced %s, symbols verified\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 已生成 %s，符号已校验\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: runtime library %s not found; run scripts/build.sh first\n",
+   "source": "hermes cc: runtime library %s not found; run scripts/build.sh first\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 找不到运行时库 %s，先跑 scripts/build.sh\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: symbol %s is referenced but not defined -- the runtime library and the unit disagree\n",
+   "source": "hermes cc: symbol %s is referenced but not defined -- the runtime library and the unit disagree\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 符号 %s 被引用但没有定义 —— 运行时库与这个 unit 不配套\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: unknown argument %q\n\n%s",
+   "source": "hermes cc: unknown argument %q\n\n%s",
+   "translations": {
+    "zh-Hans": "hermes cc: 未知参数 %q\n\n%s"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes cc: warning: cannot read dynamic dependencies of %s: %v\n",
+   "source": "hermes cc: warning: cannot read dynamic dependencies of %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes cc: 警告：读不出 %s 的动态依赖：%v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: %s does not report clang on --version; refusing to use it.\n",
+   "source": "hermes compile: %s does not report clang on --version; refusing to use it.\n",
+   "translations": {
+    "zh-Hans": "hermes compile: %s 的 --version 不是 clang，拒绝使用。\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: %s needs a library path\n\n",
+   "source": "hermes compile: %s needs a library path\n\n",
+   "translations": {
+    "zh-Hans": "hermes compile: %s 需要库路径\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: %v\n",
+   "source": "hermes compile: %v\n",
+   "translations": {
+    "zh-Hans": "hermes compile: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: --backend needs a name\n\n",
+   "source": "hermes compile: --backend needs a name\n\n",
+   "translations": {
+    "zh-Hans": "hermes compile: --backend 需要名字\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: --color needs auto|always|never\n\n",
+   "source": "hermes compile: --color needs auto|always|never\n\n",
+   "translations": {
+    "zh-Hans": "hermes compile: --color 需要 auto|always|never\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: --runtime-lib needs a path\n\n",
+   "source": "hermes compile: --runtime-lib needs a path\n\n",
+   "translations": {
+    "zh-Hans": "hermes compile: --runtime-lib 需要路径\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: --sysroot needs a directory\n\n",
+   "source": "hermes compile: --sysroot needs a directory\n\n",
+   "translations": {
+    "zh-Hans": "hermes compile: --sysroot 需要一个目录\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: --target needs a target triple or GOOS\n\n",
+   "source": "hermes compile: --target needs a target triple or GOOS\n\n",
+   "translations": {
+    "zh-Hans": "hermes compile: --target 需要目标三元组或 GOOS\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: -o needs a file\n\n",
+   "source": "hermes compile: -o needs a file\n\n",
+   "translations": {
+    "zh-Hans": "hermes compile: -o 需要文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: cannot read %s: %v\n",
+   "source": "hermes compile: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes compile: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: clang not found. The D-025 driver model requires the machine own compiler; Hermes never bundles one\n",
+   "source": "hermes compile: clang not found. The D-025 driver model requires the machine own compiler; Hermes never bundles one\n",
+   "translations": {
+    "zh-Hans": "hermes compile: 找不到 clang。D-025 的 driver 模型要求用本机已有的编译器，Hermes 不内置编译器\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: compilation failed: %v\n%s\n",
+   "source": "hermes compile: compilation failed: %v\n%s\n",
+   "translations": {
+    "zh-Hans": "hermes compile: 编译失败: %v\n%s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: missing source file\n\n",
+   "source": "hermes compile: missing source file\n\n",
+   "translations": {
+    "zh-Hans": "hermes compile: 缺少源文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: produced bare-metal AOT artifact %s (no IR, no Go runtime, no interpreter, static C/Rust only)\n",
+   "source": "hermes compile: produced bare-metal AOT artifact %s (no IR, no Go runtime, no interpreter, static C/Rust only)\n",
+   "translations": {
+    "zh-Hans": "hermes compile: 已产出裸机 AOT 产物 %s（无 IR、无 Go 运行时、无解释器，只用纯 C/Rust 静态库）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: produced native executable %s (AOT, no IR, no Go runtime, no interpreter)\n",
+   "source": "hermes compile: produced native executable %s (AOT, no IR, no Go runtime, no interpreter)\n",
+   "translations": {
+    "zh-Hans": "hermes compile: 已产出本机可执行文件 %s（AOT、无 IR、无 Go 运行时、无解释器）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: produced native executable %s (AOT, no IR, no interpreter; links Go-runtime libraries %v via --link-static/--link-dynamic)\n",
+   "source": "hermes compile: produced native executable %s (AOT, no IR, no interpreter; links Go-runtime libraries %v via --link-static/--link-dynamic)\n",
+   "translations": {
+    "zh-Hans": "hermes compile: 已产出本机可执行文件 %s（AOT、无 IR、无解释器；经 --link-static/--link-dynamic 链接了 Go 运行时库 %v）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: produced native executable %s (AOT, no IR, no interpreter; tool/model calls link glibhermesnet.a)\n",
+   "source": "hermes compile: produced native executable %s (AOT, no IR, no interpreter; tool/model calls link glibhermesnet.a)\n",
+   "translations": {
+    "zh-Hans": "hermes compile: 已产出本机可执行文件 %s（AOT、无 IR、无解释器；工具/模型调用链接 glibhermesnet.a）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes compile: unknown --color %q (want auto|always|never)\n\n%s",
+   "source": "hermes compile: unknown --color %q (want auto|always|never)\n\n%s",
+   "translations": {
+    "zh-Hans": "hermes compile: 未知的 --color %q（需要 auto|always|never）\n\n%s"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes explain: %s is not a usable archive: %v\n",
+   "source": "hermes explain: %s is not a usable archive: %v\n",
+   "translations": {
+    "zh-Hans": "hermes explain: %s 不是可用归档: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes explain: --color needs auto|always|never\n\n",
+   "source": "hermes explain: --color needs auto|always|never\n\n",
+   "translations": {
+    "zh-Hans": "hermes explain: --color 需要 auto|always|never\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes explain: --color only applies to a DIAG_CODE; an IR contract is printed as plain text\n\n",
+   "source": "hermes explain: --color only applies to a DIAG_CODE; an IR contract is printed as plain text\n\n",
+   "translations": {
+    "zh-Hans": "hermes explain: --color 只适用于 DIAG_CODE；IR 契约按纯文本打印\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes explain: --workflow needs a name\n\n",
+   "source": "hermes explain: --workflow needs a name\n\n",
+   "translations": {
+    "zh-Hans": "hermes explain: --workflow 需要名字\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes explain: IR is invalid (%d diagnostics)\n",
+   "source": "hermes explain: IR is invalid (%d diagnostics)\n",
+   "translations": {
+    "zh-Hans": "hermes explain: IR 不合格（%d 条诊断）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes explain: cannot read %s: %v\n",
+   "source": "hermes explain: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes explain: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes explain: missing IR / .hbc / DIAG_CODE\n\n",
+   "source": "hermes explain: missing IR / .hbc / DIAG_CODE\n\n",
+   "translations": {
+    "zh-Hans": "hermes explain: 缺少 IR / .hbc / DIAG_CODE\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes explain: no explanation registered for %s\n",
+   "source": "hermes explain: no explanation registered for %s\n",
+   "translations": {
+    "zh-Hans": "hermes explain: %s 没有登记离线说明\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes explain: unknown --color %q (want auto|always|never)\n\n%s",
+   "source": "hermes explain: unknown --color %q (want auto|always|never)\n\n%s",
+   "translations": {
+    "zh-Hans": "hermes explain: 未知的 --color %q（需要 auto|always|never）\n\n%s"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes explain: unknown argument %q\n\n%s",
+   "source": "hermes explain: unknown argument %q\n\n%s",
+   "translations": {
+    "zh-Hans": "hermes explain: 未知参数 %q\n\n%s"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes fmt: %s needs formatting\n",
+   "source": "hermes fmt: %s needs formatting\n",
+   "translations": {
+    "zh-Hans": "hermes fmt: %s 需要格式化\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes fmt: cannot read %s: %v\n",
+   "source": "hermes fmt: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes fmt: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes fmt: cannot write %s: %v\n",
+   "source": "hermes fmt: cannot write %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes fmt: 写不出 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes fmt: formatted %s\n",
+   "source": "hermes fmt: formatted %s\n",
+   "translations": {
+    "zh-Hans": "hermes fmt: 已格式化 %s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes fmt: missing source file\n\n",
+   "source": "hermes fmt: missing source file\n\n",
+   "translations": {
+    "zh-Hans": "hermes fmt: 缺少源文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes fmt: unknown flag %q\n\n%s",
+   "source": "hermes fmt: unknown flag %q\n\n%s",
+   "translations": {
+    "zh-Hans": "hermes fmt: 未知参数 %q\n\n%s"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes header: %s is not a usable archive: %v\n",
+   "source": "hermes header: %s is not a usable archive: %v\n",
+   "translations": {
+    "zh-Hans": "hermes header: %s 不是可用归档: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes header: %v\n",
+   "source": "hermes header: %v\n",
+   "translations": {
+    "zh-Hans": "hermes header: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes header: -o needs a file\n\n",
+   "source": "hermes header: -o needs a file\n\n",
+   "translations": {
+    "zh-Hans": "hermes header: -o 需要文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes header: IR is invalid (%d diagnostics)\n",
+   "source": "hermes header: IR is invalid (%d diagnostics)\n",
+   "translations": {
+    "zh-Hans": "hermes header: IR 不合格（%d 条诊断）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes header: cannot read %s: %v\n",
+   "source": "hermes header: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes header: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes header: cannot write %s: %v\n",
+   "source": "hermes header: cannot write %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes header: 写不出 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes header: missing IR / .hbc\n\n",
+   "source": "hermes header: missing IR / .hbc\n\n",
+   "translations": {
+    "zh-Hans": "hermes header: 缺少 IR / .hbc\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes header: wrote %s (%d bytes)\n",
+   "source": "hermes header: wrote %s (%d bytes)\n",
+   "translations": {
+    "zh-Hans": "hermes header: 已写入 %s（%d 字节）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes import: %s is not a usable plan: %v\n",
+   "source": "hermes import: %s is not a usable plan: %v\n",
+   "translations": {
+    "zh-Hans": "hermes import: %s 不是可用的计划: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes import: --from-plan needs a file argument\n\n",
+   "source": "hermes import: --from-plan needs a file argument\n\n",
+   "translations": {
+    "zh-Hans": "hermes import: --from-plan 需要一个文件参数\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes import: -o needs a file argument\n\n",
+   "source": "hermes import: -o needs a file argument\n\n",
+   "translations": {
+    "zh-Hans": "hermes import: -o 需要一个文件参数\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes import: cannot create directory %s: %v\n",
+   "source": "hermes import: cannot create directory %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes import: 建不了目录 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes import: cannot read plan %s: %v\n",
+   "source": "hermes import: cannot read plan %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes import: 读不到计划 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes import: cannot write %s: %v\n",
+   "source": "hermes import: cannot write %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes import: 写不出 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes import: missing --from-plan\n\n",
+   "source": "hermes import: missing --from-plan\n\n",
+   "translations": {
+    "zh-Hans": "hermes import: 缺少 --from-plan\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes import: note: %s\n",
+   "source": "hermes import: note: %s\n",
+   "translations": {
+    "zh-Hans": "hermes import: 注意: %s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes import: wrote %s (%d bytes, dropped %d kinds of unrecognised flags)\n",
+   "source": "hermes import: wrote %s (%d bytes, dropped %d kinds of unrecognised flags)\n",
+   "translations": {
+    "zh-Hans": "hermes import: 已写入 %s（%d 字节，丢弃 %d 类未识别参数）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ir: %v\n",
+   "source": "hermes ir: %v\n",
+   "translations": {
+    "zh-Hans": "hermes ir: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ir: --color needs auto|always|never\n\n",
+   "source": "hermes ir: --color needs auto|always|never\n\n",
+   "translations": {
+    "zh-Hans": "hermes ir: --color 需要 auto|always|never\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ir: -L needs a directory\n\n",
+   "source": "hermes ir: -L needs a directory\n\n",
+   "translations": {
+    "zh-Hans": "hermes ir: -L 需要目录\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ir: -o needs a file argument\n\n",
+   "source": "hermes ir: -o needs a file argument\n\n",
+   "translations": {
+    "zh-Hans": "hermes ir: -o 需要一个文件参数\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ir: cannot read %s: %v\n",
+   "source": "hermes ir: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes ir: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ir: cannot write %s: %v\n",
+   "source": "hermes ir: cannot write %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes ir: 写不出 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ir: missing source file\n\n",
+   "source": "hermes ir: missing source file\n\n",
+   "translations": {
+    "zh-Hans": "hermes ir: 缺少源文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ir: unknown --color %q (want auto|always|never)\n\n%s",
+   "source": "hermes ir: unknown --color %q (want auto|always|never)\n\n%s",
+   "translations": {
+    "zh-Hans": "hermes ir: 未知的 --color %q（需要 auto|always|never）\n\n%s"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ir: unknown argument %q\n\n%s",
+   "source": "hermes ir: unknown argument %q\n\n%s",
+   "translations": {
+    "zh-Hans": "hermes ir: 未知参数 %q\n\n%s"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes ir: wrote %s (%d bytes)\n",
+   "source": "hermes ir: wrote %s (%d bytes)\n",
+   "translations": {
+    "zh-Hans": "hermes ir: 已写入 %s（%d 字节）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes licenses: no LICENSE found. Tried:",
+   "source": "hermes licenses: no LICENSE found. Tried:",
+   "translations": {
+    "zh-Hans": "hermes licenses: 找不到 LICENSE。已尝试："
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: %s\n",
+   "source": "hermes link: %s\n",
+   "translations": {
+    "zh-Hans": "hermes link: %s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: %s is not a usable archive: %v\n",
+   "source": "hermes link: %s is not a usable archive: %v\n",
+   "translations": {
+    "zh-Hans": "hermes link: %s 不是可用归档: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: --no-strip: keeping all %d members\n",
+   "source": "hermes link: --no-strip: keeping all %d members\n",
+   "translations": {
+    "zh-Hans": "hermes link: --no-strip：保留全部 %d 个成员\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: -L needs a directory\n\n",
+   "source": "hermes link: -L needs a directory\n\n",
+   "translations": {
+    "zh-Hans": "hermes link: -L 需要目录\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: -l needs a library name\n\n",
+   "source": "hermes link: -l needs a library name\n\n",
+   "translations": {
+    "zh-Hans": "hermes link: -l 需要库名\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: -o needs a file\n\n",
+   "source": "hermes link: -o needs a file\n\n",
+   "translations": {
+    "zh-Hans": "hermes link: -o 需要文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: cannot find library %q; tried: %s\n",
+   "source": "hermes link: cannot find library %q; tried: %s\n",
+   "translations": {
+    "zh-Hans": "hermes link: 找不到库 %q；试过: %s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: cannot read %s: %v\n",
+   "source": "hermes link: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes link: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: cannot write %s: %v\n",
+   "source": "hermes link: cannot write %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes link: 写不出 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: cannot write archive: %v\n",
+   "source": "hermes link: cannot write archive: %v\n",
+   "translations": {
+    "zh-Hans": "hermes link: 写归档失败: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: missing input .hbc\n\n",
+   "source": "hermes link: missing input .hbc\n\n",
+   "translations": {
+    "zh-Hans": "hermes link: 缺少输入 .hbc\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: nothing reachable after stripping (missing is_entry?)\n",
+   "source": "hermes link: nothing reachable after stripping (missing is_entry?)\n",
+   "translations": {
+    "zh-Hans": "hermes link: 剥离后没有任何可达成员（缺 is_entry？）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: stripped %s (unreachable from entry)\n",
+   "source": "hermes link: stripped %s (unreachable from entry)\n",
+   "translations": {
+    "zh-Hans": "hermes link: 剥离 %s（从 entry 不可达）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes link: wrote %s (%d bytes, %d members, %d entries)\n",
+   "source": "hermes link: wrote %s (%d bytes, %d members, %d entries)\n",
+   "translations": {
+    "zh-Hans": "hermes link: 已写入 %s（%d 字节，%d 个成员，%d 个入口）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes new: %s already exists\n",
+   "source": "hermes new: %s already exists\n",
+   "translations": {
+    "zh-Hans": "hermes new: %s 已存在\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes new: unexpected argument %q\n\n",
+   "source": "hermes new: unexpected argument %q\n\n",
+   "translations": {
+    "zh-Hans": "hermes new: 多余的参数 %q\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: %s has no members\n",
+   "source": "hermes run: %s has no members\n",
+   "translations": {
+    "zh-Hans": "hermes run: %s 里没有成员\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: %s is not a usable archive: %v\n",
+   "source": "hermes run: %s is not a usable archive: %v\n",
+   "translations": {
+    "zh-Hans": "hermes run: %s 不是可用归档: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: %s is not valid JSON: %v\n",
+   "source": "hermes run: %s is not valid JSON: %v\n",
+   "translations": {
+    "zh-Hans": "hermes run: %s 不是合法 JSON: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: %v\n",
+   "source": "hermes run: %v\n",
+   "translations": {
+    "zh-Hans": "hermes run: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: --color needs auto|always|never\n\n",
+   "source": "hermes run: --color needs auto|always|never\n\n",
+   "translations": {
+    "zh-Hans": "hermes run: --color 需要 auto|always|never\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: --input needs a file\n\n",
+   "source": "hermes run: --input needs a file\n\n",
+   "translations": {
+    "zh-Hans": "hermes run: --input 需要文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: --store needs a directory\n\n",
+   "source": "hermes run: --store needs a directory\n\n",
+   "translations": {
+    "zh-Hans": "hermes run: --store 需要目录\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: --trace needs a file\n\n",
+   "source": "hermes run: --trace needs a file\n\n",
+   "translations": {
+    "zh-Hans": "hermes run: --trace 需要文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: --workflow needs a name\n\n",
+   "source": "hermes run: --workflow needs a name\n\n",
+   "translations": {
+    "zh-Hans": "hermes run: --workflow 需要名字\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: IR is invalid (%d diagnostics):\n%s\n",
+   "source": "hermes run: IR is invalid (%d diagnostics):\n%s\n",
+   "translations": {
+    "zh-Hans": "hermes run: IR 不合格（%d 条诊断）:\n%s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: cannot read %s: %v\n",
+   "source": "hermes run: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes run: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: cannot serialise result: %v\n",
+   "source": "hermes run: cannot serialise result: %v\n",
+   "translations": {
+    "zh-Hans": "hermes run: 结果无法序列化: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: cannot write trace: %v\n",
+   "source": "hermes run: cannot write trace: %v\n",
+   "translations": {
+    "zh-Hans": "hermes run: 写 trace 失败: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: missing IR file\n\n",
+   "source": "hermes run: missing IR file\n\n",
+   "translations": {
+    "zh-Hans": "hermes run: 缺少 IR 文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: unknown --color %q (want auto|always|never)\n\n%s",
+   "source": "hermes run: unknown --color %q (want auto|always|never)\n\n%s",
+   "translations": {
+    "zh-Hans": "hermes run: 未知的 --color %q（需要 auto|always|never）\n\n%s"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes run: wrote trace %s (%d spans)\n",
+   "source": "hermes run: wrote trace %s (%d spans)\n",
+   "translations": {
+    "zh-Hans": "hermes run: 已写入 trace %s（%d 个 span）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes serve: %s (%d workflows, %d backends)\n",
+   "source": "hermes serve: %s (%d workflows, %d backends)\n",
+   "translations": {
+    "zh-Hans": "hermes serve: %s（%d 个 workflow，%d 个 backend）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes serve: %v\n",
+   "source": "hermes serve: %v\n",
+   "translations": {
+    "zh-Hans": "hermes serve: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes serve: --addr needs an address\n\n",
+   "source": "hermes serve: --addr needs an address\n\n",
+   "translations": {
+    "zh-Hans": "hermes serve: --addr 需要地址\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes serve: IR is invalid (%d diagnostics)\n",
+   "source": "hermes serve: IR is invalid (%d diagnostics)\n",
+   "translations": {
+    "zh-Hans": "hermes serve: IR 不合格（%d 条诊断）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes serve: cannot read %s: %v\n",
+   "source": "hermes serve: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes serve: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes serve: missing IR / .hbc\n\n",
+   "source": "hermes serve: missing IR / .hbc\n\n",
+   "translations": {
+    "zh-Hans": "hermes serve: 缺少 IR / .hbc\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign hbc: %s is not a usable archive: %v\n",
+   "source": "hermes sign hbc: %s is not a usable archive: %v\n",
+   "translations": {
+    "zh-Hans": "hermes sign hbc: %s 不是可用归档: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign hbc: %v\n",
+   "source": "hermes sign hbc: %v\n",
+   "translations": {
+    "zh-Hans": "hermes sign hbc: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign hbc: cannot read %s: %v\n",
+   "source": "hermes sign hbc: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes sign hbc: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign hbc: cannot write %s: %v\n",
+   "source": "hermes sign hbc: cannot write %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes sign hbc: 写不出 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign hbc: need <file.hbc> -k <key.pem>\n\n",
+   "source": "hermes sign hbc: need <file.hbc> -k <key.pem>\n\n",
+   "translations": {
+    "zh-Hans": "hermes sign hbc: 需要 <file.hbc> -k <key.pem>\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign hbc: signed %s (key_id=%s)\n",
+   "source": "hermes sign hbc: signed %s (key_id=%s)\n",
+   "translations": {
+    "zh-Hans": "hermes sign hbc: 已签名 %s（key_id=%s）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign keygen: %v\n",
+   "source": "hermes sign keygen: %v\n",
+   "translations": {
+    "zh-Hans": "hermes sign keygen: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign keygen: cannot write %s: %v\n",
+   "source": "hermes sign keygen: cannot write %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes sign keygen: 写不出 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign keygen: cannot write public key: %v\n",
+   "source": "hermes sign keygen: cannot write public key: %v\n",
+   "translations": {
+    "zh-Hans": "hermes sign keygen: 写不出公钥: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign keygen: private key %s (0600), public key %s.pub, key_id=%s\n",
+   "source": "hermes sign keygen: private key %s (0600), public key %s.pub, key_id=%s\n",
+   "translations": {
+    "zh-Hans": "hermes sign keygen: 私钥 %s（0600）、公钥 %s.pub，key_id=%s\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign verify: %v\n",
+   "source": "hermes sign verify: %v\n",
+   "translations": {
+    "zh-Hans": "hermes sign verify: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign verify: cannot read %s: %v\n",
+   "source": "hermes sign verify: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes sign verify: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes sign verify: need <file.hbc> -p <pub.pem>\n\n",
+   "source": "hermes sign verify: need <file.hbc> -p <pub.pem>\n\n",
+   "translations": {
+    "zh-Hans": "hermes sign verify: 需要 <file.hbc> -p <pub.pem>\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes trace diff: %s: %v\n",
+   "source": "hermes trace diff: %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes trace diff: %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes trace diff: needs exactly two trace files\n",
+   "source": "hermes trace diff: needs exactly two trace files\n",
+   "translations": {
+    "zh-Hans": "hermes trace diff: 需要且只需要两个 trace 文件\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes trace summary: needs exactly one file path\n",
+   "source": "hermes trace summary: needs exactly one file path\n",
+   "translations": {
+    "zh-Hans": "hermes trace summary: 需要且只需要一个文件路径\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes trace verify: needs exactly one file path\n",
+   "source": "hermes trace verify: needs exactly one file path\n",
+   "translations": {
+    "zh-Hans": "hermes trace verify: 需要且只需要一个文件路径\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes trace: missing trace file path\n",
+   "source": "hermes trace: missing trace file path\n",
+   "translations": {
+    "zh-Hans": "hermes trace: 缺少 trace 文件路径\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes verify: %v\n",
+   "source": "hermes verify: %v\n",
+   "translations": {
+    "zh-Hans": "hermes verify: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes verify: -p needs a public key file\n\n",
+   "source": "hermes verify: -p needs a public key file\n\n",
+   "translations": {
+    "zh-Hans": "hermes verify: -p 需要公钥文件\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes verify: [1/5 structure] .hbc is invalid: %v\n",
+   "source": "hermes verify: [1/5 structure] .hbc is invalid: %v\n",
+   "translations": {
+    "zh-Hans": "hermes verify: [1/5 结构] .hbc 不合格: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes verify: [1/5 structure] sealed is invalid: %v\n",
+   "source": "hermes verify: [1/5 structure] sealed is invalid: %v\n",
+   "translations": {
+    "zh-Hans": "hermes verify: [1/5 结构] sealed 不合格: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes verify: [2/5 signature] .hbc: %v\n",
+   "source": "hermes verify: [2/5 signature] .hbc: %v\n",
+   "translations": {
+    "zh-Hans": "hermes verify: [2/5 验签] .hbc: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes verify: [2/5 signature] sealed/cross-check: %v\n",
+   "source": "hermes verify: [2/5 signature] sealed/cross-check: %v\n",
+   "translations": {
+    "zh-Hans": "hermes verify: [2/5 验签] sealed/交叉校验: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes verify: cannot read %s: %v\n",
+   "source": "hermes verify: cannot read %s: %v\n",
+   "translations": {
+    "zh-Hans": "hermes verify: 读不到 %s: %v\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "hermes verify: need <app.hbc> <app.sealed.hermes> -p <pub.pem>\n\n",
+   "source": "hermes verify: need <app.hbc> <app.sealed.hermes> -p <pub.pem>\n\n",
+   "translations": {
+    "zh-Hans": "hermes verify: 需要 <app.hbc> <app.sealed.hermes> -p <pub.pem>\n\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "latest:    %s  (up to date)",
+   "source": "latest:    %s  (up to date)",
+   "translations": {
+    "zh-Hans": "最新版本:  %s（已是最新）"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "latest:    %s  (update available: hermes upgrade)",
+   "source": "latest:    %s  (update available: hermes upgrade)",
+   "translations": {
+    "zh-Hans": "最新版本:  %s（可以升级：hermes upgrade）"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "method not allowed",
+   "source": "method not allowed",
+   "translations": {
+    "zh-Hans": "method not allowed"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "model call -> asks for lookup_order",
+   "source": "model call -> asks for lookup_order",
+   "translations": {
+    "zh-Hans": "模型调用 → 要求调用 lookup_order"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "native layer failed to initialise",
+   "source": "native layer failed to initialise",
+   "translations": {
+    "zh-Hans": "原生层初始化失败"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "next: extract it and run ./install.sh (verified package)",
+   "source": "next: extract it and run ./install.sh (verified package)",
+   "translations": {
+    "zh-Hans": "下一步：解包后运行 ./install.sh（包已验证）"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "no entry workflow; use --workflow <name>",
+   "source": "no entry workflow; use --workflow <name>",
+   "translations": {
+    "zh-Hans": "没有 entry workflow，请用 --workflow <name>"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "no license file found under %s",
+   "source": "no license file found under %s",
+   "translations": {
+    "zh-Hans": "在 %s 下没读到任何许可文件"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "no workflow named %q (available: %s)",
+   "source": "no workflow named %q (available: %s)",
+   "translations": {
+    "zh-Hans": "没有名为 %q 的 workflow（可用：%s）"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "pack is missing key %q; refusing to import\n",
+   "source": "pack is missing key %q; refusing to import\n",
+   "translations": {
+    "zh-Hans": "包缺少键 %q，拒绝导入\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "release has no SHA256SUMS; refusing to replace the binary\n",
+   "source": "release has no SHA256SUMS; refusing to replace the binary\n",
+   "translations": {
+    "zh-Hans": "该版本没有 SHA256SUMS，拒绝替换二进制\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "request body is not valid JSON: ",
+   "source": "request body is not valid JSON: ",
+   "translations": {
+    "zh-Hans": "请求体不是合法 JSON: "
+   },
+   "state": "draft"
+  },
+  {
+   "key": "run failed",
+   "source": "run failed",
+   "translations": {
+    "zh-Hans": "执行失败"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "running the built artifact failed",
+   "source": "running the built artifact failed",
+   "translations": {
+    "zh-Hans": "产物运行失败"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "saved %s",
+   "source": "saved %s",
+   "translations": {
+    "zh-Hans": "已保存 %s"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "step",
+   "source": "step",
+   "translations": {
+    "zh-Hans": "step"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "tenant mode (%d tenants: %s)",
+   "source": "tenant mode (%d tenants: %s)",
+   "translations": {
+    "zh-Hans": "租户模式（%d 个租户：%s）"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "this IR has no entry workflow; the model must be given explicitly",
+   "source": "this IR has no entry workflow; the model must be given explicitly",
+   "translations": {
+    "zh-Hans": "这份 IR 没有 entry workflow，必须显式指定 model"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "this release has no %s (no build for this platform)\n",
+   "source": "this release has no %s (no build for this platform)\n",
+   "translations": {
+    "zh-Hans": "该版本没有 %s（当前平台没有构建产物）\n"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "unexpected argument",
+   "source": "unexpected argument",
+   "translations": {
+    "zh-Hans": "多余参数"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "unknown",
+   "source": "unknown",
+   "translations": {
+    "zh-Hans": "未知"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "unknown argument",
+   "source": "unknown argument",
+   "translations": {
+    "zh-Hans": "未知参数"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "unknown argument %q",
+   "source": "unknown argument %q",
+   "translations": {
+    "zh-Hans": "未知参数 %q"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "unknown command",
+   "source": "unknown command",
+   "translations": {
+    "zh-Hans": "未知命令"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "unknown subcommand",
+   "source": "unknown subcommand",
+   "translations": {
+    "zh-Hans": "未知子命令"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "unlimited (no compile-time bound; the runtime step cap is the only gate)",
+   "source": "unlimited (no compile-time bound; the runtime step cap is the only gate)",
+   "translations": {
+    "zh-Hans": "无编译期上界（只有运行期步数硬上限这一道闸）"
+   },
+   "state": "draft"
+  },
+  {
+   "key": "yes (cost not statically bounded: a loop, a recursive call, or max_steps = unlimited)",
+   "source": "yes (cost not statically bounded: a loop, a recursive call, or max_steps = unlimited)",
+   "translations": {
+    "zh-Hans": "是（代价无法静态定界：一个循环、一次递归调用，或 max_steps = unlimited）"
+   },
+   "state": "draft"
+  }
+ ]
+}

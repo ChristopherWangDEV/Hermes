@@ -1,0 +1,5 @@
+#include "bad.h"
+#link native "math" from "math_tool.h"
+export workflow probe() entry -> int {
+    return fetch("x");
+}

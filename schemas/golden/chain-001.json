@@ -1,0 +1,13 @@
+{
+  "name": "chain-001",
+  "note": "空块：单块、长度 0。覆盖 len=0 与创世 prev=全 0 的边界。",
+  "domain": "hermes.trace.v1",
+  "final_tag": "hermes.trace.final",
+  "blocks": [
+    ""
+  ],
+  "expected": [
+    "fd8bade7d217be7c970082861aae02a15dc6014df6f990d403cfcd9f4db3b927"
+  ],
+  "final": "d3f964ce2ea903ff9f85538e502181d31b0c616fb9b2240be76e20d26d1e7e91"
+}

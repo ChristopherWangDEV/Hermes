@@ -1,0 +1,146 @@
+name: CI
+
+# 为什么要有这个文件：一个 Go + Rust + C++ 的项目没有 CI 徽章，路过的人会默认
+# "它大概编不过"。而"能编"这件事，不该由每个读者自己花十分钟验证。
+#
+# 红线：构建只用 clang / libc++，不碰 GNU 工具链与 libstdc++。
+# 所以 Linux 上一个必做的事是显式指定 CC/CXX —— 不指定就会静默用 gcc。
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  macos:
+    name: macOS (arm64)
+    # 为什么默认不在 push 时跑：这个仓库的账号拿不到 macOS runner
+    # （job 在队列里被取消，0 步、0 秒、无 runner 分配），于是每次 push 都会
+    # 留下一条"已取消"的记录，把徽章染红 —— 而 macOS 构建本身是好的。
+    # 手动触发（workflow_dispatch）可以看到它真跑；等 macOS runner 可用
+    # （Settings → Billing 里的 macOS 分钟数）再把这行 if 删掉。
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: macos-14
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: false
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      # build.sh 故意用 `cargo build --offline`（构建过程不联网、可复现）。
+      # 代价是新机器上没有 crate 缓存，所以 CI 先预热一次：
+      # 联网只发生在 CI 的这一步，构建脚本本身仍然一次都不下载。
+      - name: Prime cargo cache
+        run: cargo fetch --manifest-path native/rust/Cargo.toml
+
+      - name: Build
+        run: bash scripts/build.sh
+        env:
+          CC: clang
+          CXX: clang++
+
+      - name: Test (unit + guards, with -race)
+        run: go test -race ./...
+
+      - name: C++ frontend acceptance
+        run: bash tests/compiler/run.sh
+
+      - name: Release package layout
+        run: bash scripts/release.sh
+
+  linux:
+    name: Linux x86_64 (experimental)
+    # **experimental 是如实标记，不是免责**：这条 job 从未在真机上验证过。
+    # Linux 静态链 glibc 的路径被 D-033 主动拒绝，musl 那条路也没实测。
+    # 等它真的绿了，把 continue-on-error 去掉 —— 在那之前，红了不阻塞主干，
+    # 但会留下记录。
+    continue-on-error: true
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.23"
+          cache: false
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install clang + libc++ (never gcc)
+        run: |
+          set -x
+          # runner 上常有 unattended-upgrades 占着 dpkg 锁；直接装会随机失败，
+          # 而失败原因是"锁"不是"包不存在"。先停服务，再给锁一个超时。
+          sudo systemctl stop unattended-upgrades 2>/dev/null || true
+          sudo apt-get update -o Acquire::Retries=3
+          install_one() {
+            for attempt in 1 2 3; do
+              if sudo apt-get install -y -o DPkg::Lock::Timeout=120 "$1"; then
+                return 0
+              fi
+              echo "retry $1 (attempt $attempt failed)" >&2
+              sleep 5
+            done
+            return 1
+          }
+          failed=""
+          # 包名与**真机验证过的那套一致**（本地 Ubuntu 就是这样装通的）：
+          # 带版本号的名字比元包更明确，也避免元包在某天改了指向。
+          for pkg in clang libc++-18-dev libc++abi-18-dev libunwind-18-dev llvm-18 lld-18 liblzma-dev; do
+            echo "== installing $pkg =="
+            install_one "$pkg" || failed="$failed $pkg"
+          done
+          if [ -n "$failed" ]; then
+            echo "FAILED_PKGS:$failed" >&2
+            exit 1
+          fi
+          clang --version
+          clang++ --version
+          ld.lld --version || lld --version || true
+          # 直接验证"门禁 1b 会跑的那个探针"，而不是等到 build.sh 里才失败。
+          echo "== libc++ probe =="
+          printf '#include <cstddef>\n#if defined(__GLIBCXX__)\n#error libstdc++\n#endif\n#if !defined(_LIBCPP_VERSION)\n#error no-libc++\n#endif\nint main(){return 0;}\n' > /tmp/probe.cpp
+          clang++ -std=c++17 -stdlib=libc++ -fsyntax-only /tmp/probe.cpp && echo "libc++ OK"
+
+      - name: Prime cargo cache
+        run: cargo fetch --manifest-path native/rust/Cargo.toml
+
+      - name: Build (clang only)
+        run: bash scripts/build.sh
+        env:
+          CC: clang
+          CXX: clang++
+          AR: llvm-ar
+          CGO_CC: clang
+
+      - name: Test (unit + guards, with -race)
+        run: go test -race ./...
+        env:
+          CC: clang
+          CXX: clang++
+          # 这一步直接跑 go test，绕过 check.sh 的 CGO_LDFLAGS 注入；
+          # Linux 上不钉就会让 cgo 链接回落到 GNU ld（GPL）。
+          CGO_LDFLAGS: -fuse-ld=lld
+
+      - name: Diagnostics on failure
+        if: failure()
+        run: |
+          echo "== toolchain =="
+          clang --version | head -2 || true
+          ar --version | head -1 || true
+          cargo --version || true
+          go version || true
+          echo "== build dir =="
+          ls build 2>/dev/null | head -20 || true
+
+      - name: Report Linux status
+        if: always()
+        run: |
+          echo "Linux 从未在真机验证过；这条 job 的结论是数据点，不是承诺。"

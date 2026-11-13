@@ -1,0 +1,6 @@
+export workflow ov() entry -> string {
+    char c = 300;
+    short s = 40000;
+    long l = 100000;
+    return "{c}:{s}:{l}";
+}

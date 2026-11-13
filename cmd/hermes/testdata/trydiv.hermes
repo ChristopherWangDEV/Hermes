@@ -1,0 +1,9 @@
+export workflow tc() entry -> string {
+    try {
+        auto z = 0;
+        auto x = 1 / z;
+        return "no";
+    } catch (ContractError e) {
+        return "caught";
+    }
+}

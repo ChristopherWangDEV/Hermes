@@ -1,0 +1,8 @@
+export workflow par() entry -> string {
+    auto [a, b] = parallel {
+        auto x = "one";
+        auto y = "two";
+        return [x, y];
+    };
+    return "done";
+}

@@ -1,0 +1,9 @@
+// 一个不需要网络的最小 unit：C 程序调它来做字符串拼装。
+export struct Ticket {
+    string title;
+    int priority;
+}
+
+export workflow label(input: Ticket) entry -> string {
+    return "{input.title} #{input.priority}";
+}

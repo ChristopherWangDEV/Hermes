@@ -1,0 +1,4 @@
+#include "types.h"
+export workflow probe() entry -> int {
+    return imul(6, 7);
+}

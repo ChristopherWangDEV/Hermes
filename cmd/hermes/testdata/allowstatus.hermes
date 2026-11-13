@@ -1,0 +1,14 @@
+#link <std/net>
+
+export struct OrderInfo {
+    string id;
+}
+
+export workflow f() entry -> string {
+    auto r = tool.call<OrderInfo>(
+        url = "https://api.example.com/o/{input.id}",
+        method = "GET",
+        allow_status = [404, 409]
+    );
+    return "ok";
+}

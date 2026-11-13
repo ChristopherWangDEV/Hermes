@@ -1,0 +1,17 @@
+export workflow calc(input: int) entry -> string {
+    auto n = input + 1;
+    auto half = n / 2;
+    auto rest = n % 2;
+    auto big = half >= 10;
+    auto both = big && true;
+    auto either = big || false;
+    auto same = n == 3;
+    auto diff = n != 3;
+    if (same) {
+        return "same:{rest}";
+    }
+    if (diff && either) {
+        return "diff:{half}";
+    }
+    return "other:{n}";
+}

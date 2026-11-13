@@ -1,0 +1,10 @@
+export workflow ctl() entry -> string {
+    match ("refund") {
+        case "refund": {
+            if (true) { return "r"; } else { return "s"; }
+        }
+        default: {
+            retry (2) { return "d"; }
+        }
+    }
+}
