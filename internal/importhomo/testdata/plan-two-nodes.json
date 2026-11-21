@@ -1,0 +1,53 @@
+[
+  {
+    "kind": "keygen",
+    "argv": [
+      "homonoia",
+      "keygen",
+      "--cluster-key",
+      "/tmp/homo/cluster.key"
+    ],
+    "note": "once per cluster; copy this file to every node",
+    "file": null
+  },
+  {
+    "kind": "serve",
+    "argv": [
+      "homonoia",
+      "serve",
+      "--config",
+      "/tmp/homonoia-serve-local-2.toml",
+      "--id",
+      "local-2",
+      "--bind-interface",
+      "auto"
+    ],
+    "note": "local-2 holds model_group 'chat' (one of 2)",
+    "file": "/tmp/homonoia-serve-local-2.toml"
+  },
+  {
+    "kind": "gateway",
+    "argv": [
+      "homonoia",
+      "gateway",
+      "--http",
+      "127.0.0.1:0",
+      "--id",
+      "local",
+      "--model",
+      "chat=/tmp/homo/tiny.gguf",
+      "--default-model",
+      "chat",
+      "--model-stages",
+      "chat=local,local-2",
+      "--max-memory",
+      "0",
+      "--topology",
+      "auto",
+      "--split",
+      "auto"
+    ],
+    "note": "serves chat over 2 node(s)",
+    "file": null
+  }
+]

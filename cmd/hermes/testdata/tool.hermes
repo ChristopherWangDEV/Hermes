@@ -1,0 +1,13 @@
+#link <std/net>
+
+export struct OrderInfo {
+    string id;
+}
+
+export workflow fetch() entry -> string {
+    auto r = tool.call<OrderInfo>(
+        url = "https://api.example.com/orders/{input.id}",
+        method = "GET"
+    );
+    return "ok";
+}

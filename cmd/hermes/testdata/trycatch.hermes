@@ -1,0 +1,14 @@
+#link <std/model>
+
+export struct Intent {
+    string action;
+}
+
+export workflow tc() entry -> string {
+    try {
+        auto i = model.generate<Intent>(prompt = "classify", precision = "exact");
+        return "ok";
+    } catch (ModelError e) {
+        return "caught";
+    }
+}

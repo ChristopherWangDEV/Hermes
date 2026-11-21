@@ -1,0 +1,18 @@
+{
+  "code": "E3018",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "env() 的参数必须是常量字符串：插值不是常量",
+  "why": "后端端点或凭据名在构建期读取；插值出来的值要到运行期才知道，无法写进配置。",
+  "fix": [
+    "给 env() 传纯字符串字面量",
+    "把插值挪到运行期代码里"
+  ],
+  "text": "error[E3018]: env() 的参数必须是常量字符串：插值不是常量\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 后端端点或凭据名在构建期读取；插值出来的值要到运行期才知道，无法写进配置。\n  help: 给 env() 传纯字符串字面量\n  help: 把插值挪到运行期代码里\n"
+}

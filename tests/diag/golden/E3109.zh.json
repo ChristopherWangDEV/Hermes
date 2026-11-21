@@ -1,0 +1,18 @@
+{
+  "code": "E3109",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "[ERROR] Blocking synchronization or network routing requires a host OS.",
+  "why": "sleep 与 until 需要调度器和条件变量；定向 emit（route == 2，`to \u003cctx\u003e`）需要一个活着的上下文句柄来路由。裸机上这两样都没有——槽表就是静态地址。频道路由（route == 1）**刻意不在这个集合里**：它是编译期哈希加一次整数比较，裸机上照样能做。",
+  "fix": [
+    "把 sleep/until 换成计数或轮询的循环——裸机上没有阻塞等待",
+    "emit 改成频道路由（不带 `to \u003cctx\u003e`），或者把这个 workflow 挪到宿主侧"
+  ],
+  "text": "error[E3109]: [ERROR] Blocking synchronization or network routing requires a host OS.\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: sleep 与 until 需要调度器和条件变量；定向 emit（route == 2，`to \u003cctx\u003e`）需要一个活着的上下文句柄来路由。裸机上这两样都没有——槽表就是静态地址。频道路由（route == 1）**刻意不在这个集合里**：它是编译期哈希加一次整数比较，裸机上照样能做。\n  help: 把 sleep/until 换成计数或轮询的循环——裸机上没有阻塞等待\n  help: emit 改成频道路由（不带 `to \u003cctx\u003e`），或者把这个 workflow 挪到宿主侧\n"
+}

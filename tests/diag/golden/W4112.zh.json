@@ -1,0 +1,21 @@
+{
+  "code": "W4112",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "chan": "V_chan",
+    "sig": "V_sig"
+  },
+  "message": "信号 `V_sig` 在频道 \"V_chan\" 上没有任何 handler",
+  "why": "频道在编译期被哈希，拼错一个字符就得到一个没人监听的哈希：emit 照常执行，静默地什么都不做。全局 emit 匹配任意全局槽，而频道路由的 emit 只匹配同频道上的槽。",
+  "fix": [
+    "检查频道名，或者补一个 handler：on V_sig from \"V_chan\" { … }",
+    "如果它本来就由另一个模块处理，忽略这条警告。"
+  ],
+  "text": "error[W4112]: 信号 `V_sig` 在频道 \"V_chan\" 上没有任何 handler\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 频道在编译期被哈希，拼错一个字符就得到一个没人监听的哈希：emit 照常执行，静默地什么都不做。全局 emit 匹配任意全局槽，而频道路由的 emit 只匹配同频道上的槽。\n  help: 检查频道名，或者补一个 handler：on V_sig from \"V_chan\" { … }\n  help: 如果它本来就由另一个模块处理，忽略这条警告。\n"
+}

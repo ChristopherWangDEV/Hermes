@@ -1,0 +1,18 @@
+{
+  "code": "E2001",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "类型实参列表后缺少 '('",
+  "why": "写成 name\u003cT\u003e 的泛型调用必须紧跟调用括号；省掉会让 \u003cT\u003e 被当成小于比较。",
+  "fix": [
+    "写成 name\u003cT\u003e(...)",
+    "或者去掉 \u003cT\u003e，让类型被推断"
+  ],
+  "text": "error[E2001]: 类型实参列表后缺少 '('\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 写成 name\u003cT\u003e 的泛型调用必须紧跟调用括号；省掉会让 \u003cT\u003e 被当成小于比较。\n  help: 写成 name\u003cT\u003e(...)\n  help: 或者去掉 \u003cT\u003e，让类型被推断\n"
+}

@@ -1,0 +1,20 @@
+{
+  "code": "E3032",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "header": "V_header"
+  },
+  "message": "原生头 V_header 不是纯 C ABI 头",
+  "why": "cgo 只解析 C；C++ 头（.hpp/.cpp/.cc）不能充当原生契约",
+  "fix": [
+    "为归档提供纯 C 头（.h）",
+    "把 C++ API 包一层 extern \"C\" 薄封装，让 #link native 指向 .h 封装头"
+  ],
+  "text": "error[E3032]: 原生头 V_header 不是纯 C ABI 头\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: cgo 只解析 C；C++ 头（.hpp/.cpp/.cc）不能充当原生契约\n  help: 为归档提供纯 C 头（.h）\n  help: 把 C++ API 包一层 extern \"C\" 薄封装，让 #link native 指向 .h 封装头\n"
+}

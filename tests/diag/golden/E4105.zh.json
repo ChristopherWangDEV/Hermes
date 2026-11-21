@@ -1,0 +1,18 @@
+{
+  "code": "E4105",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "break 不在循环里",
+  "why": "`break` 跳出的是最内层循环，而类型检查只把 for/while 的循环体算作循环——这里没有可跳出的东西。跨越 workflow 边界是 `stop` 的职责，两者混用会让控制流读不懂。",
+  "fix": [
+    "要提前结束 workflow，用 `workflow.stop(reason: …)`",
+    "或者把这条 `break` 挪进它想跳出的那个循环"
+  ],
+  "text": "error[E4105]: break 不在循环里\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `break` 跳出的是最内层循环，而类型检查只把 for/while 的循环体算作循环——这里没有可跳出的东西。跨越 workflow 边界是 `stop` 的职责，两者混用会让控制流读不懂。\n  help: 要提前结束 workflow，用 `workflow.stop(reason: …)`\n  help: 或者把这条 `break` 挪进它想跳出的那个循环\n"
+}

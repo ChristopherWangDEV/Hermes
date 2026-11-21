@@ -1,0 +1,18 @@
+{
+  "code": "W4113",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "没有 timeout 的 until 可以永久阻塞",
+  "why": "workflow 的上界是步数，不是墙上时间。没有 timeout 的 until 没有任何编译器看得见的上界，于是少一次 emit 就能把这个产物挂死，而成本模型照样报一个有限的运行。",
+  "fix": [
+    "加个界：until(\u003cSignal\u003e) timeout(30s)",
+    "如果这次等待本来就该无界，那就留着，但要保证 emit 一定会来。"
+  ],
+  "text": "error[W4113]: 没有 timeout 的 until 可以永久阻塞\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: workflow 的上界是步数，不是墙上时间。没有 timeout 的 until 没有任何编译器看得见的上界，于是少一次 emit 就能把这个产物挂死，而成本模型照样报一个有限的运行。\n  help: 加个界：until(\u003cSignal\u003e) timeout(30s)\n  help: 如果这次等待本来就该无界，那就留着，但要保证 emit 一定会来。\n"
+}

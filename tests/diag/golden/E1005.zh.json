@@ -1,0 +1,18 @@
+{
+  "code": "E1005",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "double 字面量必须写成 D.D（'.5' 非法）",
+  "why": "前导点会与字段访问的 '.' 混淆；要求写成 D.D 才能让词法无歧义。",
+  "fix": [
+    "写成 0.5 而不是 .5",
+    "小数用 `double`；金额仍留在 `cost` / int 微单位"
+  ],
+  "text": "error[E1005]: double 字面量必须写成 D.D（'.5' 非法）\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 前导点会与字段访问的 '.' 混淆；要求写成 D.D 才能让词法无歧义。\n  help: 写成 0.5 而不是 .5\n  help: 小数用 `double`；金额仍留在 `cost` / int 微单位\n"
+}

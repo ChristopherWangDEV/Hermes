@@ -1,0 +1,21 @@
+{
+  "code": "E3003",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "depth": "V_depth",
+    "limit": "V_limit"
+  },
+  "message": "include chain is V_depth levels deep, exceeding the limit of V_limit",
+  "why": "The limit exists so a hostile or accidental chain cannot exhaust the stack. It is far above any readable design — if you hit it, the header layout is the problem, not the limit.",
+  "fix": [
+    "flatten the hierarchy: put shared declarations in one leaf header",
+    "or split the deepest header into two that are siblings rather than nested"
+  ],
+  "text": "error[E3003]: include chain is V_depth levels deep, exceeding the limit of V_limit\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The limit exists so a hostile or accidental chain cannot exhaust the stack. It is far above any readable design — if you hit it, the header layout is the problem, not the limit.\n  help: flatten the hierarchy: put shared declarations in one leaf header\n  help: or split the deepest header into two that are siblings rather than nested\n"
+}

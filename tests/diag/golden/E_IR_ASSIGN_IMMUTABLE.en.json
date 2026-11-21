@@ -1,0 +1,18 @@
+{
+  "code": "E_IR_ASSIGN_IMMUTABLE",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "Cannot mutate const variable",
+  "why": "A `decl` node with const:true (IR.md §4.2) means the binding never changes; only variables declared with `auto` may be assigned. The check runs at assembly time, not at run time: catching it later would mean a wrong program compiles and only fails when that line is reached. It is one of the few load-time diagnostics the user can actually fix, which is why the assembly stage reports it as a user error rather than a compiler bug.",
+  "fix": [
+    "remove `const`, or assign to a new variable instead",
+    "if this IR was not produced by `hermes ir`, regenerate it — a const `decl` followed by an `assign` to it can only come from a hand edit"
+  ],
+  "text": "error[E_IR_ASSIGN_IMMUTABLE]: Cannot mutate const variable\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A `decl` node with const:true (IR.md §4.2) means the binding never changes; only variables declared with `auto` may be assigned. The check runs at assembly time, not at run time: catching it later would mean a wrong program compiles and only fails when that line is reached. It is one of the few load-time diagnostics the user can actually fix, which is why the assembly stage reports it as a user error rather than a compiler bug.\n  help: remove `const`, or assign to a new variable instead\n  help: if this IR was not produced by `hermes ir`, regenerate it — a const `decl` followed by an `assign` to it can only come from a hand edit\n"
+}

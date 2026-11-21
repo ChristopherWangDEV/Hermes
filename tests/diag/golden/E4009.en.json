@@ -1,0 +1,18 @@
+{
+  "code": "E4009",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "operator % requires int operands",
+  "why": "Remainder is only meaningful on integers; a remainder on cost, double, string, json, or struct has no well-defined result.",
+  "fix": [
+    "use int operands for %",
+    "for cost, work in micro-USD ints first"
+  ],
+  "text": "error[E4009]: operator % requires int operands\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Remainder is only meaningful on integers; a remainder on cost, double, string, json, or struct has no well-defined result.\n  help: use int operands for %\n  help: for cost, work in micro-USD ints first\n"
+}

@@ -1,0 +1,12 @@
+// JSON 窄化与数组长度：json.as_* 是编译期已知的窄化调用（call_json），
+// len 取字符串/数组长度，不能为负的判断用一元 ! 。
+export workflow main() entry -> string {
+    auto raw = input;
+    auto n = json.as_int(raw);
+    auto ok = !false;
+
+    if (ok && n >= 0) {
+        return "clean";
+    }
+    return "dirty";
+}

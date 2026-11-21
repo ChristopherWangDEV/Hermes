@@ -1,0 +1,21 @@
+{
+  "code": "E1010",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "spec": "V_spec",
+    "suggestion": "V_suggestion"
+  },
+  "message": "#link V_spec is not a valid module name",
+  "why": "A #link payload is a *module name*, not a file name — it resolves to \u003cname\u003e.hbc. Writing a suffix or a path makes people think absolute paths work, and then builds that work on one machine fail on another.",
+  "fix": [
+    "write the module name only: #link \"V_suggestion\";",
+    "if the library lives elsewhere, point -L at its directory instead of putting a path in the source"
+  ],
+  "text": "error[E1010]: #link V_spec is not a valid module name\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A #link payload is a *module name*, not a file name — it resolves to \u003cname\u003e.hbc. Writing a suffix or a path makes people think absolute paths work, and then builds that work on one machine fail on another.\n  help: write the module name only: #link \"V_suggestion\";\n  help: if the library lives elsewhere, point -L at its directory instead of putting a path in the source\n"
+}

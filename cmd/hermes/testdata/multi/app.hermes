@@ -1,0 +1,5 @@
+#include "app.h"
+
+export workflow app() entry -> string {
+    return "ok";
+}

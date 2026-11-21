@@ -1,0 +1,22 @@
+{
+  "code": "E_IR_VAR_MISMATCH",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "detail": "V_detail",
+    "name": "V_name",
+    "var": "V_var"
+  },
+  "message": "变量 V_name（id V_var）与绑定它的 `decl` 节点不一致：V_detail",
+  "why": "vars[] 和 decl 节点是同一个绑定的两种视图。执行器按 vars[] 预留槽位、在 decl 节点里赋值；两者不一致时，变量会从一个从没被写过的槽里读出来。",
+  "fix": [
+    "让 var V_var.decl 指向给它赋值的那个 `decl` 节点",
+    "或者如果 decl 节点已经不存在，删掉这条 vars[] 记录"
+  ],
+  "text": "error[E_IR_VAR_MISMATCH]: 变量 V_name（id V_var）与绑定它的 `decl` 节点不一致：V_detail\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: vars[] 和 decl 节点是同一个绑定的两种视图。执行器按 vars[] 预留槽位、在 decl 节点里赋值；两者不一致时，变量会从一个从没被写过的槽里读出来。\n  help: 让 var V_var.decl 指向给它赋值的那个 `decl` 节点\n  help: 或者如果 decl 节点已经不存在，删掉这条 vars[] 记录\n"
+}

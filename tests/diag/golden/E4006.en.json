@@ -1,0 +1,18 @@
+{
+  "code": "E4006",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "int and double do not auto-promote",
+  "why": "There is no implicit numeric promotion; automatic int to double is the classic source of silent precision loss and rounding bugs.",
+  "fix": [
+    "convert explicitly to the type you want",
+    "or keep both operands the same type"
+  ],
+  "text": "error[E4006]: int and double do not auto-promote\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: There is no implicit numeric promotion; automatic int to double is the classic source of silent precision loss and rounding bugs.\n  help: convert explicitly to the type you want\n  help: or keep both operands the same type\n"
+}

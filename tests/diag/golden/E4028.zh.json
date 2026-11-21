@@ -1,0 +1,18 @@
+{
+  "code": "E4028",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "在 `for` 循环结束后使用了循环变量",
+  "why": "循环变量归 for 头所有，只在循环体内存在；循环结束后槽位被回收，在外面引用就是读一个已经不存在的变量。",
+  "fix": [
+    "把使用挪进循环体",
+    "或者在循环前声明一个变量把值存下来"
+  ],
+  "text": "error[E4028]: 在 `for` 循环结束后使用了循环变量\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 循环变量归 for 头所有，只在循环体内存在；循环结束后槽位被回收，在外面引用就是读一个已经不存在的变量。\n  help: 把使用挪进循环体\n  help: 或者在循环前声明一个变量把值存下来\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E2002",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "workflow 名是标识符，不是带引号的字符串",
+  "why": "workflow 名是标识符，才能按符号被链接与导出；字符串不能充当符号名。",
+  "fix": [
+    "去掉引号：workflow Name",
+    "如果你要的是字符串值，把它放进函数体"
+  ],
+  "text": "error[E2002]: workflow 名是标识符，不是带引号的字符串\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: workflow 名是标识符，才能按符号被链接与导出；字符串不能充当符号名。\n  help: 去掉引号：workflow Name\n  help: 如果你要的是字符串值，把它放进函数体\n"
+}

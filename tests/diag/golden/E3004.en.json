@@ -1,0 +1,21 @@
+{
+  "code": "E3004",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "count": "V_count",
+    "limit": "V_limit"
+  },
+  "message": "the unit expands to V_count modules, exceeding the limit of V_limit",
+  "why": "Every module is parsed and kept for the whole compile. The cap bounds memory on hostile input and keeps \"how long does this build take\" answerable from the source tree alone.",
+  "fix": [
+    "split the unit: move part of it behind a #link so its modules are not re-parsed",
+    "or consolidate small headers that are only ever included together"
+  ],
+  "text": "error[E3004]: the unit expands to V_count modules, exceeding the limit of V_limit\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Every module is parsed and kept for the whole compile. The cap bounds memory on hostile input and keeps \"how long does this build take\" answerable from the source tree alone.\n  help: split the unit: move part of it behind a #link so its modules are not re-parsed\n  help: or consolidate small headers that are only ever included together\n"
+}

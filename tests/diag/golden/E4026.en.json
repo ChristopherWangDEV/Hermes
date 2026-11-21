@@ -1,0 +1,18 @@
+{
+  "code": "E4026",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "cannot reassign a const variable inside a fallback block",
+  "why": "A const is immutable for the whole scope; a fallback is not an exception — reassigning there would make const mean different things in different blocks.",
+  "fix": [
+    "use a non-const variable if it must change",
+    "or move the assignment out of the fallback"
+  ],
+  "text": "error[E4026]: cannot reassign a const variable inside a fallback block\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A const is immutable for the whole scope; a fallback is not an exception — reassigning there would make const mean different things in different blocks.\n  help: use a non-const variable if it must change\n  help: or move the assignment out of the fallback\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E4034",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "该错误字段规范里有，但运行期还没有带上",
+  "why": "LANGUAGE.md 7.1.1 声明了这个字段，所以它不是拼写错误——但执行器的错误值目前还没有填它。放行的话会编得过、运行期死在 `field does not exist` 上，而那是普通 error，catch 接不住：静态检查通过而程序失败，比直接拒绝更坏。",
+  "fix": [
+    "改读运行期已经带上的字段（E4016 的 help 按错误类型列出了它们）",
+    "或者把结果当正常值读：`allow_status = [404]` 时状态码从 HttpResult\u003cT\u003e 回来，`r.status == 404` 根本不需要错误对象"
+  ],
+  "text": "error[E4034]: 该错误字段规范里有，但运行期还没有带上\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: LANGUAGE.md 7.1.1 声明了这个字段，所以它不是拼写错误——但执行器的错误值目前还没有填它。放行的话会编得过、运行期死在 `field does not exist` 上，而那是普通 error，catch 接不住：静态检查通过而程序失败，比直接拒绝更坏。\n  help: 改读运行期已经带上的字段（E4016 的 help 按错误类型列出了它们）\n  help: 或者把结果当正常值读：`allow_status = [404]` 时状态码从 HttpResult\u003cT\u003e 回来，`r.status == 404` 根本不需要错误对象\n"
+}

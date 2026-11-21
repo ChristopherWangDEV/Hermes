@@ -1,0 +1,24 @@
+{
+  "code": "E3108",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "bad": "V_bad",
+    "licence": "V_licence",
+    "name": "V_name",
+    "reason": "V_reason",
+    "source": "V_source"
+  },
+  "message": "hermes compile: V_bad is a V_name runtime (V_licence): V_reason (source: V_source)",
+  "why": "The licence red line is a closed set, checked again on the plan surface as defence in depth: the --link-* inputs were already screened before the plan, but the built-in network archive is a separate input path. A hit means this artifact would statically carry a runtime whose licence forbids distributing it. Which runtime entered the link is the question — not what the symbols look like, since mangling is both a false positive and a false negative.",
+  "fix": [
+    "link an equivalent implementation whose licence permits distribution instead",
+    "read the (source: …) URL in the message — the rule names its own authority, and the exception conditions are stated there"
+  ],
+  "text": "error[E3108]: hermes compile: V_bad is a V_name runtime (V_licence): V_reason (source: V_source)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The licence red line is a closed set, checked again on the plan surface as defence in depth: the --link-* inputs were already screened before the plan, but the built-in network archive is a separate input path. A hit means this artifact would statically carry a runtime whose licence forbids distributing it. Which runtime entered the link is the question — not what the symbols look like, since mangling is both a false positive and a false negative.\n  help: link an equivalent implementation whose licence permits distribution instead\n  help: read the (source: …) URL in the message — the rule names its own authority, and the exception conditions are stated there\n"
+}

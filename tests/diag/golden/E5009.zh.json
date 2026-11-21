@@ -1,0 +1,18 @@
+{
+  "code": "E5009",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "幂等键必须由输入派生",
+  "why": "常量或随机的 idem 键并不幂等：常量会把不同请求塌缩成一个，随机键每次重试都变，等于没去重。",
+  "fix": [
+    "用请求字段派生键（如订单号）",
+    "或者工具本就幂等，索性省掉 idem_key"
+  ],
+  "text": "error[E5009]: 幂等键必须由输入派生\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 常量或随机的 idem 键并不幂等：常量会把不同请求塌缩成一个，随机键每次重试都变，等于没去重。\n  help: 用请求字段派生键（如订单号）\n  help: 或者工具本就幂等，索性省掉 idem_key\n"
+}

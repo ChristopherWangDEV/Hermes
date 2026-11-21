@@ -1,0 +1,21 @@
+{
+  "code": "W_IR_PANEL_TRUNCATED",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "dropped": "V_dropped",
+    "shown": "V_shown"
+  },
+  "message": "stopped after V_shown diagnostics; V_dropped more were suppressed",
+  "why": "A single bad input can produce thousands of follow-on errors, and the useful ones are always at the top. The cap keeps the report readable and bounds memory on hostile IR.",
+  "fix": [
+    "fix the first V_shown and re-run — the rest are usually consequences",
+    "or raise the cap with --max-diags if you really want the full list"
+  ],
+  "text": "error[W_IR_PANEL_TRUNCATED]: stopped after V_shown diagnostics; V_dropped more were suppressed\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A single bad input can produce thousands of follow-on errors, and the useful ones are always at the top. The cap keeps the report readable and bounds memory on hostile IR.\n  help: fix the first V_shown and re-run — the rest are usually consequences\n  help: or raise the cap with --max-diags if you really want the full list\n"
+}

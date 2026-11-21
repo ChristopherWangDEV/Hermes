@@ -1,0 +1,18 @@
+{
+  "code": "E4032",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "cannot index a value that is not an array",
+  "why": "Only arrays support indexed access; indexing an int/string/json/struct has no element to return.",
+  "fix": [
+    "index an array value",
+    "for json, extract a typed array first (json.as_array)"
+  ],
+  "text": "error[E4032]: cannot index a value that is not an array\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Only arrays support indexed access; indexing an int/string/json/struct has no element to return.\n  help: index an array value\n  help: for json, extract a typed array first (json.as_array)\n"
+}

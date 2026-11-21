@@ -1,0 +1,18 @@
+{
+  "code": "E1008",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "invalid string escape or interpolation",
+  "why": "Escapes and interpolation must follow the grammar; a malformed one cannot be decoded, and a line-broken string would swallow the code after it.",
+  "fix": [
+    "valid escapes: \\\\ \\\" \\n \\r \\t, and \\u escapes with 4 hex digits",
+    "interpolation must be a plain path such as input.text"
+  ],
+  "text": "error[E1008]: invalid string escape or interpolation\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Escapes and interpolation must follow the grammar; a malformed one cannot be decoded, and a line-broken string would swallow the code after it.\n  help: valid escapes: \\\\ \\\" \\n \\r \\t, and \\u escapes with 4 hex digits\n  help: interpolation must be a plain path such as input.text\n"
+}

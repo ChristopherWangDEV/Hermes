@@ -1,0 +1,20 @@
+{
+  "code": "E4110",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "sig": "V_sig"
+  },
+  "message": "duplicate handler for `V_sig` in the same scope",
+  "why": "Handlers are collected per scope. Two for one signal in one scope would both be candidates, and which one runs is decided by binding order — that is not something a reader can see, so the program's behaviour would depend on an invisible ordering.",
+  "fix": [
+    "merge the two handlers into one",
+    "or move one into a nested block — the list is per scope, so a nested scope may declare its own"
+  ],
+  "text": "error[E4110]: duplicate handler for `V_sig` in the same scope\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Handlers are collected per scope. Two for one signal in one scope would both be candidates, and which one runs is decided by binding order — that is not something a reader can see, so the program's behaviour would depend on an invisible ordering.\n  help: merge the two handlers into one\n  help: or move one into a nested block — the list is per scope, so a nested scope may declare its own\n"
+}

@@ -1,0 +1,21 @@
+{
+  "code": "E3102",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "lib": "V_lib",
+    "target": "V_target"
+  },
+  "message": "hermes compile: 裸机目标 V_target 没有动态加载器；--link-dynamic 被禁止（收到 \"V_lib\"）。改用 --link-static 加一份纯 C/Rust 的 .a。",
+  "why": "裸机产物就是固件：运行期没有加载器把 .so/.dylib 映射进地址空间，链接行里的动态库永远无法兑现。链接计划在裸机分支上刻意让 DynamicLibs 恒为空——放行一个的结果是产物链得过、起不来。",
+  "fix": [
+    "把 --link-dynamic 换成 --link-static，并给它一份纯 C/Rust 的 .a",
+    "那个库只有 .so/.dylib 形态的话，先用 clang -c 加 ar rcs 重建成静态归档"
+  ],
+  "text": "error[E3102]: hermes compile: 裸机目标 V_target 没有动态加载器；--link-dynamic 被禁止（收到 \"V_lib\"）。改用 --link-static 加一份纯 C/Rust 的 .a。\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 裸机产物就是固件：运行期没有加载器把 .so/.dylib 映射进地址空间，链接行里的动态库永远无法兑现。链接计划在裸机分支上刻意让 DynamicLibs 恒为空——放行一个的结果是产物链得过、起不来。\n  help: 把 --link-dynamic 换成 --link-static，并给它一份纯 C/Rust 的 .a\n  help: 那个库只有 .so/.dylib 形态的话，先用 clang -c 加 ar rcs 重建成静态归档\n"
+}

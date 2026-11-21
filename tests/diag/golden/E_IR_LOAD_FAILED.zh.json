@@ -1,0 +1,20 @@
+{
+  "code": "E_IR_LOAD_FAILED",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "detail": "V_detail"
+  },
+  "message": "IR 字节不是本 schema 期望的合法 JSON：V_detail",
+  "why": "加载器按固定形状解码。某个字段的 JSON 类型不对时（该是整数的地方给了对象、该是列表的地方给了字符串），解码会在第一处不匹配处停下，之后的内容一概不检查 —— 所以在修好它之前你只会看到这一条。",
+  "fix": [
+    "修报出来的那个字段；周围的内容大概率是好的",
+    "如果这份产物是手改的，重新生成一份"
+  ],
+  "text": "error[E_IR_LOAD_FAILED]: IR 字节不是本 schema 期望的合法 JSON：V_detail\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 加载器按固定形状解码。某个字段的 JSON 类型不对时（该是整数的地方给了对象、该是列表的地方给了字符串），解码会在第一处不匹配处停下，之后的内容一概不检查 —— 所以在修好它之前你只会看到这一条。\n  help: 修报出来的那个字段；周围的内容大概率是好的\n  help: 如果这份产物是手改的，重新生成一份\n"
+}

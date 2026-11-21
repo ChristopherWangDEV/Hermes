@@ -1,0 +1,18 @@
+{
+  "code": "W5005",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "entry has no structural contract: input is declared as json, so hermes serve cannot generate documentation from it nor reject malformed requests at the entry point",
+  "why": "The input type is the HTTP request contract. When declared as json the request body is arbitrary JSON, so serve can neither generate an API schema nor validate the fields at the entry point. This is a sanctioned escape hatch (LANGUAGE.md §4.8), but it loses compile-time contract protection.",
+  "fix": [
+    "declare a struct as the contract: `input: SupportInput`, where the fields are the shape of the request body and non-`T?` fields become required",
+    "if arbitrary JSON is truly needed, keep json but accept this warning, or upgrade it to an error with --deny-warnings"
+  ],
+  "text": "error[W5005]: entry has no structural contract: input is declared as json, so hermes serve cannot generate documentation from it nor reject malformed requests at the entry point\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The input type is the HTTP request contract. When declared as json the request body is arbitrary JSON, so serve can neither generate an API schema nor validate the fields at the entry point. This is a sanctioned escape hatch (LANGUAGE.md §4.8), but it loses compile-time contract protection.\n  help: declare a struct as the contract: `input: SupportInput`, where the fields are the shape of the request body and non-`T?` fields become required\n  help: if arbitrary JSON is truly needed, keep json but accept this warning, or upgrade it to an error with --deny-warnings\n"
+}

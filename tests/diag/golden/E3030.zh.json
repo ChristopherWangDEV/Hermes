@@ -1,0 +1,20 @@
+{
+  "code": "E3030",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "type": "V_type"
+  },
+  "message": "类型 V_type 不能跨 C ABI 边界",
+  "why": "只有 int、bool、string、double、cost 和不透明结构体在 C 里有稳定布局；json、vector\u003cT\u003e、泛型都没有",
+  "fix": [
+    "改用受支持的 C-ABI 类型：int、bool、string、double、cost 或不透明结构体",
+    "把值包进结构体，以不透明指针跨边界"
+  ],
+  "text": "error[E3030]: 类型 V_type 不能跨 C ABI 边界\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 只有 int、bool、string、double、cost 和不透明结构体在 C 里有稳定布局；json、vector\u003cT\u003e、泛型都没有\n  help: 改用受支持的 C-ABI 类型：int、bool、string、double、cost 或不透明结构体\n  help: 把值包进结构体，以不透明指针跨边界\n"
+}

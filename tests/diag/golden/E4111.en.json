@@ -1,0 +1,18 @@
+{
+  "code": "E4111",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "sleep takes a duration",
+  "why": "The duration is a number of milliseconds, or a literal with a unit that the parser already folded; anything else has no meaning to the runtime and would be silently coerced. The same code fires for `until` with `timeout takes milliseconds as an int`: the timeout is compared against the monotonic clock in milliseconds, and a string or a struct cannot be a deadline.",
+  "fix": [
+    "pass an int (ms) or a literal with a unit, e.g. sleep(1500) or sleep(1.5s)",
+    "for a timeout, pass an int of milliseconds: timeout(30000) or timeout(30s)"
+  ],
+  "text": "error[E4111]: sleep takes a duration\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The duration is a number of milliseconds, or a literal with a unit that the parser already folded; anything else has no meaning to the runtime and would be silently coerced. The same code fires for `until` with `timeout takes milliseconds as an int`: the timeout is compared against the monotonic clock in milliseconds, and a string or a struct cannot be a deadline.\n  help: pass an int (ms) or a literal with a unit, e.g. sleep(1500) or sleep(1.5s)\n  help: for a timeout, pass an int of milliseconds: timeout(30000) or timeout(30s)\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E4026",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "不能在 fallback 块里重新赋值 const 变量",
+  "why": "const 在整个作用域内不可变；fallback 不是例外——在里面改会让 const 在不同块里含义不同。",
+  "fix": [
+    "需要可变就用非 const 变量",
+    "或者把赋值移出 fallback"
+  ],
+  "text": "error[E4026]: 不能在 fallback 块里重新赋值 const 变量\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: const 在整个作用域内不可变；fallback 不是例外——在里面改会让 const 在不同块里含义不同。\n  help: 需要可变就用非 const 变量\n  help: 或者把赋值移出 fallback\n"
+}

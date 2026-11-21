@@ -1,0 +1,18 @@
+{
+  "code": "E4012",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "逻辑 \u0026\u0026、||、! 需要 bool 操作数",
+  "why": "语言没有真值性；\u0026\u0026、||、! 是布尔联结词，int/string/json 操作数需要并不存在的非零即真隐式规则。",
+  "fix": [
+    "显式比较：x != 0，或 s != 空字符串字面量",
+    "或者把操作数改成 bool"
+  ],
+  "text": "error[E4012]: 逻辑 \u0026\u0026、||、! 需要 bool 操作数\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 语言没有真值性；\u0026\u0026、||、! 是布尔联结词，int/string/json 操作数需要并不存在的非零即真隐式规则。\n  help: 显式比较：x != 0，或 s != 空字符串字面量\n  help: 或者把操作数改成 bool\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E4028",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "the loop variable of a `for` loop is used after the loop has ended",
+  "why": "The loop variable is owned by the for header and exists only inside the body; its slot is reclaimed when the loop ends, so referencing it outside reads a variable that no longer exists.",
+  "fix": [
+    "move the use inside the loop body",
+    "or copy the value to a variable declared before the loop"
+  ],
+  "text": "error[E4028]: the loop variable of a `for` loop is used after the loop has ended\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The loop variable is owned by the for header and exists only inside the body; its slot is reclaimed when the loop ends, so referencing it outside reads a variable that no longer exists.\n  help: move the use inside the loop body\n  help: or copy the value to a variable declared before the loop\n"
+}

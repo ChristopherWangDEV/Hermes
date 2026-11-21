@@ -1,0 +1,18 @@
+{
+  "code": "E3109",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "[ERROR] Blocking synchronization or network routing requires a host OS.",
+  "why": "sleep and until need a scheduler and condition variables; a directed emit (route == 2, `to \u003cctx\u003e`) needs a live context handle to route to. Bare metal has none of these — the slot table is static addresses. Channel routing (route == 1) is deliberately not in this set: it is a compile-time hash plus an integer compare and works on bare metal.",
+  "fix": [
+    "replace sleep/until with a counted or polling loop — there is no blocking wait on bare metal",
+    "route the emit by channel instead of `to \u003cctx\u003e`, or move that workflow to the host side"
+  ],
+  "text": "error[E3109]: [ERROR] Blocking synchronization or network routing requires a host OS.\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: sleep and until need a scheduler and condition variables; a directed emit (route == 2, `to \u003cctx\u003e`) needs a live context handle to route to. Bare metal has none of these — the slot table is static addresses. Channel routing (route == 1) is deliberately not in this set: it is a compile-time hash plus an integer compare and works on bare metal.\n  help: replace sleep/until with a counted or polling loop — there is no blocking wait on bare metal\n  help: route the emit by channel instead of `to \u003cctx\u003e`, or move that workflow to the host side\n"
+}

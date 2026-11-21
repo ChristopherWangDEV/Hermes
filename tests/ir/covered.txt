@@ -1,0 +1,44 @@
+# IR 装配迁移棘轮：已覆盖的源码（逐字节等于 tests/ir/golden 基线）。
+# 只许进不许退：登记后一旦不再相同，测试立刻红。
+# 加行 = 宣布"这类形态已被 C++ 装配覆盖"。
+cmd#hermes#testdata#agent.hermes.json
+cmd#hermes#testdata#allowstatus.hermes.json
+cmd#hermes#testdata#arrays.hermes.json
+cmd#hermes#testdata#binop.hermes.json
+cmd#hermes#testdata#cast.hermes.json
+cmd#hermes#testdata#charlit.hermes.json
+cmd#hermes#testdata#control.hermes.json
+cmd#hermes#testdata#fallback.hermes.json
+cmd#hermes#testdata#fallbackok.hermes.json
+cmd#hermes#testdata#ffi_multi#form_a#main.hermes.json
+cmd#hermes#testdata#ffi_multi#form_b#main.hermes.json
+cmd#hermes#testdata#functions.hermes.json
+cmd#hermes#testdata#hello.hermes.json
+cmd#hermes#testdata#idemkey.hermes.json
+cmd#hermes#testdata#live.hermes.json
+cmd#hermes#testdata#loop.hermes.json
+cmd#hermes#testdata#model.hermes.json
+cmd#hermes#testdata#multi#app.hermes.json
+cmd#hermes#testdata#parallel.hermes.json
+cmd#hermes#testdata#retry.hermes.json
+cmd#hermes#testdata#retrydiv.hermes.json
+cmd#hermes#testdata#tool.hermes.json
+cmd#hermes#testdata#toolwire.hermes.json
+cmd#hermes#testdata#trycatch.hermes.json
+cmd#hermes#testdata#trydiv.hermes.json
+cmd#hermes#testdata#typed.hermes.json
+cmd#hermes#testdata#width.hermes.json
+examples#arrays#length.hermes.json
+examples#c-minimal#units#label.hermes.json
+examples#functions#greet.hermes.json
+examples#functions#recurse.hermes.json
+examples#json#coerce.hermes.json
+examples#memory#read.hermes.json
+examples#memory#write.hermes.json
+examples#parallel#fanout.hermes.json
+examples#signals#budget.hermes.json
+examples#starter#app.hermes.json
+examples#storage#journal.hermes.json
+examples#support_bot#support.hermes.json
+examples#sync#early-exit.hermes.json
+examples#sync#pacing.hermes.json

@@ -1,0 +1,18 @@
+{
+  "code": "E4019",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "`case` 标签与 `match` 主题的类型不一致",
+  "why": "case 标签要跟主题比较；字符串主题配 int 标签（或反之）永远匹配不上，说明类型搞混了。",
+  "fix": [
+    "让标签与主题同类型",
+    "或者在 match 前先转换主题"
+  ],
+  "text": "error[E4019]: `case` 标签与 `match` 主题的类型不一致\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: case 标签要跟主题比较；字符串主题配 int 标签（或反之）永远匹配不上，说明类型搞混了。\n  help: 让标签与主题同类型\n  help: 或者在 match 前先转换主题\n"
+}

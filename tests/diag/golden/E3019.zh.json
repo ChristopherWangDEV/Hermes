@@ -1,0 +1,18 @@
+{
+  "code": "E3019",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "后端地址不能内嵌凭据（user:pass@host）",
+  "why": "URL 里的凭据会进日志、trace 和 IR；必须从 env() 来，才不会写进产物或泄漏。",
+  "fix": [
+    "从地址里去掉 user:pass@",
+    "用 auth env(\"NAME\") 提供密钥"
+  ],
+  "text": "error[E3019]: 后端地址不能内嵌凭据（user:pass@host）\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: URL 里的凭据会进日志、trace 和 IR；必须从 env() 来，才不会写进产物或泄漏。\n  help: 从地址里去掉 user:pass@\n  help: 用 auth env(\"NAME\") 提供密钥\n"
+}

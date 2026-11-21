@@ -1,0 +1,18 @@
+{
+  "code": "E4108",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "stop data does not match the workflow return type",
+  "why": "`workflow.stop` returns its data to the caller, so the data has to be the type the workflow declares. Stop writes straight into the return slot, so a mismatch is a `ret` of the wrong type: it compiles and the caller reads garbage.",
+  "fix": [
+    "pass a value of the declared return type",
+    "or change the workflow's declared return type to the type you pass"
+  ],
+  "text": "error[E4108]: stop data does not match the workflow return type\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `workflow.stop` returns its data to the caller, so the data has to be the type the workflow declares. Stop writes straight into the return slot, so a mismatch is a `ret` of the wrong type: it compiles and the caller reads garbage.\n  help: pass a value of the declared return type\n  help: or change the workflow's declared return type to the type you pass\n"
+}

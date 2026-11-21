@@ -1,0 +1,13 @@
+export struct OrderInfo {
+    string id;
+    int status;
+}
+
+export struct Intent {
+    string action;
+    OrderInfo order;
+}
+
+export workflow typed() entry -> string {
+    return "ok";
+}

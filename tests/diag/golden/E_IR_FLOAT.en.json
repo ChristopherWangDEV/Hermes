@@ -1,0 +1,21 @@
+{
+  "code": "E_IR_FLOAT",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "path": "V_path",
+    "preview": "V_preview"
+  },
+  "message": "IR contains a floating-point JSON number at V_path (starts with V_preview)",
+  "why": "Canonical JSON forbids floats (IR.md P-1). The shortest round-trip representation of a float differs between Go, Rust and C++, so a float anywhere in the hashed bytes makes cross-language verification fail at random, and only on some machines.",
+  "fix": [
+    "encode it as a string: {\"k\":\"double\",\"bits\":\"3ff8000000000000\"}",
+    "money and probabilities are integers — use micro-USD (1e-6) and basis points (1e-4)"
+  ],
+  "text": "error[E_IR_FLOAT]: IR contains a floating-point JSON number at V_path (starts with V_preview)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Canonical JSON forbids floats (IR.md P-1). The shortest round-trip representation of a float differs between Go, Rust and C++, so a float anywhere in the hashed bytes makes cross-language verification fail at random, and only on some machines.\n  help: encode it as a string: {\"k\":\"double\",\"bits\":\"3ff8000000000000\"}\n  help: money and probabilities are integers — use micro-USD (1e-6) and basis points (1e-4)\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E3107",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "hermes compile: 本程序调用 tools/models，需要 Go 网络归档；用这条命令构建：go build -buildmode=c-archive -o build/glibhermesnet.a ./cmd/hermesnet",
+  "why": "tool.call / model.generate 在生成的 C 里降成 hermes_net_* 调用，而这些符号唯一的载体就是 Go 网络归档（内含 AI 接口兼容层的 c-archive）。一个归档都没解析到时，这些调用在链接期全是未解析符号。",
+  "fix": [
+    "跑消息里那条 go build；或者用 HERMES_NET_LIB 指向已有的 g* 归档（默认查找 build/glibhermesnet.a）",
+    "本程序确实不需要网络或模型的话，去掉 tool.call / model.generate 和需要它们的 backend"
+  ],
+  "text": "error[E3107]: hermes compile: 本程序调用 tools/models，需要 Go 网络归档；用这条命令构建：go build -buildmode=c-archive -o build/glibhermesnet.a ./cmd/hermesnet\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: tool.call / model.generate 在生成的 C 里降成 hermes_net_* 调用，而这些符号唯一的载体就是 Go 网络归档（内含 AI 接口兼容层的 c-archive）。一个归档都没解析到时，这些调用在链接期全是未解析符号。\n  help: 跑消息里那条 go build；或者用 HERMES_NET_LIB 指向已有的 g* 归档（默认查找 build/glibhermesnet.a）\n  help: 本程序确实不需要网络或模型的话，去掉 tool.call / model.generate 和需要它们的 backend\n"
+}

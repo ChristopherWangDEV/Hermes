@@ -1,0 +1,18 @@
+{
+  "code": "E4111",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "sleep 需要一个时长",
+  "why": "时长是毫秒数，或带单位的字面量（parser 已经折算好）；其他类型对运行期没有意义，只会被静默转换。同一个码也用于 `until` 的 `timeout takes milliseconds as an int`：timeout 与单调时钟按毫秒比较，字符串或 struct 当不了截止时间。",
+  "fix": [
+    "传 int（毫秒）或带单位的字面量，如 sleep(1500) 或 sleep(1.5s)",
+    "timeout 位传 int 毫秒：timeout(30000) 或 timeout(30s)"
+  ],
+  "text": "error[E4111]: sleep 需要一个时长\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 时长是毫秒数，或带单位的字面量（parser 已经折算好）；其他类型对运行期没有意义，只会被静默转换。同一个码也用于 `until` 的 `timeout takes milliseconds as an int`：timeout 与单调时钟按毫秒比较，字符串或 struct 当不了截止时间。\n  help: 传 int（毫秒）或带单位的字面量，如 sleep(1500) 或 sleep(1.5s)\n  help: timeout 位传 int 毫秒：timeout(30000) 或 timeout(30s)\n"
+}

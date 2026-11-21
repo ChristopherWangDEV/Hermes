@@ -1,0 +1,18 @@
+{
+  "code": "E3018",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "env() arguments must be constant strings: interpolation is not a constant",
+  "why": "A backend endpoint or credential name is read at build time; an interpolated value is only known at runtime, so it cannot be baked into the configuration.",
+  "fix": [
+    "pass a plain string literal to env()",
+    "move any interpolation into runtime code instead"
+  ],
+  "text": "error[E3018]: env() arguments must be constant strings: interpolation is not a constant\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A backend endpoint or credential name is read at build time; an interpolated value is only known at runtime, so it cannot be baked into the configuration.\n  help: pass a plain string literal to env()\n  help: move any interpolation into runtime code instead\n"
+}

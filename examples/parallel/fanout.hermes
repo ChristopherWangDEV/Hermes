@@ -1,0 +1,14 @@
+// 并发隔离：分支里声明的名字出块即关闭，产物只能经元组解构取出。
+// 元组是 fork/join 的中间态 —— 不可命名、不可存储、不可返回。
+export struct Job {
+    string id;
+}
+
+export workflow main(input: Job) entry -> string {
+    auto [left, right] = parallel {
+        auto a = "a:{input.id}";
+        auto b = "b:{input.id}";
+        return [a, b];
+    };
+    return "{left}+{right}";
+}

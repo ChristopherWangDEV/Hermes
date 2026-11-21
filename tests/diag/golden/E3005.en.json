@@ -1,0 +1,18 @@
+{
+  "code": "E3005",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a workflow in a header (.h) cannot have a body",
+  "why": "Headers declare interfaces only; a body in a header would be duplicated into every includer, so which implementation runs would depend on the include graph instead of #link.",
+  "fix": [
+    "move the body to the matching .hermes implementation",
+    "keep only the signature in the header"
+  ],
+  "text": "error[E3005]: a workflow in a header (.h) cannot have a body\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Headers declare interfaces only; a body in a header would be duplicated into every includer, so which implementation runs would depend on the include graph instead of #link.\n  help: move the body to the matching .hermes implementation\n  help: keep only the signature in the header\n"
+}

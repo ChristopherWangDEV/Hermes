@@ -1,0 +1,18 @@
+{
+  "code": "E1003",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "token count exceeds the 2,000,000 limit",
+  "why": "The total token count after include expansion is capped so parse time and memory stay bounded and build time remains answerable from the source tree.",
+  "fix": [
+    "split the file or reduce its includes",
+    "move rarely used declarations behind a #link so they are not re-parsed"
+  ],
+  "text": "error[E1003]: token count exceeds the 2,000,000 limit\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The total token count after include expansion is capped so parse time and memory stay bounded and build time remains answerable from the source tree.\n  help: split the file or reduce its includes\n  help: move rarely used declarations behind a #link so they are not re-parsed\n"
+}

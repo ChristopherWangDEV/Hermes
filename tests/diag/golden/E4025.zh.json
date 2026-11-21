@@ -1,0 +1,18 @@
+{
+  "code": "E4025",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "fallback 的返回类型与主表达式不一致",
+  "why": "fallback 是主表达式抛错时采用的值；类型不同会让调用方在运行期拿到两种不兼容类型之一。",
+  "fix": [
+    "让 fallback 返回与主表达式相同的类型",
+    "或者把 fallback 的值转换成该类型"
+  ],
+  "text": "error[E4025]: fallback 的返回类型与主表达式不一致\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: fallback 是主表达式抛错时采用的值；类型不同会让调用方在运行期拿到两种不兼容类型之一。\n  help: 让 fallback 返回与主表达式相同的类型\n  help: 或者把 fallback 的值转换成该类型\n"
+}

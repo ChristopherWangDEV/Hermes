@@ -1,0 +1,20 @@
+{
+  "code": "E3104",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "target": "V_target"
+  },
+  "message": "hermes compile: 内置的 Go 网络归档是为宿主机构建的，无法链进交叉编译到 V_target 的产物。为 V_target 构建一份 g* c-archive 并用 --link-static 传进来，或者就在宿主机上原生编译本单元。",
+  "why": "Go c-archive 是宿主架构的机器码。把单元交叉编译到别的目标、却链宿主构建的归档，结果要么是 hermes_net_* 符号未解析，要么是架构不匹配——而链接器只会点一个符号名，离真正的原因很远。",
+  "fix": [
+    "按 V_target 的 GOOS/GOARCH 构建 g* c-archive，再用 --link-static 传进来",
+    "或者去掉 --target，在这个单元将来运行的宿主上编译"
+  ],
+  "text": "error[E3104]: hermes compile: 内置的 Go 网络归档是为宿主机构建的，无法链进交叉编译到 V_target 的产物。为 V_target 构建一份 g* c-archive 并用 --link-static 传进来，或者就在宿主机上原生编译本单元。\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Go c-archive 是宿主架构的机器码。把单元交叉编译到别的目标、却链宿主构建的归档，结果要么是 hermes_net_* 符号未解析，要么是架构不匹配——而链接器只会点一个符号名，离真正的原因很远。\n  help: 按 V_target 的 GOOS/GOARCH 构建 g* c-archive，再用 --link-static 传进来\n  help: 或者去掉 --target，在这个单元将来运行的宿主上编译\n"
+}

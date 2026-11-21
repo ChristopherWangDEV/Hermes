@@ -1,0 +1,18 @@
+{
+  "code": "E4034",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "this error field is specified but the runtime does not produce it yet",
+  "why": "LANGUAGE.md 7.1.1 declares the field, so it is not a spelling mistake — but the executor's error value does not carry it yet. Accepting the access would compile and then die at run time with `field does not exist`, which is a plain error and cannot be caught: a static checker that passes while the program fails is worse than a refusal.",
+  "fix": [
+    "read a field the runtime already carries (E4016's help lists them per error type)",
+    "or read the outcome as a normal value: with `allow_status = [404]` the status comes back on HttpResult\u003cT\u003e, so `r.status == 404` needs no error object at all"
+  ],
+  "text": "error[E4034]: this error field is specified but the runtime does not produce it yet\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: LANGUAGE.md 7.1.1 declares the field, so it is not a spelling mistake — but the executor's error value does not carry it yet. Accepting the access would compile and then die at run time with `field does not exist`, which is a plain error and cannot be caught: a static checker that passes while the program fails is worse than a refusal.\n  help: read a field the runtime already carries (E4016's help lists them per error type)\n  help: or read the outcome as a normal value: with `allow_status = [404]` the status comes back on HttpResult\u003cT\u003e, so `r.status == 404` needs no error object at all\n"
+}

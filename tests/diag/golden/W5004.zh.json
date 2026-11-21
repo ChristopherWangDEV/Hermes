@@ -1,0 +1,18 @@
+{
+  "code": "W5004",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "拿形如状态码的 struct 字段去比 HTTP 状态码，但默认 tool.call 契约下非 2xx 根本不会绑定它",
+  "why": "没有 allow_status 时，tool.call 成功才返回 T，否则抛 HttpError —— 404 时执行流在 tool.call 那行就跳走了，字段从未被绑定，这个比较永远不可能为真。HTTP 状态只有通过 allow_status（HttpResult\u003cT\u003e.status）才到得了调用点。这是**启发式警告**不是错误：业务字段恰好叫 status 且真的等于 404 是合法的，编译器分不出这两种情况（LANGUAGE.md 12.1 L3）。",
+  "fix": [
+    "把该码写进调用的 allow_status，再比结果的状态：`tool.call\u003cT\u003e(..., allow_status = [404])` 然后 `r.status == 404`",
+    "或者从响应体判断：200 响应才带 T，所以检查 T 上的业务字段（如 `found = false`），而不是 HTTP 状态码"
+  ],
+  "text": "error[W5004]: 拿形如状态码的 struct 字段去比 HTTP 状态码，但默认 tool.call 契约下非 2xx 根本不会绑定它\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 没有 allow_status 时，tool.call 成功才返回 T，否则抛 HttpError —— 404 时执行流在 tool.call 那行就跳走了，字段从未被绑定，这个比较永远不可能为真。HTTP 状态只有通过 allow_status（HttpResult\u003cT\u003e.status）才到得了调用点。这是**启发式警告**不是错误：业务字段恰好叫 status 且真的等于 404 是合法的，编译器分不出这两种情况（LANGUAGE.md 12.1 L3）。\n  help: 把该码写进调用的 allow_status，再比结果的状态：`tool.call\u003cT\u003e(..., allow_status = [404])` 然后 `r.status == 404`\n  help: 或者从响应体判断：200 响应才带 T，所以检查 T 上的业务字段（如 `found = false`），而不是 HTTP 状态码\n"
+}

@@ -1,0 +1,21 @@
+{
+  "code": "E_IR_SCHEMA_UNSTABLE",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "detail": "V_detail",
+    "path": "V_path"
+  },
+  "message": "V_path 处的 schema 重新 canonical 化后字节不同：V_detail",
+  "why": "schemas[].json 是原样嵌入的，并参与类型哈希。只要重编码改了一个字节，离线构建与验签就会对\"签的是哪份 schema\"产生分歧。",
+  "fix": [
+    "按字节序输出键、不留空白",
+    "或者报告产它的前端 —— 这一般是 codegen 的 bug"
+  ],
+  "text": "error[E_IR_SCHEMA_UNSTABLE]: V_path 处的 schema 重新 canonical 化后字节不同：V_detail\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: schemas[].json 是原样嵌入的，并参与类型哈希。只要重编码改了一个字节，离线构建与验签就会对\"签的是哪份 schema\"产生分歧。\n  help: 按字节序输出键、不留空白\n  help: 或者报告产它的前端 —— 这一般是 codegen 的 bug\n"
+}

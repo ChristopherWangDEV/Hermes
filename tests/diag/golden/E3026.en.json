@@ -1,0 +1,18 @@
+{
+  "code": "E3026",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "workflow parameters other than \"input\" and \"backend\" are not supported",
+  "why": "A workflow signature is a link-time contract, not a callable interface: there are no cross-workflow calls, so a named parameter has no caller and therefore no source for its value. The host supplies exactly one payload and that payload is `input`; `backend` selects a backend at compile time. Accepting `n: int` would compile and then never run — and the run-time complaint is worded like a compiler bug, hiding a language-design gap behind the compiler's back.",
+  "fix": [
+    "put the value in the `input` type and read it as `input.\u003cfield\u003e`",
+    "or, if you meant to pick a backend, write `backend = \u003cname of a backend you declared\u003e`"
+  ],
+  "text": "error[E3026]: workflow parameters other than \"input\" and \"backend\" are not supported\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A workflow signature is a link-time contract, not a callable interface: there are no cross-workflow calls, so a named parameter has no caller and therefore no source for its value. The host supplies exactly one payload and that payload is `input`; `backend` selects a backend at compile time. Accepting `n: int` would compile and then never run — and the run-time complaint is worded like a compiler bug, hiding a language-design gap behind the compiler's back.\n  help: put the value in the `input` type and read it as `input.\u003cfield\u003e`\n  help: or, if you meant to pick a backend, write `backend = \u003cname of a backend you declared\u003e`\n"
+}

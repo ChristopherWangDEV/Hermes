@@ -1,0 +1,21 @@
+{
+  "code": "E1009",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "path": "V_path",
+    "suggestion": "V_suggestion"
+  },
+  "message": "include 路径 V_path 逃出了 include 根目录",
+  "why": "include 路径必须留在项目内。含 '.' 或 '..' 的路径能让头文件伸到源码树外面 —— 这会破坏可重现构建（解析结果取决于源码树恰好放在哪），也让离线构建去读没人声明过的文件。",
+  "fix": [
+    "用相对 include 根的路径：V_suggestion",
+    "或者用 -I 把那个目录加进来，再按它在那个根内的名字 include"
+  ],
+  "text": "error[E1009]: include 路径 V_path 逃出了 include 根目录\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: include 路径必须留在项目内。含 '.' 或 '..' 的路径能让头文件伸到源码树外面 —— 这会破坏可重现构建（解析结果取决于源码树恰好放在哪），也让离线构建去读没人声明过的文件。\n  help: 用相对 include 根的路径：V_suggestion\n  help: 或者用 -I 把那个目录加进来，再按它在那个根内的名字 include\n"
+}

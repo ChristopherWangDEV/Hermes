@@ -1,0 +1,15 @@
+// stop 与 break 正交：break 只跳出循环，stop 结束整个任务并把 data 交回调用方。
+export workflow main() entry -> string {
+    auto i = 0;
+    for (int i = 0; i < 10; i++) {
+        if (i == 3) {
+            break;
+        }
+    }
+
+    auto ready = 0;
+    if (ready == 0) {
+        workflow.stop(reason: "downstream not ready", data: "aborted");
+    }
+    return "finished";
+}

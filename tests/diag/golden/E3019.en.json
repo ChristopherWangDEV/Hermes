@@ -1,0 +1,18 @@
+{
+  "code": "E3019",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a backend address must not carry credentials (user:pass@host)",
+  "why": "Credentials in a URL end up in logs, traces, and the IR; they must come from env() so they are not written into the artifact or leaked.",
+  "fix": [
+    "remove user:pass@ from the address",
+    "supply the secret via auth env(\"NAME\")"
+  ],
+  "text": "error[E3019]: a backend address must not carry credentials (user:pass@host)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Credentials in a URL end up in logs, traces, and the IR; they must come from env() so they are not written into the artifact or leaked.\n  help: remove user:pass@ from the address\n  help: supply the secret via auth env(\"NAME\")\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "W2003",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "#link 不需要结尾分号（和 #include 一样）",
+  "why": "指令不是语句：#include 和 #link 都止于行末，结尾多出的 ';' 是多余的。",
+  "fix": [
+    "去掉结尾的 ';'",
+    "指令保持 #link \u003cstd/net\u003e"
+  ],
+  "text": "error[W2003]: #link 不需要结尾分号（和 #include 一样）\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 指令不是语句：#include 和 #link 都止于行末，结尾多出的 ';' 是多余的。\n  help: 去掉结尾的 ';'\n  help: 指令保持 #link \u003cstd/net\u003e\n"
+}

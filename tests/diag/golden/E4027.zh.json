@@ -1,0 +1,18 @@
+{
+  "code": "E4027",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "if/while 的条件必须是 bool",
+  "why": "条件是控制流分支点，语言没有真值性；int/string/json/cost 没有为真的概念，隐式规则在运行期是未定义的。",
+  "fix": [
+    "显式比较：x != 0，或 s != 空字符串字面量",
+    "或者让表达式产出 bool"
+  ],
+  "text": "error[E4027]: if/while 的条件必须是 bool\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 条件是控制流分支点，语言没有真值性；int/string/json/cost 没有为真的概念，隐式规则在运行期是未定义的。\n  help: 显式比较：x != 0，或 s != 空字符串字面量\n  help: 或者让表达式产出 bool\n"
+}

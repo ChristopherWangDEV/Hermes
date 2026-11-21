@@ -1,0 +1,20 @@
+{
+  "code": "E_IR_LOAD_FAILED",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "detail": "V_detail"
+  },
+  "message": "the IR bytes are not well-formed JSON for this schema: V_detail",
+  "why": "The loader decodes into a fixed shape. When a field has the wrong JSON type (an object where an integer was expected, a string where a list was expected), decoding stops at the first mismatch and nothing after it is checked — so this is the only diagnostic you get until it is fixed.",
+  "fix": [
+    "fix the reported field; the surrounding IR is probably fine",
+    "or regenerate the artifact if it was hand-edited"
+  ],
+  "text": "error[E_IR_LOAD_FAILED]: the IR bytes are not well-formed JSON for this schema: V_detail\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The loader decodes into a fixed shape. When a field has the wrong JSON type (an object where an integer was expected, a string where a list was expected), decoding stops at the first mismatch and nothing after it is checked — so this is the only diagnostic you get until it is fixed.\n  help: fix the reported field; the surrounding IR is probably fine\n  help: or regenerate the artifact if it was hand-edited\n"
+}

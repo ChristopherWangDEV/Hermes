@@ -1,0 +1,18 @@
+{
+  "code": "E1005",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a double literal must be written as D.D ('.5' is invalid)",
+  "why": "A leading dot is confused with the '.' of field access; requiring D.D keeps the lexer unambiguous.",
+  "fix": [
+    "write 0.5 instead of .5",
+    "use `double` for fractional values; keep money in `cost` / int micro-units"
+  ],
+  "text": "error[E1005]: a double literal must be written as D.D ('.5' is invalid)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A leading dot is confused with the '.' of field access; requiring D.D keeps the lexer unambiguous.\n  help: write 0.5 instead of .5\n  help: use `double` for fractional values; keep money in `cost` / int micro-units\n"
+}

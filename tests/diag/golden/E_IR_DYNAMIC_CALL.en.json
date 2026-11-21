@@ -1,0 +1,21 @@
+{
+  "code": "E_IR_DYNAMIC_CALL",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "fn": "V_fn",
+    "where": "V_where"
+  },
+  "message": "non-recursive function V_fn is called through call_fn at V_where: compiled mode must inline it",
+  "why": "Hermes is a compiled language: non-recursive functions are expanded at compile time so the runtime has no dynamic dispatch. A call_fn to a non-recursive function means the IR came from an older compiler, was hand-edited, or codegen has a bug. Allowing it would silently reintroduce dynamic dispatch exactly where the bounds are supposed to be static.",
+  "fix": [
+    "rebuild the IR with the current compiler (non-recursive calls are inlined)",
+    "if V_fn really recurses, mark it recursive — the depth limit 512 is the only runtime guard"
+  ],
+  "text": "error[E_IR_DYNAMIC_CALL]: non-recursive function V_fn is called through call_fn at V_where: compiled mode must inline it\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Hermes is a compiled language: non-recursive functions are expanded at compile time so the runtime has no dynamic dispatch. A call_fn to a non-recursive function means the IR came from an older compiler, was hand-edited, or codegen has a bug. Allowing it would silently reintroduce dynamic dispatch exactly where the bounds are supposed to be static.\n  help: rebuild the IR with the current compiler (non-recursive calls are inlined)\n  help: if V_fn really recurses, mark it recursive — the depth limit 512 is the only runtime guard\n"
+}

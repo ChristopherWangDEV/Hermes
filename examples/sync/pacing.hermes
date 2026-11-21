@@ -1,0 +1,16 @@
+// 同步原语：先睡一段让出 CPU，再等下一次 Ready 信号（边沿触发）。
+export signal Ready;
+
+export workflow main() entry -> string {
+    auto ticks = 0;
+
+    on Ready {
+        ticks = ticks + 1;
+    }
+
+    sleep(20);
+    emit(Ready);
+    until(Ready) timeout(50);
+
+    return "ticks:{ticks}";
+}

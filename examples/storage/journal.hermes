@@ -1,0 +1,13 @@
+// 记忆与向量：memory.* / vector.* 是存储子系统的内建（store_op）。
+// 存储位置是部署事实，不是语法（--store <dir> / $HERMES_STORE）：
+// 没有任何 workflow 用到它们时，什么都不会被写出去。
+export workflow main() entry -> string {
+    memory.put(key = "journal:last", value = "entry-42");
+    auto prev = memory.get(key = "journal:last");
+    memory.delete(key = "journal:tmp");
+
+    vector.put(id = "e42", text = "the forty-second entry");
+    auto hits = vector.query(text = "forty-second", k = 3);
+
+    return "ok";
+}

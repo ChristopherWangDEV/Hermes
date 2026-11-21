@@ -1,0 +1,18 @@
+{
+  "code": "E4008",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "cost 与 double 不能在算术里混用",
+  "why": "cost 是整数微美元；与 double 混算会重新引入 cost 本想避免的舍入误差。",
+  "fix": [
+    "金额运算留在 cost（整数）里",
+    "或显式转换并明确舍入"
+  ],
+  "text": "error[E4008]: cost 与 double 不能在算术里混用\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: cost 是整数微美元；与 double 混算会重新引入 cost 本想避免的舍入误差。\n  help: 金额运算留在 cost（整数）里\n  help: 或显式转换并明确舍入\n"
+}

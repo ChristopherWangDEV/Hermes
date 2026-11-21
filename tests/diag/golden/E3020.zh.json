@@ -1,0 +1,18 @@
+{
+  "code": "E3020",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": ".h 头文件里不能包含 backend 定义",
+  "why": "backend 定义含地址与密钥来源，属于实现而非接口；写进头文件会让每个包含者各得一份。",
+  "fix": [
+    "把 backend 定义挪到 .hermes 实现",
+    "必要时头里只留声明"
+  ],
+  "text": "error[E3020]: .h 头文件里不能包含 backend 定义\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: backend 定义含地址与密钥来源，属于实现而非接口；写进头文件会让每个包含者各得一份。\n  help: 把 backend 定义挪到 .hermes 实现\n  help: 必要时头里只留声明\n"
+}

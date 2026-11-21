@@ -1,0 +1,23 @@
+{
+  "code": "E_IR_SYM_CONFLICT",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "count": "V_count",
+    "name": "V_name",
+    "namespace": "V_namespace",
+    "places": "V_places"
+  },
+  "message": "符号 V_name 在 V_namespace 里出现 V_count 次：V_places",
+  "why": "四个命名空间（type / workflow / backend / tool）各自必须名称唯一。有重复时导出查找就依赖顺序 —— 链接器解析它先扫到的那个，于是同一份归档在两台机器上可能链出不同结果。",
+  "fix": [
+    "把其中一个改名",
+    "或者如果是残留，删掉重复的导出"
+  ],
+  "text": "error[E_IR_SYM_CONFLICT]: 符号 V_name 在 V_namespace 里出现 V_count 次：V_places\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 四个命名空间（type / workflow / backend / tool）各自必须名称唯一。有重复时导出查找就依赖顺序 —— 链接器解析它先扫到的那个，于是同一份归档在两台机器上可能链出不同结果。\n  help: 把其中一个改名\n  help: 或者如果是残留，删掉重复的导出\n"
+}

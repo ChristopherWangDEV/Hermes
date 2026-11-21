@@ -1,0 +1,24 @@
+{
+  "code": "E3108",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "bad": "V_bad",
+    "licence": "V_licence",
+    "name": "V_name",
+    "reason": "V_reason",
+    "source": "V_source"
+  },
+  "message": "hermes compile: V_bad 是 V_name 运行时（V_licence）：V_reason（出处：V_source）",
+  "why": "许可证红线是一个闭集，在**计划面**上再查一次是纵深防御：--link-* 的输入在构造计划前已经过闸，但内置网络归档是另一条输入路径。命中意味着这份产物会静态带上一份许可证不允许分发的运行时。判据是\"哪个运行时进了链接\"，不是符号长什么样——名字修饰既会误报也会漏报。",
+  "fix": [
+    "改链一个许可证允许分发的等价实现",
+    "读消息里 (source: …) 那个出处——每条规则自带权威链接，豁免条件就写在那里"
+  ],
+  "text": "error[E3108]: hermes compile: V_bad 是 V_name 运行时（V_licence）：V_reason（出处：V_source）\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 许可证红线是一个闭集，在**计划面**上再查一次是纵深防御：--link-* 的输入在构造计划前已经过闸，但内置网络归档是另一条输入路径。命中意味着这份产物会静态带上一份许可证不允许分发的运行时。判据是\"哪个运行时进了链接\"，不是符号长什么样——名字修饰既会误报也会漏报。\n  help: 改链一个许可证允许分发的等价实现\n  help: 读消息里 (source: …) 那个出处——每条规则自带权威链接，豁免条件就写在那里\n"
+}

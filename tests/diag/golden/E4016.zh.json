@@ -1,0 +1,18 @@
+{
+  "code": "E4016",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "该类型没有这个字段",
+  "why": "字段访问按固定偏移读槽位；类型没声明的字段会读到从未布局的字节，因此无法编译。",
+  "fix": [
+    "使用该类型已声明的字段",
+    "或者把该字段加进 struct 声明"
+  ],
+  "text": "error[E4016]: 该类型没有这个字段\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 字段访问按固定偏移读槽位；类型没声明的字段会读到从未布局的字节，因此无法编译。\n  help: 使用该类型已声明的字段\n  help: 或者把该字段加进 struct 声明\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E2017",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "tool.call 的 method 不是合法的 HTTP 方法",
+  "why": "只识别标准方法；未知方法无法归入幂等类别，重试安全性就无法证明。",
+  "fix": [
+    "用 GET、HEAD、POST、PUT、PATCH 或 DELETE",
+    "检查是否拼错或大小写不对"
+  ],
+  "text": "error[E2017]: tool.call 的 method 不是合法的 HTTP 方法\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 只识别标准方法；未知方法无法归入幂等类别，重试安全性就无法证明。\n  help: 用 GET、HEAD、POST、PUT、PATCH 或 DELETE\n  help: 检查是否拼错或大小写不对\n"
+}

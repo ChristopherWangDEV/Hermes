@@ -1,0 +1,21 @@
+{
+  "code": "E_IR_DYNAMIC_CALL",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "fn": "V_fn",
+    "where": "V_where"
+  },
+  "message": "非递归函数 V_fn 在 V_where 处通过 call_fn 调用：编译模式必须把它展开",
+  "why": "Hermes 是编译型语言：非递归函数在编译期展开，运行期没有动态派发。指向非递归函数的 call_fn 说明 IR 来自旧编译器、被手改过，或者 codegen 有 bug。放行它等于在上界本该静态的地方悄悄恢复动态派发。",
+  "fix": [
+    "用当前编译器重新生成 IR（非递归调用会被内联）",
+    "如果 V_fn 确实递归，把它标成 recursive —— 深度上限 512 是唯一的运行期闸"
+  ],
+  "text": "error[E_IR_DYNAMIC_CALL]: 非递归函数 V_fn 在 V_where 处通过 call_fn 调用：编译模式必须把它展开\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Hermes 是编译型语言：非递归函数在编译期展开，运行期没有动态派发。指向非递归函数的 call_fn 说明 IR 来自旧编译器、被手改过，或者 codegen 有 bug。放行它等于在上界本该静态的地方悄悄恢复动态派发。\n  help: 用当前编译器重新生成 IR（非递归调用会被内联）\n  help: 如果 V_fn 确实递归，把它标成 recursive —— 深度上限 512 是唯一的运行期闸\n"
+}

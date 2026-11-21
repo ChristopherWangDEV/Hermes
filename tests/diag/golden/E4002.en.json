@@ -1,0 +1,18 @@
+{
+  "code": "E4002",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "this catch is unreachable: an earlier catch (Error e) already catches everything",
+  "why": "Catch arms are tried in order; a catch (Error) before a narrower catch swallows every error, so the later arm can never run.",
+  "fix": [
+    "move the broad catch (Error) to the end",
+    "or remove the unreachable arm"
+  ],
+  "text": "error[E4002]: this catch is unreachable: an earlier catch (Error e) already catches everything\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Catch arms are tried in order; a catch (Error) before a narrower catch swallows every error, so the later arm can never run.\n  help: move the broad catch (Error) to the end\n  help: or remove the unreachable arm\n"
+}

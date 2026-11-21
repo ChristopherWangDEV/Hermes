@@ -1,0 +1,18 @@
+{
+  "code": "E2017",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "tool.call method is not a valid HTTP method",
+  "why": "Only the standard methods are recognized; an unknown method cannot be mapped to an idempotency class, so retry safety cannot be proven.",
+  "fix": [
+    "use GET, HEAD, POST, PUT, PATCH, or DELETE",
+    "check for a typo or wrong casing"
+  ],
+  "text": "error[E2017]: tool.call method is not a valid HTTP method\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Only the standard methods are recognized; an unknown method cannot be mapped to an idempotency class, so retry safety cannot be proven.\n  help: use GET, HEAD, POST, PUT, PATCH, or DELETE\n  help: check for a typo or wrong casing\n"
+}

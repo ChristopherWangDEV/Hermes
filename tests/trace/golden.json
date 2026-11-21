@@ -1,0 +1,88 @@
+[
+  {
+    "name": "verify-ok",
+    "args": [
+      "verify",
+      "t1.json"
+    ],
+    "exit": 0,
+    "stdout": "OK\n  root      bced2ea02a5c857515864e108865a7d3d979ca3c535440e3032449187e999d17\n  blocks    1\n  total_len 186\n",
+    "stderr": ""
+  },
+  {
+    "name": "verify-ok-json",
+    "args": [
+      "verify",
+      "t1.json",
+      "--json"
+    ],
+    "exit": 0,
+    "stdout": "{\"blocks\":1,\"root\":\"bced2ea02a5c857515864e108865a7d3d979ca3c535440e3032449187e999d17\",\"total_len\":186,\"truncated\":false,\"verified\":true}\n",
+    "stderr": ""
+  },
+  {
+    "name": "verify-tampered",
+    "args": [
+      "verify",
+      "tampered.json"
+    ],
+    "exit": 4,
+    "stdout": "",
+    "stderr": "FAIL: trace tampered at block 0 (want de5dee345ed5e355d087b54a152861eb4da498befe22a70d8b48126406f8b2ae, got fb487ca029bbf052426b85fd97e87497ae8c3fb66368ea26ba707b7833349aed)\n"
+  },
+  {
+    "name": "verify-tampered-json",
+    "args": [
+      "verify",
+      "tampered.json",
+      "--json"
+    ],
+    "exit": 4,
+    "stdout": "{\"block\":0,\"detail\":\"\",\"got\":\"fb487ca029bbf052426b85fd97e87497ae8c3fb66368ea26ba707b7833349aed\",\"verified\":false,\"want\":\"de5dee345ed5e355d087b54a152861eb4da498befe22a70d8b48126406f8b2ae\"}\n",
+    "stderr": "FAIL: trace tampered at block 0 (want de5dee345ed5e355d087b54a152861eb4da498befe22a70d8b48126406f8b2ae, got fb487ca029bbf052426b85fd97e87497ae8c3fb66368ea26ba707b7833349aed)\n"
+  },
+  {
+    "name": "summary",
+    "args": [
+      "summary",
+      "t1.json"
+    ],
+    "exit": 0,
+    "stdout": "run        \nspans      1\nfailed_at  - (no failed step)\ncalls      provider=0 tool=0\ntokens     in=0 out=0\ncost       0 micro-USD\n",
+    "stderr": ""
+  },
+  {
+    "name": "summary-json",
+    "args": [
+      "summary",
+      "t1.json",
+      "--json"
+    ],
+    "exit": 0,
+    "stdout": "{\"run_id\":\"\",\"spans\":1,\"failed_step\":\"\",\"failed_span\":\"\",\"attribution\":\"\",\"micro_usd\":0,\"tokens_in\":0,\"tokens_out\":0,\"provider_calls\":0,\"tool_calls\":0,\"truncated\":false}\n",
+    "stderr": ""
+  },
+  {
+    "name": "diff",
+    "args": [
+      "diff",
+      "t1.json",
+      "t2.json"
+    ],
+    "exit": 0,
+    "stdout": "tokens +0, cost micro_usd +0, failed 0 -\u003e 0\n",
+    "stderr": ""
+  },
+  {
+    "name": "diff-json",
+    "args": [
+      "diff",
+      "t1.json",
+      "t2.json",
+      "--json"
+    ],
+    "exit": 0,
+    "stdout": "{\n  \"OnlyLeft\": null,\n  \"OnlyRight\": null,\n  \"Changed\": null,\n  \"TokenDelta\": 0,\n  \"CostDelta\": 0,\n  \"FailedLeft\": 0,\n  \"FailedRight\": 0\n}\n",
+    "stderr": ""
+  }
+]

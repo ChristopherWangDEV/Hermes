@@ -1,0 +1,18 @@
+{
+  "code": "E3023",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "the input argument must have a type",
+  "why": "input's type is the request contract; without it the decoder has no schema to check the incoming body against.",
+  "fix": [
+    "annotate the type: input: Req",
+    "give the struct a matching schema"
+  ],
+  "text": "error[E3023]: the input argument must have a type\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: input's type is the request contract; without it the decoder has no schema to check the incoming body against.\n  help: annotate the type: input: Req\n  help: give the struct a matching schema\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E3020",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a header (.h) cannot contain a backend definition",
+  "why": "A backend definition names an address and a secret source — implementation, not interface; putting it in a header gives every includer its own copy.",
+  "fix": [
+    "move the backend definition to the .hermes implementation",
+    "keep only a declaration in the header if needed"
+  ],
+  "text": "error[E3020]: a header (.h) cannot contain a backend definition\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A backend definition names an address and a secret source — implementation, not interface; putting it in a header gives every includer its own copy.\n  help: move the backend definition to the .hermes implementation\n  help: keep only a declaration in the header if needed\n"
+}

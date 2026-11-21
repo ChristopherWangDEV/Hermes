@@ -1,0 +1,18 @@
+{
+  "code": "E4033",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "不能用 == 或 != 比较两个 double",
+  "why": "二进制浮点的精确相等不是一个稳定谓词，编译期证不出来，所以直接拒，而不是让它静默返回 false。舍入会让两个数学上相等的值比出不相等，NaN 与自己也不相等：`x == x` 可能为假，而 `x != x` 悄悄成了语言里唯一的 NaN 判据。",
+  "fix": [
+    "把值保持在精确单位上（int 微单位或 `cost`）再比",
+    "或者用显式容差比较：可以写 `double` 字面量，也可以取自输入（如 `json.as_float(input.eps)`）；相等比较本身仍然被拒"
+  ],
+  "text": "error[E4033]: 不能用 == 或 != 比较两个 double\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 二进制浮点的精确相等不是一个稳定谓词，编译期证不出来，所以直接拒，而不是让它静默返回 false。舍入会让两个数学上相等的值比出不相等，NaN 与自己也不相等：`x == x` 可能为假，而 `x != x` 悄悄成了语言里唯一的 NaN 判据。\n  help: 把值保持在精确单位上（int 微单位或 `cost`）再比\n  help: 或者用显式容差比较：可以写 `double` 字面量，也可以取自输入（如 `json.as_float(input.eps)`）；相等比较本身仍然被拒\n"
+}

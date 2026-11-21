@@ -1,0 +1,18 @@
+{
+  "code": "E3026",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "workflow 的形参只支持 \"input\" 与 \"backend\" 两种，其余不支持",
+  "why": "workflow 签名在本语言里是**链接期契约**，不是可调用接口：语言没有跨 workflow 调用，所以具名形参没有调用方，也就**没有任何取值来源**。宿主只提供一份 payload，那份 payload 就是 `input`；`backend` 则在编译期选后端。放行 `n: int` 的结果是\"编得过、永远跑不起来\"，而运行期那句报错的措辞像是编译器出了故障——把语言设计的缺口藏在编译器背后。",
+  "fix": [
+    "把值放进 `input` 的类型里，用 `input.\u003c字段\u003e` 读",
+    "或者你本来是想选一个 backend，那就写 `backend = \u003c已声明的 backend 名\u003e`"
+  ],
+  "text": "error[E3026]: workflow 的形参只支持 \"input\" 与 \"backend\" 两种，其余不支持\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: workflow 签名在本语言里是**链接期契约**，不是可调用接口：语言没有跨 workflow 调用，所以具名形参没有调用方，也就**没有任何取值来源**。宿主只提供一份 payload，那份 payload 就是 `input`；`backend` 则在编译期选后端。放行 `n: int` 的结果是\"编得过、永远跑不起来\"，而运行期那句报错的措辞像是编译器出了故障——把语言设计的缺口藏在编译器背后。\n  help: 把值放进 `input` 的类型里，用 `input.\u003c字段\u003e` 读\n  help: 或者你本来是想选一个 backend，那就写 `backend = \u003c已声明的 backend 名\u003e`\n"
+}

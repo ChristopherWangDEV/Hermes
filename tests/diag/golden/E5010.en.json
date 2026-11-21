@@ -1,0 +1,18 @@
+{
+  "code": "E5010",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "cannot write to an outer variable inside `parallel`",
+  "why": "Parallel branches run concurrently; writing a variable declared outside the block is a data race whose result depends on scheduling, so it is rejected.",
+  "fix": [
+    "return a value from each branch and merge after parallel",
+    "or use a variable declared inside the branch"
+  ],
+  "text": "error[E5010]: cannot write to an outer variable inside `parallel`\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Parallel branches run concurrently; writing a variable declared outside the block is a data race whose result depends on scheduling, so it is rejected.\n  help: return a value from each branch and merge after parallel\n  help: or use a variable declared inside the branch\n"
+}

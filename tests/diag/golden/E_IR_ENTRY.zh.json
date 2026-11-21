@@ -1,0 +1,21 @@
+{
+  "code": "E_IR_ENTRY",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "name": "V_name",
+    "reason": "V_reason"
+  },
+  "message": "V_reason（workflow V_name）",
+  "why": "入口选择必须唯一：不带 --workflow 的 `hermes run` 会选唯一的那个导出入口。零个候选意味着没东西可跑；两个意味着选择是抛硬币，产物不可重现。",
+  "fix": [
+    "给恰好一个导出的 workflow 打上 `entry`",
+    "或者在运行时显式传 --workflow \u003cname\u003e"
+  ],
+  "text": "error[E_IR_ENTRY]: V_reason（workflow V_name）\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 入口选择必须唯一：不带 --workflow 的 `hermes run` 会选唯一的那个导出入口。零个候选意味着没东西可跑；两个意味着选择是抛硬币，产物不可重现。\n  help: 给恰好一个导出的 workflow 打上 `entry`\n  help: 或者在运行时显式传 --workflow \u003cname\u003e\n"
+}

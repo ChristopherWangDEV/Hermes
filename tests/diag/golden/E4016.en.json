@@ -1,0 +1,18 @@
+{
+  "code": "E4016",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "the type has no such field",
+  "why": "Field access reads a slot at a fixed offset; a field the type does not declare would read bytes that were never laid out, so the access cannot be compiled.",
+  "fix": [
+    "use one of the type's declared fields",
+    "or add the field to the struct declaration"
+  ],
+  "text": "error[E4016]: the type has no such field\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Field access reads a slot at a fixed offset; a field the type does not declare would read bytes that were never laid out, so the access cannot be compiled.\n  help: use one of the type's declared fields\n  help: or add the field to the struct declaration\n"
+}

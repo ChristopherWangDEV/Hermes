@@ -1,0 +1,18 @@
+{
+  "code": "E1006",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "amount has more than 6 decimal places (micro-USD limit)",
+  "why": "cost is micro-USD and allows at most 6 decimal places; anything finer cannot be represented and would be silently rounded.",
+  "fix": [
+    "round the amount to 6 decimal places",
+    "or express it in micro-USD integers directly"
+  ],
+  "text": "error[E1006]: amount has more than 6 decimal places (micro-USD limit)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: cost is micro-USD and allows at most 6 decimal places; anything finer cannot be represented and would be silently rounded.\n  help: round the amount to 6 decimal places\n  help: or express it in micro-USD integers directly\n"
+}

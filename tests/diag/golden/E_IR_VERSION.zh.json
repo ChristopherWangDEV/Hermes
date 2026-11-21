@@ -1,0 +1,22 @@
+{
+  "code": "E_IR_VERSION",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "field": "V_field",
+    "got": "V_got",
+    "want": "V_want"
+  },
+  "message": "V_field 是 V_got，但本版本只接受 V_want（Hermes 2.0.0 及之后）",
+  "why": "IR 有意不做向前兼容：2.x 只读 2.0.0 及之后产出的东西。接受更旧的产物，等于按现在的含义去解释语义已经变过的字段 —— 一个看起来像正确答案的错误答案。没有迁移路径是有意的：1.x 的产物被明确拒绝，而不是被静默误读。",
+  "fix": [
+    "用这个编译器（2.0.0+）重新编译源码",
+    "确实要跑 1.x 产物的话，用 1.x 的二进制 —— 不要手改版本字段"
+  ],
+  "text": "error[E_IR_VERSION]: V_field 是 V_got，但本版本只接受 V_want（Hermes 2.0.0 及之后）\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: IR 有意不做向前兼容：2.x 只读 2.0.0 及之后产出的东西。接受更旧的产物，等于按现在的含义去解释语义已经变过的字段 —— 一个看起来像正确答案的错误答案。没有迁移路径是有意的：1.x 的产物被明确拒绝，而不是被静默误读。\n  help: 用这个编译器（2.0.0+）重新编译源码\n  help: 确实要跑 1.x 产物的话，用 1.x 的二进制 —— 不要手改版本字段\n"
+}

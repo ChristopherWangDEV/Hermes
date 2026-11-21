@@ -1,0 +1,22 @@
+{
+  "code": "E_IR_CYCLE",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "chain": "V_chain",
+    "edge": "V_edge",
+    "wf": "V_wf"
+  },
+  "message": "workflow V_wf 的节点图有环 —— V_chain",
+  "why": "IR 必须是有向无环图（IR.md V-3）。有环意味着执行器可以永远重新进入同一个节点，于是超时和预算都兜不住 —— 它只能被外部杀掉，而不是自己停下来。",
+  "fix": [
+    "删掉 V_edge 这条边来打破环",
+    "如果要重复执行，用 `retry` —— 它是有界的，而图本身必须无环"
+  ],
+  "text": "error[E_IR_CYCLE]: workflow V_wf 的节点图有环 —— V_chain\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: IR 必须是有向无环图（IR.md V-3）。有环意味着执行器可以永远重新进入同一个节点，于是超时和预算都兜不住 —— 它只能被外部杀掉，而不是自己停下来。\n  help: 删掉 V_edge 这条边来打破环\n  help: 如果要重复执行，用 `retry` —— 它是有界的，而图本身必须无环\n"
+}

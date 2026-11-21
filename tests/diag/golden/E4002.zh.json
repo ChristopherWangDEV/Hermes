@@ -1,0 +1,18 @@
+{
+  "code": "E4002",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "这个 catch 不可达：前面的 catch (Error e) 已经能捕获一切",
+  "why": "catch 分支按顺序匹配；catch (Error) 放在更窄的分支之前会吞掉所有错误，后面的分支永远跑不到。",
+  "fix": [
+    "把宽的 catch (Error) 挪到最后",
+    "或者删掉这个不可达的分支"
+  ],
+  "text": "error[E4002]: 这个 catch 不可达：前面的 catch (Error e) 已经能捕获一切\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: catch 分支按顺序匹配；catch (Error) 放在更窄的分支之前会吞掉所有错误，后面的分支永远跑不到。\n  help: 把宽的 catch (Error) 挪到最后\n  help: 或者删掉这个不可达的分支\n"
+}

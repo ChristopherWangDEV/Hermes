@@ -1,0 +1,20 @@
+{
+  "code": "E3030",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "type": "V_type"
+  },
+  "message": "type V_type cannot cross the C ABI boundary",
+  "why": "only int, bool, string, double, cost, and opaque structs have a stable C layout; json, vector\u003cT\u003e, and generics do not",
+  "fix": [
+    "use a supported C-ABI type: int, bool, string, double, cost, or an opaque struct",
+    "pass the value inside a struct and cross the boundary by opaque pointer"
+  ],
+  "text": "error[E3030]: type V_type cannot cross the C ABI boundary\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: only int, bool, string, double, cost, and opaque structs have a stable C layout; json, vector\u003cT\u003e, and generics do not\n  help: use a supported C-ABI type: int, bool, string, double, cost, or an opaque struct\n  help: pass the value inside a struct and cross the boundary by opaque pointer\n"
+}

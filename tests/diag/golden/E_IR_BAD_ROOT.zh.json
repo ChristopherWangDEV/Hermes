@@ -1,0 +1,22 @@
+{
+  "code": "E_IR_BAD_ROOT",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "reason": "V_reason",
+    "root": "V_root",
+    "wf": "V_wf"
+  },
+  "message": "workflow V_wf：root=V_root，但 V_reason",
+  "why": "执行器从 root 开始，并在那里期待一个语句列表，也就是 k=\"seq\" 的节点。其他 kind 没有定义好的入口语义，跑起来第一步就是未定义行为。",
+  "fix": [
+    "把 root 指向第一个 `seq` 节点",
+    "或者如果 workflow 只有一条语句，把它包进一个 `seq` 节点"
+  ],
+  "text": "error[E_IR_BAD_ROOT]: workflow V_wf：root=V_root，但 V_reason\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 执行器从 root 开始，并在那里期待一个语句列表，也就是 k=\"seq\" 的节点。其他 kind 没有定义好的入口语义，跑起来第一步就是未定义行为。\n  help: 把 root 指向第一个 `seq` 节点\n  help: 或者如果 workflow 只有一条语句，把它包进一个 `seq` 节点\n"
+}

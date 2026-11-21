@@ -1,0 +1,18 @@
+{
+  "code": "E4027",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "an if/while condition must be bool",
+  "why": "A condition is a control-flow branch point and the language has no truthiness; int/string/json/cost have no notion of being true, so an implicit rule would be undefined at runtime.",
+  "fix": [
+    "compare explicitly: x != 0, or s != a quoted empty string",
+    "or produce a bool from the expression"
+  ],
+  "text": "error[E4027]: an if/while condition must be bool\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A condition is a control-flow branch point and the language has no truthiness; int/string/json/cost have no notion of being true, so an implicit rule would be undefined at runtime.\n  help: compare explicitly: x != 0, or s != a quoted empty string\n  help: or produce a bool from the expression\n"
+}

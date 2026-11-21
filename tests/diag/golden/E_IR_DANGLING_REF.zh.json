@@ -1,0 +1,24 @@
+{
+  "code": "E_IR_DANGLING_REF",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "id": "V_id",
+    "path": "V_path",
+    "range": "V_range",
+    "table": "V_table",
+    "what": "V_what"
+  },
+  "message": "V_what 指向 V_id，但 V_table 只有 V_range",
+  "why": "IR 里每个引用位置上的 id 都必须落在它所指的那张表内。悬空意味着这份 IR 被截断过、被手改过，或者产它的前端差了一个版本。",
+  "fix": [
+    "删掉 V_path 处的这个引用",
+    "或者补上缺失的条目 —— 表必须与它的引用保持一致"
+  ],
+  "text": "error[E_IR_DANGLING_REF]: V_what 指向 V_id，但 V_table 只有 V_range\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: IR 里每个引用位置上的 id 都必须落在它所指的那张表内。悬空意味着这份 IR 被截断过、被手改过，或者产它的前端差了一个版本。\n  help: 删掉 V_path 处的这个引用\n  help: 或者补上缺失的条目 —— 表必须与它的引用保持一致\n"
+}

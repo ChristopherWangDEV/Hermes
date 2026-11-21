@@ -1,0 +1,20 @@
+{
+  "code": "E3103",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "lib": "V_lib"
+  },
+  "message": "hermes compile: \"V_lib\" carries a Go runtime but is not in the g* namespace. Rename it to glibhermesnet.a (or gnet.a) so the target gate can see it; all Go-runtime libraries must start with 'g'.",
+  "why": "The g* prefix is a declaration, not a heuristic scan of file contents: the compiler is entitled to treat every g* library as Go-runtime-bearing, and that naming is the only thing the bare-metal gate reads. A Go archive without the prefix is invisible to the gate, so it can walk a Go runtime into firmware — and the run time would die from the missing OS, not from a build error.",
+  "fix": [
+    "rename the archive to glibhermesnet.a (or gnet.a) and rebuild the plan",
+    "if it is really a pure C/Rust library, do not occupy the g* namespace — both sides of the contract are declarations, not scans"
+  ],
+  "text": "error[E3103]: hermes compile: \"V_lib\" carries a Go runtime but is not in the g* namespace. Rename it to glibhermesnet.a (or gnet.a) so the target gate can see it; all Go-runtime libraries must start with 'g'.\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The g* prefix is a declaration, not a heuristic scan of file contents: the compiler is entitled to treat every g* library as Go-runtime-bearing, and that naming is the only thing the bare-metal gate reads. A Go archive without the prefix is invisible to the gate, so it can walk a Go runtime into firmware — and the run time would die from the missing OS, not from a build error.\n  help: rename the archive to glibhermesnet.a (or gnet.a) and rebuild the plan\n  help: if it is really a pure C/Rust library, do not occupy the g* namespace — both sides of the contract are declarations, not scans\n"
+}

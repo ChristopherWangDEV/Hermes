@@ -1,0 +1,18 @@
+{
+  "code": "E4033",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "cannot compare two doubles with == or !=",
+  "why": "Exact equality on binary floating point is not a stable predicate, so it cannot be proven at compile time and is rejected instead of silently returning false. Rounding makes two mathematically equal values compare unequal, and NaN is unequal to itself: `x == x` can be false, and `x != x` quietly becomes the only NaN test in the language.",
+  "fix": [
+    "keep the value in exact units (int micro-units, or `cost`) and compare that",
+    "or compare with an explicit tolerance: use a `double` literal or a value from the input, e.g. `json.as_float(input.eps)`; equality itself is still rejected"
+  ],
+  "text": "error[E4033]: cannot compare two doubles with == or !=\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Exact equality on binary floating point is not a stable predicate, so it cannot be proven at compile time and is rejected instead of silently returning false. Rounding makes two mathematically equal values compare unequal, and NaN is unequal to itself: `x == x` can be false, and `x != x` quietly becomes the only NaN test in the language.\n  help: keep the value in exact units (int micro-units, or `cost`) and compare that\n  help: or compare with an explicit tolerance: use a `double` literal or a value from the input, e.g. `json.as_float(input.eps)`; equality itself is still rejected\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E4018",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "`match` has no `default` branch",
+  "why": "Exhaustiveness cannot be proven for string subjects, so a match without default would have an undefined result for an unmatched value.",
+  "fix": [
+    "add a default: arm",
+    "or narrow the subject so the cases are provably exhaustive"
+  ],
+  "text": "error[E4018]: `match` has no `default` branch\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Exhaustiveness cannot be proven for string subjects, so a match without default would have an undefined result for an unmatched value.\n  help: add a default: arm\n  help: or narrow the subject so the cases are provably exhaustive\n"
+}

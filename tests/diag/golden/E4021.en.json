@@ -1,0 +1,18 @@
+{
+  "code": "E4021",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "return type mismatch: the returned value does not match the declared return type",
+  "why": "The declared return type is the workflow's contract — callers, the linker, and the IR schema all rely on it; a different value breaks all of them.",
+  "fix": [
+    "return a value of the declared type",
+    "or change the declaration to the type you return"
+  ],
+  "text": "error[E4021]: return type mismatch: the returned value does not match the declared return type\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The declared return type is the workflow's contract — callers, the linker, and the IR schema all rely on it; a different value breaks all of them.\n  help: return a value of the declared type\n  help: or change the declaration to the type you return\n"
+}

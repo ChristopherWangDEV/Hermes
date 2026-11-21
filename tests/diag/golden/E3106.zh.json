@@ -1,0 +1,21 @@
+{
+  "code": "E3106",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "lib": "V_lib",
+    "target": "V_target"
+  },
+  "message": "hermes compile: 裸机目标 V_target 只能链静态 .a 归档；--link-static \"V_lib\" 不是静态归档。请把它重建成纯 C/Rust 的 .a。",
+  "why": "裸机分支里，链接计划只装你点名的静态归档——没有动态库、没有 framework、没有加载器。不是 .a 的路径（.so/.dylib、目标文件、目录）没有归档索引可供解析 hermes_net_* 或你的 extern 符号，于是链接报的是未解析符号，离真正的原因很远。",
+  "fix": [
+    "用 clang -c 加 ar rcs 重建成纯 C/Rust 的 .a",
+    "或者把 --link-static 指向一个本来就以归档形式发布的等价库"
+  ],
+  "text": "error[E3106]: hermes compile: 裸机目标 V_target 只能链静态 .a 归档；--link-static \"V_lib\" 不是静态归档。请把它重建成纯 C/Rust 的 .a。\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 裸机分支里，链接计划只装你点名的静态归档——没有动态库、没有 framework、没有加载器。不是 .a 的路径（.so/.dylib、目标文件、目录）没有归档索引可供解析 hermes_net_* 或你的 extern 符号，于是链接报的是未解析符号，离真正的原因很远。\n  help: 用 clang -c 加 ar rcs 重建成纯 C/Rust 的 .a\n  help: 或者把 --link-static 指向一个本来就以归档形式发布的等价库\n"
+}

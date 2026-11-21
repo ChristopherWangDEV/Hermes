@@ -1,0 +1,23 @@
+{
+  "code": "E_IR_BAD_LOC",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "count": "V_count",
+    "last": "V_last",
+    "m": "V_m",
+    "what": "V_what"
+  },
+  "message": "V_what：loc.m=V_m，但 unit 只有 V_count 个模块（0..V_last）",
+  "why": "loc.m 是 unit.modules[] 的下标。越界会让**诊断渲染器自己崩掉** —— 加载器在试图报告一个失败时失败，你看到的会是 panic 而不是这条消息。",
+  "fix": [
+    "修产生方的 loc.m —— 这几乎总是前端 bug，不是手改 IR",
+    "如果是手工编辑过的 IR，重新生成一份"
+  ],
+  "text": "error[E_IR_BAD_LOC]: V_what：loc.m=V_m，但 unit 只有 V_count 个模块（0..V_last）\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: loc.m 是 unit.modules[] 的下标。越界会让**诊断渲染器自己崩掉** —— 加载器在试图报告一个失败时失败，你看到的会是 panic 而不是这条消息。\n  help: 修产生方的 loc.m —— 这几乎总是前端 bug，不是手改 IR\n  help: 如果是手工编辑过的 IR，重新生成一份\n"
+}

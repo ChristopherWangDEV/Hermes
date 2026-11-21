@@ -1,0 +1,18 @@
+{
+  "code": "E_IR_ASSIGN_IMMUTABLE",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "不能修改 const 变量",
+  "why": "`decl` 节点带 const:true（IR.md §4.2）表示这个绑定永不改变；只有 `auto` 声明的变量可以被赋值。这条在**装配期**判，不在运行期：晚判意味着错误的程序能编过，只在跑到那一行时才失败。它是少数几条用户真能自己修的加载期诊断，所以汇编阶段把它报成用户错误，而不是编译器 bug。",
+  "fix": [
+    "去掉 `const`，或者改成给一个新变量赋值",
+    "如果这份 IR 不是 `hermes ir` 产出的，重新生成一份——const 的 `decl` 后面跟着一条指向它的 `assign`，只可能来自手改"
+  ],
+  "text": "error[E_IR_ASSIGN_IMMUTABLE]: 不能修改 const 变量\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `decl` 节点带 const:true（IR.md §4.2）表示这个绑定永不改变；只有 `auto` 声明的变量可以被赋值。这条在**装配期**判，不在运行期：晚判意味着错误的程序能编过，只在跑到那一行时才失败。它是少数几条用户真能自己修的加载期诊断，所以汇编阶段把它报成用户错误，而不是编译器 bug。\n  help: 去掉 `const`，或者改成给一个新变量赋值\n  help: 如果这份 IR 不是 `hermes ir` 产出的，重新生成一份——const 的 `decl` 后面跟着一条指向它的 `assign`，只可能来自手改\n"
+}

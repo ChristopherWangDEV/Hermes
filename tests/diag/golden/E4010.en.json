@@ -1,0 +1,18 @@
+{
+  "code": "E4010",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "cannot compare two values of different types with == or !=",
+  "why": "Equality requires both operands to be the same type; comparing across types has no single meaning and would need a hidden coercion.",
+  "fix": [
+    "compare values of the same type",
+    "convert one side explicitly to match"
+  ],
+  "text": "error[E4010]: cannot compare two values of different types with == or !=\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Equality requires both operands to be the same type; comparing across types has no single meaning and would need a hidden coercion.\n  help: compare values of the same type\n  help: convert one side explicitly to match\n"
+}

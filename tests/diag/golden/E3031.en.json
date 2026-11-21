@@ -1,0 +1,20 @@
+{
+  "code": "E3031",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "sym": "V_sym"
+  },
+  "message": "extern declaration V_sym has no matching #link native",
+  "why": "an extern symbol's implementation must come from a native archive named by #link native; without it the linker cannot resolve the symbol",
+  "fix": [
+    "add '#link native \"\u003carchive\u003e\" from \"\u003cheader\u003e\";' in the same compilation unit",
+    "make sure the extern symbol name matches a symbol exported by that archive"
+  ],
+  "text": "error[E3031]: extern declaration V_sym has no matching #link native\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: an extern symbol's implementation must come from a native archive named by #link native; without it the linker cannot resolve the symbol\n  help: add '#link native \"\u003carchive\u003e\" from \"\u003cheader\u003e\";' in the same compilation unit\n  help: make sure the extern symbol name matches a symbol exported by that archive\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "W2004",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "max_steps = unlimited：该 agent 的步数没有静态可证的上界",
+  "why": "步数无限时 max_spans 不再是可证的 trace 上界、预算无法预留，只剩运行期硬上限。",
+  "fix": [
+    "需要可证上界就设具体 max_steps",
+    "只有当你本就以运行期上限为闸时才接受它"
+  ],
+  "text": "error[W2004]: max_steps = unlimited：该 agent 的步数没有静态可证的上界\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 步数无限时 max_spans 不再是可证的 trace 上界、预算无法预留，只剩运行期硬上限。\n  help: 需要可证上界就设具体 max_steps\n  help: 只有当你本就以运行期上限为闸时才接受它\n"
+}

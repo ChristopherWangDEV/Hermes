@@ -1,0 +1,18 @@
+{
+  "code": "E5007",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "`retry` 内的工具调用没有幂等证明",
+  "why": "retry 在遇到 RunError 时重跑整个 body；未证明幂等的 call_tool 会把同一个 POST 再发一遍——重复扣款、重复副作用。",
+  "fix": [
+    "把该调用移出 retry 子树",
+    "或者给工具真证明（GET/HEAD、idempotent = true，或纯 idem_key）"
+  ],
+  "text": "error[E5007]: `retry` 内的工具调用没有幂等证明\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: retry 在遇到 RunError 时重跑整个 body；未证明幂等的 call_tool 会把同一个 POST 再发一遍——重复扣款、重复副作用。\n  help: 把该调用移出 retry 子树\n  help: 或者给工具真证明（GET/HEAD、idempotent = true，或纯 idem_key）\n"
+}

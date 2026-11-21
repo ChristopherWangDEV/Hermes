@@ -1,0 +1,18 @@
+{
+  "code": "E3016",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "tool.call 需要 #link \u003cstd/net\u003e；model.generate 需要 #link \u003cstd/model\u003e",
+  "why": "内置能力不是默认存在的：网络与模型原语只有在本单元链接了对应 stdlib 模块时才可用，未链接的调用没有实现。",
+  "fix": [
+    "tool.call 加 #link \u003cstd/net\u003e;",
+    "model.generate 加 #link \u003cstd/model\u003e;"
+  ],
+  "text": "error[E3016]: tool.call 需要 #link \u003cstd/net\u003e；model.generate 需要 #link \u003cstd/model\u003e\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 内置能力不是默认存在的：网络与模型原语只有在本单元链接了对应 stdlib 模块时才可用，未链接的调用没有实现。\n  help: tool.call 加 #link \u003cstd/net\u003e;\n  help: model.generate 加 #link \u003cstd/model\u003e;\n"
+}

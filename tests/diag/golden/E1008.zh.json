@@ -1,0 +1,18 @@
+{
+  "code": "E1008",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "非法的字符串转义或插值",
+  "why": "转义与插值必须符合语法；写坏了一个就解码不出来，跨行的字符串还会吞掉后面的代码。",
+  "fix": [
+    "合法转义：\\\\ \\\" \\n \\r \\t，以及带 4 位十六进制的 \\u 转义",
+    "插值必须是纯路径，如 input.text"
+  ],
+  "text": "error[E1008]: 非法的字符串转义或插值\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 转义与插值必须符合语法；写坏了一个就解码不出来，跨行的字符串还会吞掉后面的代码。\n  help: 合法转义：\\\\ \\\" \\n \\r \\t，以及带 4 位十六进制的 \\u 转义\n  help: 插值必须是纯路径，如 input.text\n"
+}

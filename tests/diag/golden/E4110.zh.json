@@ -1,0 +1,20 @@
+{
+  "code": "E4110",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "sig": "V_sig"
+  },
+  "message": "同一作用域里 `V_sig` 有两个 handler",
+  "why": "handler 是按作用域收集的。同一个信号在同一个作用域里有两个，两者都是候选，而跑哪个由绑定顺序决定——那不是读者看得见的东西，程序行为就依赖了一个隐形的次序。",
+  "fix": [
+    "把两个 handler 合并成一个",
+    "或者把其中一个挪进嵌套块——表是按作用域算的，嵌套作用域可以自己再声明一个"
+  ],
+  "text": "error[E4110]: 同一作用域里 `V_sig` 有两个 handler\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: handler 是按作用域收集的。同一个信号在同一个作用域里有两个，两者都是候选，而跑哪个由绑定顺序决定——那不是读者看得见的东西，程序行为就依赖了一个隐形的次序。\n  help: 把两个 handler 合并成一个\n  help: 或者把其中一个挪进嵌套块——表是按作用域算的，嵌套作用域可以自己再声明一个\n"
+}

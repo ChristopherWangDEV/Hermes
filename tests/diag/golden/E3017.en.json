@@ -1,0 +1,18 @@
+{
+  "code": "E3017",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "#link is only allowed in .hermes files",
+  "why": "Linking chooses an implementation; headers describe interfaces and are included many times, so a #link there would pull one implementation into every includer.",
+  "fix": [
+    "move the #link into the .hermes implementation",
+    "keep only #include in the header"
+  ],
+  "text": "error[E3017]: #link is only allowed in .hermes files\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Linking chooses an implementation; headers describe interfaces and are included many times, so a #link there would pull one implementation into every includer.\n  help: move the #link into the .hermes implementation\n  help: keep only #include in the header\n"
+}

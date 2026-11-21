@@ -1,0 +1,18 @@
+{
+  "code": "E4025",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "fallback return type does not match the main expression",
+  "why": "The fallback is the value used when the main expression raises; if its type differs, callers would get one of two incompatible types at runtime.",
+  "fix": [
+    "make the fallback return the same type as the main expression",
+    "or convert the fallback value to that type"
+  ],
+  "text": "error[E4025]: fallback return type does not match the main expression\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The fallback is the value used when the main expression raises; if its type differs, callers would get one of two incompatible types at runtime.\n  help: make the fallback return the same type as the main expression\n  help: or convert the fallback value to that type\n"
+}

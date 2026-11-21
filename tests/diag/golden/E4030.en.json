@@ -1,0 +1,18 @@
+{
+  "code": "E4030",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "argument type mismatch in a call",
+  "why": "A call passes a value of one type where the callee declares another; with no implicit conversion, the call cannot be compiled to the declared signature.",
+  "fix": [
+    "pass a value of the declared parameter type",
+    "or convert the argument explicitly"
+  ],
+  "text": "error[E4030]: argument type mismatch in a call\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A call passes a value of one type where the callee declares another; with no implicit conversion, the call cannot be compiled to the declared signature.\n  help: pass a value of the declared parameter type\n  help: or convert the argument explicitly\n"
+}

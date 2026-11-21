@@ -1,0 +1,18 @@
+{
+  "code": "E4007",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "an arithmetic operator was applied to a non-numeric operand (string, bool, json)",
+  "why": "Strings have no arithmetic and there is no operator overloading; concatenation is deliberately disallowed because it hides encoding and locale, and unary minus is only defined on numbers.",
+  "fix": [
+    "combine strings with interpolation (put the value inside the string) instead of an operator",
+    "narrow json to a numeric type before arithmetic (json.as_int)"
+  ],
+  "text": "error[E4007]: an arithmetic operator was applied to a non-numeric operand (string, bool, json)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Strings have no arithmetic and there is no operator overloading; concatenation is deliberately disallowed because it hides encoding and locale, and unary minus is only defined on numbers.\n  help: combine strings with interpolation (put the value inside the string) instead of an operator\n  help: narrow json to a numeric type before arithmetic (json.as_int)\n"
+}

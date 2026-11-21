@@ -1,0 +1,18 @@
+{
+  "code": "E2016",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "tool.call 的 method 必须是字符串字面量",
+  "why": "HTTP 方法决定幂等性（GET/HEAD 可安全重试）；它必须在编译期可读，所以拒绝计算出来的方法。",
+  "fix": [
+    "传字面量：tool.call(\"GET\", ...)",
+    "方法若会变，拆成几个独立调用点"
+  ],
+  "text": "error[E2016]: tool.call 的 method 必须是字符串字面量\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: HTTP 方法决定幂等性（GET/HEAD 可安全重试）；它必须在编译期可读，所以拒绝计算出来的方法。\n  help: 传字面量：tool.call(\"GET\", ...)\n  help: 方法若会变，拆成几个独立调用点\n"
+}

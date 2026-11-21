@@ -1,0 +1,18 @@
+{
+  "code": "E4104",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "这个 workflow 必须返回值",
+  "why": "声明的返回类型不是 void，于是裸写 `return;` 会让出口缺一个值，后端会发出一个结果未定义的 `ret`。workflow 体内的 `return` 就是调用方拿到的那个值。",
+  "fix": [
+    "返回一个声明类型的值",
+    "或者把 workflow 的返回类型声明成 void，并把其他每个 `return` 的值一并去掉"
+  ],
+  "text": "error[E4104]: 这个 workflow 必须返回值\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 声明的返回类型不是 void，于是裸写 `return;` 会让出口缺一个值，后端会发出一个结果未定义的 `ret`。workflow 体内的 `return` 就是调用方拿到的那个值。\n  help: 返回一个声明类型的值\n  help: 或者把 workflow 的返回类型声明成 void，并把其他每个 `return` 的值一并去掉\n"
+}

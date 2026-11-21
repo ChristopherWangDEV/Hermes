@@ -1,0 +1,26 @@
+#include "app.h"
+
+#link <std/model>
+#link <std/net>
+
+backend gateway = env("GATEWAY_URL", "http://127.0.0.1:8080");
+
+workflow triage(input: Ticket, backend = gateway) entry {
+    auto intent = model.generate<Intent>(
+        prompt = "判断这条工单该怎么处理：{input.text}",
+        precision = "exact"
+    );
+    match (intent.action) {
+        case "refund": {
+            auto answer = model.agent(
+                goal = "查订单 {intent.order_id} 的状态，然后告诉用户能不能退款",
+                tools = ["lookup_order"],
+                max_steps = 4
+            );
+            return answer;
+        }
+        default: {
+            return "已记录，稍后人工处理。";
+        }
+    }
+}

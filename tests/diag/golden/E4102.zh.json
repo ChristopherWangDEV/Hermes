@@ -1,0 +1,21 @@
+{
+  "code": "E4102",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "fn": "V_fn",
+    "got": "V_got"
+  },
+  "message": "V_fn 接受的是 snapshot，实际传入 V_got",
+  "why": "snapshot 是 memory.checkpoint() 返回的**不透明**句柄：它是事务边界，不是一个值。其他任何东西（json 值、int、struct）都不是边界，对它提交只会静默什么都不做。Snapshot 刻意做成独立类型而不是 json：它进不了 json，也不能跨 workflow 传递。",
+  "fix": [
+    "传 memory.checkpoint() 拿到的那个值",
+    "把句柄存在局部变量里，跨 checkpoint() 与 rollback()/commit() 使用——它不透明，存不进 json，也交不给别的 workflow"
+  ],
+  "text": "error[E4102]: V_fn 接受的是 snapshot，实际传入 V_got\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: snapshot 是 memory.checkpoint() 返回的**不透明**句柄：它是事务边界，不是一个值。其他任何东西（json 值、int、struct）都不是边界，对它提交只会静默什么都不做。Snapshot 刻意做成独立类型而不是 json：它进不了 json，也不能跨 workflow 传递。\n  help: 传 memory.checkpoint() 拿到的那个值\n  help: 把句柄存在局部变量里，跨 checkpoint() 与 rollback()/commit() 使用——它不透明，存不进 json，也交不给别的 workflow\n"
+}

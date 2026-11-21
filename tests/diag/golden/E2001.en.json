@@ -1,0 +1,18 @@
+{
+  "code": "E2001",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "expected '(' after a type-argument list",
+  "why": "A generic callee written as name\u003cT\u003e must be followed by its call parentheses; leaving them off makes the \u003cT\u003e read as a less-than comparison.",
+  "fix": [
+    "write name\u003cT\u003e(...)",
+    "or drop the \u003cT\u003e and let the type be inferred"
+  ],
+  "text": "error[E2001]: expected '(' after a type-argument list\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A generic callee written as name\u003cT\u003e must be followed by its call parentheses; leaving them off makes the \u003cT\u003e read as a less-than comparison.\n  help: write name\u003cT\u003e(...)\n  help: or drop the \u003cT\u003e and let the type be inferred\n"
+}

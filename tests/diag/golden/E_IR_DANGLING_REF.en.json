@@ -1,0 +1,24 @@
+{
+  "code": "E_IR_DANGLING_REF",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "id": "V_id",
+    "path": "V_path",
+    "range": "V_range",
+    "table": "V_table",
+    "what": "V_what"
+  },
+  "message": "V_what points at V_id, but V_table has V_range",
+  "why": "Every id in the IR's reference positions must index into the table it names. A dangling id means the IR was truncated, hand-edited, or produced by a frontend that is one version out of step.",
+  "fix": [
+    "remove the reference at V_path",
+    "or add the missing entry — the table must stay consistent with its references"
+  ],
+  "text": "error[E_IR_DANGLING_REF]: V_what points at V_id, but V_table has V_range\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Every id in the IR's reference positions must index into the table it names. A dangling id means the IR was truncated, hand-edited, or produced by a frontend that is one version out of step.\n  help: remove the reference at V_path\n  help: or add the missing entry — the table must stay consistent with its references\n"
+}

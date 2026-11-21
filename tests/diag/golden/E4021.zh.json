@@ -1,0 +1,18 @@
+{
+  "code": "E4021",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "返回类型不匹配：返回的值与声明的返回类型不符",
+  "why": "声明的返回类型是 workflow 的契约——调用方、链接器和 IR schema 都依赖它；返回别的类型会同时破坏三者。",
+  "fix": [
+    "返回声明类型的值",
+    "或者把声明改成你实际返回的类型"
+  ],
+  "text": "error[E4021]: 返回类型不匹配：返回的值与声明的返回类型不符\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 声明的返回类型是 workflow 的契约——调用方、链接器和 IR schema 都依赖它；返回别的类型会同时破坏三者。\n  help: 返回声明类型的值\n  help: 或者把声明改成你实际返回的类型\n"
+}

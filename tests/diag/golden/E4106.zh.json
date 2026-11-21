@@ -1,0 +1,18 @@
+{
+  "code": "E4106",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "continue 不在循环里",
+  "why": "`continue` 跳的是最内层循环的下一次迭代。外面没有循环就没有目标，这条语句只会看起来像控制流，实际什么都不做。",
+  "fix": [
+    "把它挪进它想继续的那个循环",
+    "或者删掉——这里没有任何东西可以被继续"
+  ],
+  "text": "error[E4106]: continue 不在循环里\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `continue` 跳的是最内层循环的下一次迭代。外面没有循环就没有目标，这条语句只会看起来像控制流，实际什么都不做。\n  help: 把它挪进它想继续的那个循环\n  help: 或者删掉——这里没有任何东西可以被继续\n"
+}

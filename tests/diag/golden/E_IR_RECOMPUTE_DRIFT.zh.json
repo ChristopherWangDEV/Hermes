@@ -1,0 +1,22 @@
+{
+  "code": "E_IR_RECOMPUTE_DRIFT",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "actual": "V_actual",
+    "claimed": "V_claimed",
+    "field": "V_field"
+  },
+  "message": "V_field 声称 V_claimed，但从 IR 复算得到 V_actual",
+  "why": "这个字段是派生的，不是权威值。它在构建时写入、必须在加载时复算 —— 否则一个被篡改的值就能悄悄抬高执行上限，而 bounds 存在的意义恰恰是封住一次运行能做什么。",
+  "fix": [
+    "重新生成产物 —— 产生方写了不一致的值",
+    "如果是手改的：不要改，派生字段是复算出来的，不是信来的"
+  ],
+  "text": "error[E_IR_RECOMPUTE_DRIFT]: V_field 声称 V_claimed，但从 IR 复算得到 V_actual\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 这个字段是派生的，不是权威值。它在构建时写入、必须在加载时复算 —— 否则一个被篡改的值就能悄悄抬高执行上限，而 bounds 存在的意义恰恰是封住一次运行能做什么。\n  help: 重新生成产物 —— 产生方写了不一致的值\n  help: 如果是手改的：不要改，派生字段是复算出来的，不是信来的\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "W2004",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "max_steps = unlimited: this agent has no statically known upper bound on steps",
+  "why": "With unlimited steps, max_spans is no longer a provable trace bound and budgets cannot be pre-reserved; only the runtime step cap remains.",
+  "fix": [
+    "set a concrete max_steps if you need provable bounds",
+    "accept it only when the runtime cap is the intended guard"
+  ],
+  "text": "error[W2004]: max_steps = unlimited: this agent has no statically known upper bound on steps\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: With unlimited steps, max_spans is no longer a provable trace bound and budgets cannot be pre-reserved; only the runtime step cap remains.\n  help: set a concrete max_steps if you need provable bounds\n  help: accept it only when the runtime cap is the intended guard\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E4106",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "continue outside a loop",
+  "why": "`continue` jumps to the next iteration of the innermost loop. With no loop around it there is no target, so the statement would be a no-op that looks like control flow.",
+  "fix": [
+    "move it inside the loop it is meant to continue",
+    "or delete it — nothing is being continued here"
+  ],
+  "text": "error[E4106]: continue outside a loop\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `continue` jumps to the next iteration of the innermost loop. With no loop around it there is no target, so the statement would be a no-op that looks like control flow.\n  help: move it inside the loop it is meant to continue\n  help: or delete it — nothing is being continued here\n"
+}

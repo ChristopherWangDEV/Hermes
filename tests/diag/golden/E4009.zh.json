@@ -1,0 +1,18 @@
+{
+  "code": "E4009",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "运算符 % 需要 int 操作数",
+  "why": "取余只对整数有意义；对 cost、double、string、json 或 struct 取余没有良定义。",
+  "fix": [
+    "% 用 int 操作数",
+    "对 cost 先换算成微美元整数"
+  ],
+  "text": "error[E4009]: 运算符 % 需要 int 操作数\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 取余只对整数有意义；对 cost、double、string、json 或 struct 取余没有良定义。\n  help: % 用 int 操作数\n  help: 对 cost 先换算成微美元整数\n"
+}

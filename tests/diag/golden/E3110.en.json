@@ -1,0 +1,18 @@
+{
+  "code": "E3110",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "Go runtime libraries (g*) cannot be linked for bare-metal targets. Please use pure C/Rust static libraries.",
+  "why": "A bare-metal artifact runs without an operating system: no scheduler, no threads, no dynamic loader and no syscall layer. A Go runtime archive carries all of those assumptions in its machine code, so the firmware may link and still fail at the first goroutine switch. The g* prefix is the declared carrier of that runtime (legacy Go archive names are screened too), which is why the plan builder refuses the name instead of guessing at symbols.",
+  "fix": [
+    "rebuild the network layer as a pure C/Rust static .a exposing an extern \"C\" bridge and link that instead",
+    "or drop --target and compile this unit natively on the host, where the Go runtime is available"
+  ],
+  "text": "error[E3110]: Go runtime libraries (g*) cannot be linked for bare-metal targets. Please use pure C/Rust static libraries.\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A bare-metal artifact runs without an operating system: no scheduler, no threads, no dynamic loader and no syscall layer. A Go runtime archive carries all of those assumptions in its machine code, so the firmware may link and still fail at the first goroutine switch. The g* prefix is the declared carrier of that runtime (legacy Go archive names are screened too), which is why the plan builder refuses the name instead of guessing at symbols.\n  help: rebuild the network layer as a pure C/Rust static .a exposing an extern \"C\" bridge and link that instead\n  help: or drop --target and compile this unit natively on the host, where the Go runtime is available\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E5010",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "不能在 `parallel` 内写外部变量",
+  "why": "parallel 分支并发执行；写块外声明的变量是数据竞争，结果取决于调度，因此被拒。",
+  "fix": [
+    "每个分支返回值，parallel 之后再合并",
+    "或者用分支内声明的变量"
+  ],
+  "text": "error[E5010]: 不能在 `parallel` 内写外部变量\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: parallel 分支并发执行；写块外声明的变量是数据竞争，结果取决于调度，因此被拒。\n  help: 每个分支返回值，parallel 之后再合并\n  help: 或者用分支内声明的变量\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E2002",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a workflow name is an identifier, not a quoted string",
+  "why": "Workflow names are identifiers so they can be linked and exported by symbol; a quoted string cannot be a symbol name.",
+  "fix": [
+    "write the name without quotes: workflow Name",
+    "if you meant a string value, move it into the body"
+  ],
+  "text": "error[E2002]: a workflow name is an identifier, not a quoted string\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Workflow names are identifiers so they can be linked and exported by symbol; a quoted string cannot be a symbol name.\n  help: write the name without quotes: workflow Name\n  help: if you meant a string value, move it into the body\n"
+}

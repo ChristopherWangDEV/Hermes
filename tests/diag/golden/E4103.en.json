@@ -1,0 +1,18 @@
+{
+  "code": "E4103",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a void call cannot be returned",
+  "why": "Returning `void` would hand the caller a value that does not exist. The declared return type is the workflow's contract, so there is nothing to write into the return slot.",
+  "fix": [
+    "write the call on its own line",
+    "then `return` a value of the declared return type"
+  ],
+  "text": "error[E4103]: a void call cannot be returned\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Returning `void` would hand the caller a value that does not exist. The declared return type is the workflow's contract, so there is nothing to write into the return slot.\n  help: write the call on its own line\n  help: then `return` a value of the declared return type\n"
+}

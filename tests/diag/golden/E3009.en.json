@@ -1,0 +1,18 @@
+{
+  "code": "E3009",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a tool declaration field must have the form name = \"value\";",
+  "why": "Tool metadata (endpoint, method, idempotency) is a flat set of string fields; a malformed field means the tool cannot be described to the runtime.",
+  "fix": [
+    "write each field as name = \"value\";",
+    "check that the value is a quoted string literal"
+  ],
+  "text": "error[E3009]: a tool declaration field must have the form name = \"value\";\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Tool metadata (endpoint, method, idempotency) is a flat set of string fields; a malformed field means the tool cannot be described to the runtime.\n  help: write each field as name = \"value\";\n  help: check that the value is a quoted string literal\n"
+}

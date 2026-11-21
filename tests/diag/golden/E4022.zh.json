@@ -1,0 +1,18 @@
+{
+  "code": "E4022",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "不能返回元组",
+  "why": "workflow 的返回类型必须是有 schema 的单一具名类型；元组没有名字，无法导出或描述给调用方。",
+  "fix": [
+    "把值包进 struct 再返回",
+    "或者只返回一个值，其余通过 input 传"
+  ],
+  "text": "error[E4022]: 不能返回元组\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: workflow 的返回类型必须是有 schema 的单一具名类型；元组没有名字，无法导出或描述给调用方。\n  help: 把值包进 struct 再返回\n  help: 或者只返回一个值，其余通过 input 传\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E4104",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "this workflow must return a value",
+  "why": "The declared return type is not void, so a bare `return;` leaves the epilogue without a value and the backend would emit a `ret` with an undefined result. A body-level `return` in a workflow is exactly the value the caller receives.",
+  "fix": [
+    "return a value of the declared type",
+    "or declare the workflow's return type as void and drop the value from every other `return`"
+  ],
+  "text": "error[E4104]: this workflow must return a value\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The declared return type is not void, so a bare `return;` leaves the epilogue without a value and the backend would emit a `ret` with an undefined result. A body-level `return` in a workflow is exactly the value the caller receives.\n  help: return a value of the declared type\n  help: or declare the workflow's return type as void and drop the value from every other `return`\n"
+}

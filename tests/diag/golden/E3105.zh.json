@@ -1,0 +1,22 @@
+{
+  "code": "E3105",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "flag": "V_flag",
+    "lib": "V_lib",
+    "stem": "V_stem"
+  },
+  "message": "hermes compile: V_flag \"V_lib\" 是 C++ ABI 运行时（V_stem）。Hermes 只链纯 C ABI：名字修饰与 STL 布局跨编译器不可移植。请写一层 extern \"C\" 的 C 桥接并链它。",
+  "why": "名字修饰与 STL 内存布局都是编译器私有的，C++ ABI 运行时一旦进链接，产物就取决于那个库是谁编的。libc++ 在许可证上合法，但它仍然是一条 ABI 边界——所以这道检查和许可证闭集各管一条（许可证理由与 ABI 理由不能共用一个码）。受支持的路径是自己写一层 extern \"C\" 薄封装，它本身就是普通 C ABI 的 .a。",
+  "fix": [
+    "用 extern \"C\" 写一层薄桥接，编成普通 .a 再链",
+    "只是要 C++ 标准库里的某个算法的话，自己实现或换一个纯 C 的库"
+  ],
+  "text": "error[E3105]: hermes compile: V_flag \"V_lib\" 是 C++ ABI 运行时（V_stem）。Hermes 只链纯 C ABI：名字修饰与 STL 布局跨编译器不可移植。请写一层 extern \"C\" 的 C 桥接并链它。\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 名字修饰与 STL 内存布局都是编译器私有的，C++ ABI 运行时一旦进链接，产物就取决于那个库是谁编的。libc++ 在许可证上合法，但它仍然是一条 ABI 边界——所以这道检查和许可证闭集各管一条（许可证理由与 ABI 理由不能共用一个码）。受支持的路径是自己写一层 extern \"C\" 薄封装，它本身就是普通 C ABI 的 .a。\n  help: 用 extern \"C\" 写一层薄桥接，编成普通 .a 再链\n  help: 只是要 C++ 标准库里的某个算法的话，自己实现或换一个纯 C 的库\n"
+}

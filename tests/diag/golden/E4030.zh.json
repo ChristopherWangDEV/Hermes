@@ -1,0 +1,18 @@
+{
+  "code": "E4030",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "调用实参类型不匹配",
+  "why": "实参类型与被调方声明的形参类型不同；没有隐式转换，调用无法按声明签名编译。",
+  "fix": [
+    "传声明形参类型的值",
+    "或者显式转换实参"
+  ],
+  "text": "error[E4030]: 调用实参类型不匹配\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 实参类型与被调方声明的形参类型不同；没有隐式转换，调用无法按声明签名编译。\n  help: 传声明形参类型的值\n  help: 或者显式转换实参\n"
+}

@@ -1,0 +1,106 @@
+[
+  {
+    "name": "strip-unreachable",
+    "args": [
+      "base.hbc",
+      "extra.hbc",
+      "-o",
+      "out1.hbc"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "hermes link: stripped extra (unreachable from entry)\nhermes link: wrote out1.hbc (2608 bytes, 2 members, 1 entries)\n",
+    "out_sha": "f238bd0c4306ce7260ee1ae3566d036e4620e04dba085dd496263e09c76ce862"
+  },
+  {
+    "name": "no-strip",
+    "args": [
+      "base.hbc",
+      "extra.hbc",
+      "-o",
+      "out2.hbc",
+      "--no-strip"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "hermes link: --no-strip: keeping all 2 members\nhermes link: wrote out2.hbc (4588 bytes, 2 members, 1 entries)\n",
+    "out_sha": "0c4500017dfaf117f3909b3578c9b114c606e4741aee88ef7a66c3693534d350"
+  },
+  {
+    "name": "dup-workflow",
+    "args": [
+      "base.hbc",
+      "dup.hbc",
+      "-o",
+      "out3.hbc"
+    ],
+    "exit": 4,
+    "stdout": "",
+    "stderr": "hermes link: duplicate workflow \"one\": base.hbc/base and dup.hbc/dup. Not overwriting and not continuing with a warning: a silent overwrite would make 'what did I just link' unknowable (E_LINK_DUP_WORKFLOW)\n",
+    "out_sha": ""
+  },
+  {
+    "name": "odr-mismatch",
+    "args": [
+      "base.hbc",
+      "odr.hbc",
+      "-o",
+      "out4.hbc"
+    ],
+    "exit": 4,
+    "stdout": "",
+    "stderr": "hermes link: struct T is defined differently in two places (E_LINK_ODR_MISMATCH):\n  member base.hbc:base\n  member odr.hbc:odr\n  field n exists only in the second definition\n  = why: the two libraries disagree on the struct behind this name. If one is silently chosen, the other library's generated JSON Schema no longer matches its own reader code --\n             at runtime this shows up as 'fields silently disappearing', with no way to trace it.\n  = fix: rename one of the structs, or make both libraries depend on the same .h\n",
+    "out_sha": ""
+  },
+  {
+    "name": "missing-lib",
+    "args": [
+      "-l",
+      "nosuch",
+      "-o",
+      "out5.hbc"
+    ],
+    "exit": 4,
+    "stdout": "",
+    "stderr": "hermes link: cannot find library \"nosuch\"; tried: libnosuch.hbc, nosuch.hbc\n",
+    "out_sha": ""
+  },
+  {
+    "name": "local-dep-tampered",
+    "args": [
+      "app.hbc",
+      "-o",
+      "out6.hbc"
+    ],
+    "exit": 4,
+    "stdout": "",
+    "stderr": "hermes link: app.hbc: local dependency validation failed for member \"app\": no archive with member_sha256 5ca9aabf4ac4429d... among the link inputs (dependency \"calc\"; this value is the index hash of the depended-on archive) (E_LINK_TAMPERED)\n",
+    "out_sha": ""
+  },
+  {
+    "name": "local-dep-ok",
+    "args": [
+      "app.hbc",
+      "calc.hbc",
+      "-o",
+      "out7.hbc"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "hermes link: stripped calc (unreachable from entry)\nhermes link: wrote out7.hbc (2825 bytes, 2 members, 1 entries)\n",
+    "out_sha": "bff0a8765977aa51ce6d28105fc0d83e9edf7da4002f0f55dfb35aad5d8386ba"
+  },
+  {
+    "name": "dup-backend",
+    "args": [
+      "be1.hbc",
+      "be2.hbc",
+      "-o",
+      "out8.hbc"
+    ],
+    "exit": 0,
+    "stdout": "",
+    "stderr": "hermes link: wrote out8.hbc (4508 bytes, 2 members, 2 entries)\n",
+    "out_sha": "bb1ab3ac66457515a65054d8d9a98b9a0d23bd469ce21fac33a980e5ab014f04"
+  }
+]

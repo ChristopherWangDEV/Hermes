@@ -1,0 +1,18 @@
+{
+  "code": "E4108",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "stop 的 data 与 workflow 的返回类型不符",
+  "why": "`workflow.stop` 会把 data 返回给调用方，所以 data 必须是 workflow 声明的那个类型。stop 直接写进返回位，类型不对就是一个类型错误的 `ret`：编得过，调用方读到的是垃圾。",
+  "fix": [
+    "传一个声明返回类型的值",
+    "或者把 workflow 的返回类型改成你实际传的那个类型"
+  ],
+  "text": "error[E4108]: stop 的 data 与 workflow 的返回类型不符\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `workflow.stop` 会把 data 返回给调用方，所以 data 必须是 workflow 声明的那个类型。stop 直接写进返回位，类型不对就是一个类型错误的 `ret`：编得过，调用方读到的是垃圾。\n  help: 传一个声明返回类型的值\n  help: 或者把 workflow 的返回类型改成你实际传的那个类型\n"
+}

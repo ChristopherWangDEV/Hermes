@@ -1,0 +1,18 @@
+{
+  "code": "E4023",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "cannot bind the error object to a variable",
+  "why": "The catch error object lives only inside its catch block and is borrowed, not owned; binding it out would let it outlive the error it points to.",
+  "fix": [
+    "use the error object inline inside the catch block",
+    "if you need its data later, copy the fields out explicitly"
+  ],
+  "text": "error[E4023]: cannot bind the error object to a variable\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The catch error object lives only inside its catch block and is borrowed, not owned; binding it out would let it outlive the error it points to.\n  help: use the error object inline inside the catch block\n  help: if you need its data later, copy the fields out explicitly\n"
+}

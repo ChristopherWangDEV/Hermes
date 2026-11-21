@@ -1,0 +1,18 @@
+{
+  "code": "E4011",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "cannot order-compare these operand types",
+  "why": "Ordering (\u003c \u003c= \u003e \u003e=) is only defined for int, double, cost, and string; bool, json, and struct have no total order.",
+  "fix": [
+    "compare only int, double, cost, or string",
+    "for json, compare a specific extracted field"
+  ],
+  "text": "error[E4011]: cannot order-compare these operand types\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Ordering (\u003c \u003c= \u003e \u003e=) is only defined for int, double, cost, and string; bool, json, and struct have no total order.\n  help: compare only int, double, cost, or string\n  help: for json, compare a specific extracted field\n"
+}

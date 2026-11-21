@@ -1,0 +1,18 @@
+{
+  "code": "W2003",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "#link does not need a trailing semicolon (like #include)",
+  "why": "A directive is not a statement: #include and #link both end at the line end, so a trailing ';' is stray.",
+  "fix": [
+    "remove the trailing ';'",
+    "leave the directive as #link \u003cstd/net\u003e"
+  ],
+  "text": "error[W2003]: #link does not need a trailing semicolon (like #include)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A directive is not a statement: #include and #link both end at the line end, so a trailing ';' is stray.\n  help: remove the trailing ';'\n  help: leave the directive as #link \u003cstd/net\u003e\n"
+}

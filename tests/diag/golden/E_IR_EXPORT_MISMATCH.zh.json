@@ -1,0 +1,26 @@
+{
+  "code": "E_IR_EXPORT_MISMATCH",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "action": "V_action",
+    "exported": "V_exported",
+    "name": "V_name",
+    "target": "V_target",
+    "verb": "V_verb",
+    "want": "V_want",
+    "where": "V_where"
+  },
+  "message": "workflow V_name 的 exported=V_exported，但 V_where V_verb 它",
+  "why": "workflow 上的 `exported` 和 exports.workflows（符号表）是同一个事实的两份表示。剥离器读标量，链接器读符号表。两者不一致时，一边认为符号可达、另一边认为它不存在 —— 于是产物能不能用取决于哪个工具先跑。",
+  "fix": [
+    "把 workflow 的 exported 设为 V_want",
+    "或者 V_action \"V_name\" V_target"
+  ],
+  "text": "error[E_IR_EXPORT_MISMATCH]: workflow V_name 的 exported=V_exported，但 V_where V_verb 它\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: workflow 上的 `exported` 和 exports.workflows（符号表）是同一个事实的两份表示。剥离器读标量，链接器读符号表。两者不一致时，一边认为符号可达、另一边认为它不存在 —— 于是产物能不能用取决于哪个工具先跑。\n  help: 把 workflow 的 exported 设为 V_want\n  help: 或者 V_action \"V_name\" V_target\n"
+}

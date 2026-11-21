@@ -1,0 +1,18 @@
+{
+  "code": "W5005",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "入口没有结构契约：input 被声明为 json，hermes serve 无法据此生成文档，也无法在入口挡住畸形请求",
+  "why": "input 的类型就是 HTTP 请求契约。声明为 json 时请求体是任意 JSON，serve 既生成不出 API schema，也无法在入口校验字段。这是规范允许的逃逸口（LANGUAGE.md §4.8），但会失去编译期契约保护。",
+  "fix": [
+    "声明一个 struct 作为契约：input: SupportInput，其中字段即为请求体形状，非 T? 字段会被纳入 required",
+    "若确实需要任意 JSON，保留 json 但接受此警告；也可使用 --deny-warnings 将其升级为错误"
+  ],
+  "text": "error[W5005]: 入口没有结构契约：input 被声明为 json，hermes serve 无法据此生成文档，也无法在入口挡住畸形请求\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: input 的类型就是 HTTP 请求契约。声明为 json 时请求体是任意 JSON，serve 既生成不出 API schema，也无法在入口校验字段。这是规范允许的逃逸口（LANGUAGE.md §4.8），但会失去编译期契约保护。\n  help: 声明一个 struct 作为契约：input: SupportInput，其中字段即为请求体形状，非 T? 字段会被纳入 required\n  help: 若确实需要任意 JSON，保留 json 但接受此警告；也可使用 --deny-warnings 将其升级为错误\n"
+}

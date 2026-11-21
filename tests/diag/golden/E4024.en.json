@@ -1,0 +1,18 @@
+{
+  "code": "E4024",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "`unlimited` is not a value: it may only appear as max_steps = unlimited",
+  "why": "`unlimited` means no compile-time upper bound; it is a bound marker, not a constant. Allowing it in a value position would create a variable with no value and break every bound.",
+  "fix": [
+    "use unlimited only in model.agent(max_steps = unlimited)",
+    "assign a concrete value elsewhere"
+  ],
+  "text": "error[E4024]: `unlimited` is not a value: it may only appear as max_steps = unlimited\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `unlimited` means no compile-time upper bound; it is a bound marker, not a constant. Allowing it in a value position would create a variable with no value and break every bound.\n  help: use unlimited only in model.agent(max_steps = unlimited)\n  help: assign a concrete value elsewhere\n"
+}

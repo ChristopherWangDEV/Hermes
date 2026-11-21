@@ -1,0 +1,18 @@
+{
+  "code": "E5009",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "idempotency key must be derived from the input",
+  "why": "An idem key that is constant or random is not idempotent: a constant key collapses distinct requests, a random one changes every retry and defeats dedup.",
+  "fix": [
+    "derive the key from request fields (e.g. the order id)",
+    "or omit idem_key if the tool is idempotent another way"
+  ],
+  "text": "error[E5009]: idempotency key must be derived from the input\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: An idem key that is constant or random is not idempotent: a constant key collapses distinct requests, a random one changes every retry and defeats dedup.\n  help: derive the key from request fields (e.g. the order id)\n  help: or omit idem_key if the tool is idempotent another way\n"
+}

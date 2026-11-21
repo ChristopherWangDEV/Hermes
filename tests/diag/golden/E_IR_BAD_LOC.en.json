@@ -1,0 +1,23 @@
+{
+  "code": "E_IR_BAD_LOC",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "count": "V_count",
+    "last": "V_last",
+    "m": "V_m",
+    "what": "V_what"
+  },
+  "message": "V_what: loc.m=V_m, but the unit has only V_count module(s) (0..V_last)",
+  "why": "loc.m indexes unit.modules[]. An out-of-range value crashes the diagnostic renderer itself — the loader would fail while trying to report a failure, and you would see a panic instead of this message.",
+  "fix": [
+    "fix loc.m in the producer — this is almost always a frontend bug, not hand-edited IR",
+    "or regenerate the IR if it was edited by hand"
+  ],
+  "text": "error[E_IR_BAD_LOC]: V_what: loc.m=V_m, but the unit has only V_count module(s) (0..V_last)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: loc.m indexes unit.modules[]. An out-of-range value crashes the diagnostic renderer itself — the loader would fail while trying to report a failure, and you would see a panic instead of this message.\n  help: fix loc.m in the producer — this is almost always a frontend bug, not hand-edited IR\n  help: or regenerate the IR if it was edited by hand\n"
+}

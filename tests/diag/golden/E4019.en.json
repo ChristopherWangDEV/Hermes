@@ -1,0 +1,18 @@
+{
+  "code": "E4019",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a `case` label has a different type than the `match` subject",
+  "why": "Case labels are compared to the subject; an int label on a string subject (or vice versa) can never match and signals a type confusion.",
+  "fix": [
+    "make the label the same type as the subject",
+    "or convert the subject before matching"
+  ],
+  "text": "error[E4019]: a `case` label has a different type than the `match` subject\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Case labels are compared to the subject; an int label on a string subject (or vice versa) can never match and signals a type confusion.\n  help: make the label the same type as the subject\n  help: or convert the subject before matching\n"
+}

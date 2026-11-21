@@ -1,0 +1,22 @@
+{
+  "code": "E_IR_BAD_ROOT",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "reason": "V_reason",
+    "root": "V_root",
+    "wf": "V_wf"
+  },
+  "message": "workflow V_wf: root=V_root, but V_reason",
+  "why": "The executor starts at root and expects a statement list there, i.e. a node with k=\"seq\". Any other kind has no defined entry semantics, so the first step of the run would be undefined.",
+  "fix": [
+    "point root at the first `seq` node",
+    "or wrap the body in a `seq` node if the workflow has a single statement"
+  ],
+  "text": "error[E_IR_BAD_ROOT]: workflow V_wf: root=V_root, but V_reason\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The executor starts at root and expects a statement list there, i.e. a node with k=\"seq\". Any other kind has no defined entry semantics, so the first step of the run would be undefined.\n  help: point root at the first `seq` node\n  help: or wrap the body in a `seq` node if the workflow has a single statement\n"
+}

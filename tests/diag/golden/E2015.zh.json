@@ -1,0 +1,18 @@
+{
+  "code": "E2015",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "retry 次数与 delay 必须是整数字面量",
+  "why": "retry 上界会写进 IR 的代价上界；非字面量的次数或延迟无法静态定界，剥离与 trace 限额都会算错。",
+  "fix": [
+    "写成整数字面量：retry 3 times delay 100",
+    "retry 上界是编译期的，这里不能用运行期的值"
+  ],
+  "text": "error[E2015]: retry 次数与 delay 必须是整数字面量\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: retry 上界会写进 IR 的代价上界；非字面量的次数或延迟无法静态定界，剥离与 trace 限额都会算错。\n  help: 写成整数字面量：retry 3 times delay 100\n  help: retry 上界是编译期的，这里不能用运行期的值\n"
+}

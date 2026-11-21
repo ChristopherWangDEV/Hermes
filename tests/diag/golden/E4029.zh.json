@@ -1,0 +1,18 @@
+{
+  "code": "E4029",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "旧 float 标签在 IR 里没有表示",
+  "why": "这是旧标签的纵深防线，不是「所有浮点字面量被拒」。v2.0.0 起唯一浮点类型是 `double`（IEEE-754 binary64），字面量编成位模式 {\"k\":\"double\",\"bits\":\"\u003c16 位小写 hex\u003e\"}，IR 字节里没有 JSON 浮点数字，V-7 / canonical / 签名三件事都不受影响。带 \"float\" 标签的 LitExpr 是 v2.0.0 之前的形态：它会落进字符串兜底，产出 {\"t\":\"string\",\"v\":\"float\"} —— 合法 IR，运行期却静默返回字符串 \"float\"。三道扫描器保留下来，防的是忽略诊断直接调 C ABI 的宿主。",
+  "fix": [
+    "浮点用 `double`（字面量 1.5 / 1.5e2 / 1e3 都支持）",
+    "金额仍留在 `cost` / int 微单位；`json.as_float` 这个 API 名保留原名"
+  ],
+  "text": "error[E4029]: 旧 float 标签在 IR 里没有表示\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 这是旧标签的纵深防线，不是「所有浮点字面量被拒」。v2.0.0 起唯一浮点类型是 `double`（IEEE-754 binary64），字面量编成位模式 {\"k\":\"double\",\"bits\":\"\u003c16 位小写 hex\u003e\"}，IR 字节里没有 JSON 浮点数字，V-7 / canonical / 签名三件事都不受影响。带 \"float\" 标签的 LitExpr 是 v2.0.0 之前的形态：它会落进字符串兜底，产出 {\"t\":\"string\",\"v\":\"float\"} —— 合法 IR，运行期却静默返回字符串 \"float\"。三道扫描器保留下来，防的是忽略诊断直接调 C ABI 的宿主。\n  help: 浮点用 `double`（字面量 1.5 / 1.5e2 / 1e3 都支持）\n  help: 金额仍留在 `cost` / int 微单位；`json.as_float` 这个 API 名保留原名\n"
+}

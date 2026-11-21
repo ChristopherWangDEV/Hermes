@@ -1,0 +1,21 @@
+{
+  "code": "E3102",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "lib": "V_lib",
+    "target": "V_target"
+  },
+  "message": "hermes compile: bare-metal target V_target has no dynamic loader; --link-dynamic is forbidden (got \"V_lib\"). Use --link-static with a pure C/Rust .a.",
+  "why": "A bare-metal artifact is firmware: there is no loader at run time to map a .so/.dylib into the address space, so a shared library in the link line can never be honoured. The plan builder keeps DynamicLibs empty on bare metal for exactly this reason — letting one through would produce an artifact that links but cannot start.",
+  "fix": [
+    "replace --link-dynamic with --link-static and give it a pure C/Rust .a",
+    "if the library only exists as .so/.dylib, rebuild it as a static archive first (clang -c, then ar rcs)"
+  ],
+  "text": "error[E3102]: hermes compile: bare-metal target V_target has no dynamic loader; --link-dynamic is forbidden (got \"V_lib\"). Use --link-static with a pure C/Rust .a.\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A bare-metal artifact is firmware: there is no loader at run time to map a .so/.dylib into the address space, so a shared library in the link line can never be honoured. The plan builder keeps DynamicLibs empty on bare metal for exactly this reason — letting one through would produce an artifact that links but cannot start.\n  help: replace --link-dynamic with --link-static and give it a pure C/Rust .a\n  help: if the library only exists as .so/.dylib, rebuild it as a static archive first (clang -c, then ar rcs)\n"
+}

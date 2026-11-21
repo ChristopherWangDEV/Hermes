@@ -1,0 +1,22 @@
+{
+  "code": "E3105",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "flag": "V_flag",
+    "lib": "V_lib",
+    "stem": "V_stem"
+  },
+  "message": "hermes compile: V_flag \"V_lib\" is a C++ ABI runtime (V_stem). Hermes links pure C ABI only: name mangling and STL layout are not portable across compilers. Provide a C bridge compiled with extern \"C\" and link that instead.",
+  "why": "Name mangling and STL memory layout are compiler-specific, so a C++ ABI runtime entering the link makes the artifact depend on which compiler built the library. libc++ is licence-legal but still an ABI boundary, which is why this check runs independently of the licence closed set (a licence reason and an ABI reason must not share one code). The supported route is a user-supplied shim with extern \"C\" linkage, which is itself a plain C ABI .a.",
+  "fix": [
+    "write a thin shim with extern \"C\" linkage, compile it into a plain .a, and link that instead",
+    "if only an algorithm from the C++ standard library is needed, implement it or pick a pure-C library"
+  ],
+  "text": "error[E3105]: hermes compile: V_flag \"V_lib\" is a C++ ABI runtime (V_stem). Hermes links pure C ABI only: name mangling and STL layout are not portable across compilers. Provide a C bridge compiled with extern \"C\" and link that instead.\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Name mangling and STL memory layout are compiler-specific, so a C++ ABI runtime entering the link makes the artifact depend on which compiler built the library. libc++ is licence-legal but still an ABI boundary, which is why this check runs independently of the licence closed set (a licence reason and an ABI reason must not share one code). The supported route is a user-supplied shim with extern \"C\" linkage, which is itself a plain C ABI .a.\n  help: write a thin shim with extern \"C\" linkage, compile it into a plain .a, and link that instead\n  help: if only an algorithm from the C++ standard library is needed, implement it or pick a pure-C library\n"
+}

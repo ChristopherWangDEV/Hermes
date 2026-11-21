@@ -1,0 +1,18 @@
+{
+  "code": "E4020",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "同一个 case 标签出现了多次",
+  "why": "重复标签让第二个分支成为死代码，也掩盖了作者本想写另一个值的事实。",
+  "fix": [
+    "删掉重复的分支",
+    "或者改成你真正想要的值"
+  ],
+  "text": "error[E4020]: 同一个 case 标签出现了多次\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 重复标签让第二个分支成为死代码，也掩盖了作者本想写另一个值的事实。\n  help: 删掉重复的分支\n  help: 或者改成你真正想要的值\n"
+}

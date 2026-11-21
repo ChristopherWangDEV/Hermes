@@ -1,0 +1,18 @@
+{
+  "code": "E1001",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "syntax error: the parser could not match a declaration or statement here",
+  "why": "The grammar expects a specific token at this point; a missing separator, an unbalanced brace, or a misspelled keyword breaks the match, and parsing stops until it is fixed.",
+  "fix": [
+    "check the punctuation and keywords around the reported position against LANGUAGE.md §3",
+    "if the message names a token kind, look for a typo just before it"
+  ],
+  "text": "error[E1001]: syntax error: the parser could not match a declaration or statement here\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The grammar expects a specific token at this point; a missing separator, an unbalanced brace, or a misspelled keyword breaks the match, and parsing stops until it is fixed.\n  help: check the punctuation and keywords around the reported position against LANGUAGE.md §3\n  help: if the message names a token kind, look for a typo just before it\n"
+}

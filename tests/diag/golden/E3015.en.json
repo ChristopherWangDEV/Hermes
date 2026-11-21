@@ -1,0 +1,22 @@
+{
+  "code": "E3015",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "mod": "V_mod",
+    "name": "V_name",
+    "path": "V_path"
+  },
+  "message": "#include V_path targets an implementation file; only .h may be included",
+  "why": "A .hermes file contains bodies. Including one would give every includer its own copy of the implementation and make \"which implementation is linked\" depend on the include graph instead of on #link — which is exactly the property #include/#link separation exists to protect.",
+  "fix": [
+    "to use its implementation, write: #link \"V_mod\";",
+    "to use only its types, include its interface: #include \"V_name.h\""
+  ],
+  "text": "error[E3015]: #include V_path targets an implementation file; only .h may be included\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A .hermes file contains bodies. Including one would give every includer its own copy of the implementation and make \"which implementation is linked\" depend on the include graph instead of on #link — which is exactly the property #include/#link separation exists to protect.\n  help: to use its implementation, write: #link \"V_mod\";\n  help: to use only its types, include its interface: #include \"V_name.h\"\n"
+}

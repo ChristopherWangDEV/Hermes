@@ -1,0 +1,18 @@
+{
+  "code": "E4035",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a backend parameter default must be a bare backend name",
+  "why": "A parameter default becomes `params[].v`, a constant folded at compile time — so `backend = 1 + 1` has no value to record, because there is no evaluator at run time. And which backend is used is read **only** from a bare identifier: `backend = \"homonoia\"` folds into {\"k\":\"string\",\"v\":\"homonoia\"} and still leaves the backend name empty, so the next error the user sees is about something else entirely. A dotted name is worse — it folds to its **last** segment and silently selects a different backend.",
+  "fix": [
+    "write the backend bare and unquoted: `backend = homonoia`",
+    "or omit the parameter entirely: a workflow without it simply has no default backend"
+  ],
+  "text": "error[E4035]: a backend parameter default must be a bare backend name\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A parameter default becomes `params[].v`, a constant folded at compile time — so `backend = 1 + 1` has no value to record, because there is no evaluator at run time. And which backend is used is read **only** from a bare identifier: `backend = \"homonoia\"` folds into {\"k\":\"string\",\"v\":\"homonoia\"} and still leaves the backend name empty, so the next error the user sees is about something else entirely. A dotted name is worse — it folds to its **last** segment and silently selects a different backend.\n  help: write the backend bare and unquoted: `backend = homonoia`\n  help: or omit the parameter entirely: a workflow without it simply has no default backend\n"
+}

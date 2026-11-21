@@ -1,0 +1,16 @@
+// 递归函数是唯一保留 call_fn 动态派发的路径：非递归函数在编译期内联展开，
+// 递归才需要真正的调用帧（运行期深度上限 512，超界回普通错误而非崩溃）。
+int countdown(int n) {
+    if (n <= 0) {
+        return 0;
+    }
+    return countdown(n - 1);
+}
+
+export workflow main() entry -> string {
+    auto r = countdown(3);
+    if (r == 0) {
+        return "done";
+    }
+    return "stuck";
+}

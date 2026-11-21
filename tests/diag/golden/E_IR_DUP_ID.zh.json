@@ -1,0 +1,24 @@
+{
+  "code": "E_IR_DUP_ID",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "first": "V_first",
+    "id": "V_id",
+    "last": "V_last",
+    "second": "V_second",
+    "wf": "V_wf"
+  },
+  "message": "workflow V_wf 里 node id V_id 重复：先出现在 V_first，又出现在 V_second",
+  "why": "node id 就是数组下标（IR.md §4）。两个节点共用一个 id 会让所有指向它的引用变成二义 —— 一个声称指向 V_id 的 kid 到底指哪一个，取决于遍历顺序。",
+  "fix": [
+    "把 V_second 处的节点重新编号（id 必须连续，0..V_last）",
+    "或者删掉两个里的一个（如果是残留的话）"
+  ],
+  "text": "error[E_IR_DUP_ID]: workflow V_wf 里 node id V_id 重复：先出现在 V_first，又出现在 V_second\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: node id 就是数组下标（IR.md §4）。两个节点共用一个 id 会让所有指向它的引用变成二义 —— 一个声称指向 V_id 的 kid 到底指哪一个，取决于遍历顺序。\n  help: 把 V_second 处的节点重新编号（id 必须连续，0..V_last）\n  help: 或者删掉两个里的一个（如果是残留的话）\n"
+}

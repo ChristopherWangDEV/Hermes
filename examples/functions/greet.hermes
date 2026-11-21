@@ -1,0 +1,17 @@
+// 用户函数：非递归函数在编译期展开（内联），递归才走 call_fn 动态路径。
+string greet(string name) {
+    return "hello";
+}
+
+string twice(string s) {
+    return greet(s);
+}
+
+export workflow main() entry -> string {
+    auto a = greet("world");
+    auto b = twice("world");
+    if (a == b) {
+        return "same";
+    }
+    return "diff";
+}

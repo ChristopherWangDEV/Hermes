@@ -1,0 +1,20 @@
+{
+  "code": "E4109",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "sig": "V_sig"
+  },
+  "message": "undeclared signal `V_sig`",
+  "why": "Signals are a closed set, declared with `export signal \u003cName\u003e;`. The same code is emitted by all three uses, worded `handler for undeclared signal`, `wait for undeclared signal` and `emit of undeclared signal`, because they are one fact: the name is not in the declared set, so it can only be a typo. A handler for it waits forever, a wait on it blocks until its timeout every time, and an emit of it fires into nothing without reporting anything.",
+  "fix": [
+    "declare it with `export signal \u003cName\u003e;`",
+    "or check the spelling — the name must match a declared signal exactly"
+  ],
+  "text": "error[E4109]: undeclared signal `V_sig`\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Signals are a closed set, declared with `export signal \u003cName\u003e;`. The same code is emitted by all three uses, worded `handler for undeclared signal`, `wait for undeclared signal` and `emit of undeclared signal`, because they are one fact: the name is not in the declared set, so it can only be a typo. A handler for it waits forever, a wait on it blocks until its timeout every time, and an emit of it fires into nothing without reporting anything.\n  help: declare it with `export signal \u003cName\u003e;`\n  help: or check the spelling — the name must match a declared signal exactly\n"
+}

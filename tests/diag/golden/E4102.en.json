@@ -1,0 +1,21 @@
+{
+  "code": "E4102",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "fn": "V_fn",
+    "got": "V_got"
+  },
+  "message": "V_fn takes a snapshot, got V_got",
+  "why": "A snapshot is the opaque handle returned by memory.checkpoint(): it is a transaction boundary, not a value. Anything else (a json value, an int, a struct) is not a boundary, so committing it would silently do nothing. Snapshot is a separate type rather than json on purpose — it cannot enter json and cannot be passed across a workflow.",
+  "fix": [
+    "pass the value you got from memory.checkpoint()",
+    "keep that handle in a local variable between checkpoint() and rollback()/commit() — it is opaque, so it cannot be stored in json or handed to another workflow"
+  ],
+  "text": "error[E4102]: V_fn takes a snapshot, got V_got\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A snapshot is the opaque handle returned by memory.checkpoint(): it is a transaction boundary, not a value. Anything else (a json value, an int, a struct) is not a boundary, so committing it would silently do nothing. Snapshot is a separate type rather than json on purpose — it cannot enter json and cannot be passed across a workflow.\n  help: pass the value you got from memory.checkpoint()\n  help: keep that handle in a local variable between checkpoint() and rollback()/commit() — it is opaque, so it cannot be stored in json or handed to another workflow\n"
+}

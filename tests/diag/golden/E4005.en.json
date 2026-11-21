@@ -1,0 +1,18 @@
+{
+  "code": "E4005",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "cost cannot be added to or subtracted by a bare int",
+  "why": "cost is micro-USD; adding a bare int treats that int as micro-USD by accident, a unit error that silently changes money by a factor of 10^6.",
+  "fix": [
+    "wrap the int as a cost explicitly",
+    "or keep the amount in one unit throughout"
+  ],
+  "text": "error[E4005]: cost cannot be added to or subtracted by a bare int\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: cost is micro-USD; adding a bare int treats that int as micro-USD by accident, a unit error that silently changes money by a factor of 10^6.\n  help: wrap the int as a cost explicitly\n  help: or keep the amount in one unit throughout\n"
+}

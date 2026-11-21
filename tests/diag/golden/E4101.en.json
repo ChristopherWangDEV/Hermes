@@ -1,0 +1,18 @@
+{
+  "code": "E4101",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a void call cannot be used as a value",
+  "why": "`void` means this call returns nothing: there is no value to store, pass or compare, so a value position (a binding, an argument, one side of an operator) has nothing to put there. Letting it through leaves a hole that only surfaces when the IR is assembled, and that error names a missing node field instead of `this call returns nothing`.",
+  "fix": [
+    "call it as its own statement and drop the binding",
+    "if you need an outcome from it, give the callee a return type — `void` is a statement, never an operand"
+  ],
+  "text": "error[E4101]: a void call cannot be used as a value\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `void` means this call returns nothing: there is no value to store, pass or compare, so a value position (a binding, an argument, one side of an operator) has nothing to put there. Letting it through leaves a hole that only surfaces when the IR is assembled, and that error names a missing node field instead of `this call returns nothing`.\n  help: call it as its own statement and drop the binding\n  help: if you need an outcome from it, give the callee a return type — `void` is a statement, never an operand\n"
+}

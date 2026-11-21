@@ -1,0 +1,18 @@
+{
+  "code": "W4113",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "until without a timeout can block forever",
+  "why": "The workflow's bounds are step counts, not wall-clock time. An until with no timeout has no upper bound the compiler can see, so one missing emit hangs the artifact while the cost model still reports a finite run.",
+  "fix": [
+    "add a bound: until(\u003cSignal\u003e) timeout(30s)",
+    "if the wait is genuinely meant to be unbounded, keep it and make sure an emit is guaranteed."
+  ],
+  "text": "error[W4113]: until without a timeout can block forever\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The workflow's bounds are step counts, not wall-clock time. An until with no timeout has no upper bound the compiler can see, so one missing emit hangs the artifact while the cost model still reports a finite run.\n  help: add a bound: until(\u003cSignal\u003e) timeout(30s)\n  help: if the wait is genuinely meant to be unbounded, keep it and make sure an emit is guaranteed.\n"
+}

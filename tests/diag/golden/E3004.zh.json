@@ -1,0 +1,21 @@
+{
+  "code": "E3004",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "count": "V_count",
+    "limit": "V_limit"
+  },
+  "message": "本单元展开出 V_count 个模块，超过上限 V_limit",
+  "why": "每个模块都要解析并保留到编译结束。上限给恶意输入的内存定了界，也让\"这个构建要多久\"能从源码树本身回答。",
+  "fix": [
+    "拆分单元：把一部分挪到 #link 后面，那样它的模块不会被重新解析",
+    "或者合并那些总是一起被 include 的小头文件"
+  ],
+  "text": "error[E3004]: 本单元展开出 V_count 个模块，超过上限 V_limit\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 每个模块都要解析并保留到编译结束。上限给恶意输入的内存定了界，也让\"这个构建要多久\"能从源码树本身回答。\n  help: 拆分单元：把一部分挪到 #link 后面，那样它的模块不会被重新解析\n  help: 或者合并那些总是一起被 include 的小头文件\n"
+}

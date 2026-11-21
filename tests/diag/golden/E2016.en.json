@@ -1,0 +1,18 @@
+{
+  "code": "E2016",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "tool.call method must be a string literal",
+  "why": "The HTTP method decides idempotency (GET/HEAD are safe to retry); it must be readable at compile time, so a computed method is rejected.",
+  "fix": [
+    "pass a literal: tool.call(\"GET\", ...)",
+    "if the method varies, split into separate call sites"
+  ],
+  "text": "error[E2016]: tool.call method must be a string literal\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The HTTP method decides idempotency (GET/HEAD are safe to retry); it must be readable at compile time, so a computed method is rejected.\n  help: pass a literal: tool.call(\"GET\", ...)\n  help: if the method varies, split into separate call sites\n"
+}

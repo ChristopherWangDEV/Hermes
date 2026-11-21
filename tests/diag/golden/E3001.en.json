@@ -1,0 +1,21 @@
+{
+  "code": "E3001",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "available": "V_available",
+    "spec": "V_spec"
+  },
+  "message": "#link V_spec does not resolve: built-in modules are named \u003cstd/NAME\u003e",
+  "why": "Angle-bracket links only resolve against the embedded stdlib, which has a fixed, small member list. Anything else must come from a .hbc on the -L path, and that form uses quotes, not angle brackets.",
+  "fix": [
+    "use a built-in module: V_available",
+    "or link your own archive by module name: #link \"yourlib\";"
+  ],
+  "text": "error[E3001]: #link V_spec does not resolve: built-in modules are named \u003cstd/NAME\u003e\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Angle-bracket links only resolve against the embedded stdlib, which has a fixed, small member list. Anything else must come from a .hbc on the -L path, and that form uses quotes, not angle brackets.\n  help: use a built-in module: V_available\n  help: or link your own archive by module name: #link \"yourlib\";\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E4012",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "logical \u0026\u0026, ||, and ! require bool operands",
+  "why": "The language has no truthiness; \u0026\u0026, ||, ! are boolean connectives, so an int/string/json operand would need an implicit nonzero-means-true rule that does not exist.",
+  "fix": [
+    "compare explicitly: x != 0, or s != a quoted empty string",
+    "or change the operand to a bool"
+  ],
+  "text": "error[E4012]: logical \u0026\u0026, ||, and ! require bool operands\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The language has no truthiness; \u0026\u0026, ||, ! are boolean connectives, so an int/string/json operand would need an implicit nonzero-means-true rule that does not exist.\n  help: compare explicitly: x != 0, or s != a quoted empty string\n  help: or change the operand to a bool\n"
+}

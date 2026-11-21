@@ -1,0 +1,18 @@
+{
+  "code": "E4103",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "void 调用不能作为返回值",
+  "why": "返回一个 `void` 等于把一个不存在的值交给调用方。声明的返回类型是这个 workflow 的契约，返回位上没有东西可写。",
+  "fix": [
+    "把这行调用单独成句",
+    "然后 `return` 一个声明类型的值"
+  ],
+  "text": "error[E4103]: void 调用不能作为返回值\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 返回一个 `void` 等于把一个不存在的值交给调用方。声明的返回类型是这个 workflow 的契约，返回位上没有东西可写。\n  help: 把这行调用单独成句\n  help: 然后 `return` 一个声明类型的值\n"
+}

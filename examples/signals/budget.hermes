@@ -1,0 +1,26 @@
+// 信号与槽：一次预算超支事件被同单元的槽认领。
+//
+// 槽按**引用**捕获 handled，所以 emit 返回后调用方能看到它变成 1 —— 这是
+// 闭包转换里的"写回"语义：槽捕获的是变量，不是值的快照。
+//
+// 这里刻意不读 struct 输入：AOT 后端的 `input.field` 取值目前有已知缺陷
+// （见 KNOWN-GAPS），示例不应依赖它，否则读者会拿一个跑不对的样板开始。
+export signal BudgetExceeded;
+
+export workflow main() entry -> string {
+    auto handled = 0;
+    auto spent = 2000000;
+
+    on BudgetExceeded {
+        handled = handled + 1;
+    }
+
+    if (spent > 1000000) {
+        emit(BudgetExceeded);
+    }
+
+    if (handled == 1) {
+        return "handled";
+    }
+    return "quiet";
+}

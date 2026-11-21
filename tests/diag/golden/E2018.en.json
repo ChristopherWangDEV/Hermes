@@ -1,0 +1,18 @@
+{
+  "code": "E2018",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "an auth clause must be auth env(\"NAME\"): a secret comes only from the environment",
+  "why": "The secret source must be statically auditable; allowing an expression or a default lets the backend start unconfigured and fail only with a 401 at runtime.",
+  "fix": [
+    "write auth env(\"NAME\") with a literal variable name",
+    "remove any default — a secret has no safe default"
+  ],
+  "text": "error[E2018]: an auth clause must be auth env(\"NAME\"): a secret comes only from the environment\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The secret source must be statically auditable; allowing an expression or a default lets the backend start unconfigured and fail only with a 401 at runtime.\n  help: write auth env(\"NAME\") with a literal variable name\n  help: remove any default — a secret has no safe default\n"
+}

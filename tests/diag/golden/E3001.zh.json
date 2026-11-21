@@ -1,0 +1,21 @@
+{
+  "code": "E3001",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "available": "V_available",
+    "spec": "V_spec"
+  },
+  "message": "#link V_spec 无法解析：内置模块的名字是 \u003cstd/NAME\u003e",
+  "why": "尖括号形式的链接只在内嵌 stdlib 里解析，而它的成员表是固定且很小的。其他一切必须来自 -L 路径上的 .hbc，而那种形式用引号不用尖括号。",
+  "fix": [
+    "用内置模块：V_available",
+    "或者按模块名链接你自己的归档：#link \"yourlib\";"
+  ],
+  "text": "error[E3001]: #link V_spec 无法解析：内置模块的名字是 \u003cstd/NAME\u003e\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 尖括号形式的链接只在内嵌 stdlib 里解析，而它的成员表是固定且很小的。其他一切必须来自 -L 路径上的 .hbc，而那种形式用引号不用尖括号。\n  help: 用内置模块：V_available\n  help: 或者按模块名链接你自己的归档：#link \"yourlib\";\n"
+}

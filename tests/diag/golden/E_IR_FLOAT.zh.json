@@ -1,0 +1,21 @@
+{
+  "code": "E_IR_FLOAT",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "path": "V_path",
+    "preview": "V_preview"
+  },
+  "message": "IR 在 V_path 处出现浮点 JSON 数字（开头是 V_preview）",
+  "why": "canonical JSON 禁止浮点（IR.md P-1）。浮点的最短往返表示在 Go / Rust / C++ 之间有真实分歧，只要它落进被哈希的字节里，跨语言校验就会随机失败，而且只在某些机器上失败。",
+  "fix": [
+    "编码成字符串：{\"k\":\"double\",\"bits\":\"3ff8000000000000\"}",
+    "金额与概率用整数 —— 微美元（1e-6）和基点（1e-4）"
+  ],
+  "text": "error[E_IR_FLOAT]: IR 在 V_path 处出现浮点 JSON 数字（开头是 V_preview）\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: canonical JSON 禁止浮点（IR.md P-1）。浮点的最短往返表示在 Go / Rust / C++ 之间有真实分歧，只要它落进被哈希的字节里，跨语言校验就会随机失败，而且只在某些机器上失败。\n  help: 编码成字符串：{\"k\":\"double\",\"bits\":\"3ff8000000000000\"}\n  help: 金额与概率用整数 —— 微美元（1e-6）和基点（1e-4）\n"
+}

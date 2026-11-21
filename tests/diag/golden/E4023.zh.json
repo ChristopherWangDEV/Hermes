@@ -1,0 +1,18 @@
+{
+  "code": "E4023",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "不能把 error 对象绑定到变量",
+  "why": "catch 的 error 对象只活在它自己的 catch 块里且是借用的，不归你所有；绑出去会让它比所指向的错误活得更久。",
+  "fix": [
+    "在 catch 块内联使用 error 对象",
+    "若之后要用它的数据，显式把字段拷出来"
+  ],
+  "text": "error[E4023]: 不能把 error 对象绑定到变量\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: catch 的 error 对象只活在它自己的 catch 块里且是借用的，不归你所有；绑出去会让它比所指向的错误活得更久。\n  help: 在 catch 块内联使用 error 对象\n  help: 若之后要用它的数据，显式把字段拷出来\n"
+}

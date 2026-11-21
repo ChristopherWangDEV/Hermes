@@ -1,0 +1,18 @@
+{
+  "code": "E3009",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "tool 声明字段必须是 name = \"value\"; 的形式",
+  "why": "工具元信息（端点、方法、幂等性）是一组扁平字符串字段；字段写坏就无法把工具描述给运行时。",
+  "fix": [
+    "每个字段写成 name = \"value\";",
+    "确认值是用引号括起来的字符串字面量"
+  ],
+  "text": "error[E3009]: tool 声明字段必须是 name = \"value\"; 的形式\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 工具元信息（端点、方法、幂等性）是一组扁平字符串字段；字段写坏就无法把工具描述给运行时。\n  help: 每个字段写成 name = \"value\";\n  help: 确认值是用引号括起来的字符串字面量\n"
+}

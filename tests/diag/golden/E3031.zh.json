@@ -1,0 +1,20 @@
+{
+  "code": "E3031",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "sym": "V_sym"
+  },
+  "message": "extern 声明 V_sym 没有匹配的 #link native",
+  "why": "extern 符号的实现必须来自 #link native 指名的原生归档；缺它链接器无法解析该符号",
+  "fix": [
+    "在同一编译单元里加 '#link native \"\u003c归档\u003e\" from \"\u003c头\u003e\";'",
+    "确认 extern 符号名与该归档导出的符号一致"
+  ],
+  "text": "error[E3031]: extern 声明 V_sym 没有匹配的 #link native\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: extern 符号的实现必须来自 #link native 指名的原生归档；缺它链接器无法解析该符号\n  help: 在同一编译单元里加 '#link native \"\u003c归档\u003e\" from \"\u003c头\u003e\";'\n  help: 确认 extern 符号名与该归档导出的符号一致\n"
+}

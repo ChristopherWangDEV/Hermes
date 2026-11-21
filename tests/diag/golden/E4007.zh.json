@@ -1,0 +1,18 @@
+{
+  "code": "E4007",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "算术运算符用在了非数值操作数上（string、bool、json）",
+  "why": "字符串没有算术，也没有运算符重载；拼接被刻意禁止因为它会掩盖编码与区域设置，一元负号只对数字有定义。",
+  "fix": [
+    "用字符串插值（把值写进字符串里）而不是运算符",
+    "算术前把 json 收窄成数值类型（json.as_int）"
+  ],
+  "text": "error[E4007]: 算术运算符用在了非数值操作数上（string、bool、json）\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 字符串没有算术，也没有运算符重载；拼接被刻意禁止因为它会掩盖编码与区域设置，一元负号只对数字有定义。\n  help: 用字符串插值（把值写进字符串里）而不是运算符\n  help: 算术前把 json 收窄成数值类型（json.as_int）\n"
+}

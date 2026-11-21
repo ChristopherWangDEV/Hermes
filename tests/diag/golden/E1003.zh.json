@@ -1,0 +1,18 @@
+{
+  "code": "E1003",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "token 数超过 2,000,000 上限",
+  "why": "include 展开后的总 token 数被限制，好让解析时间与内存有界、构建耗时能从源码树本身回答。",
+  "fix": [
+    "拆分文件或减少 include",
+    "把不常用的声明挪到 #link 后面，避免被重新解析"
+  ],
+  "text": "error[E1003]: token 数超过 2,000,000 上限\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: include 展开后的总 token 数被限制，好让解析时间与内存有界、构建耗时能从源码树本身回答。\n  help: 拆分文件或减少 include\n  help: 把不常用的声明挪到 #link 后面，避免被重新解析\n"
+}

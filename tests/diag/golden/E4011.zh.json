@@ -1,0 +1,18 @@
+{
+  "code": "E4011",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "这些操作数类型不能做大小比较",
+  "why": "大小比较（\u003c \u003c= \u003e \u003e=）只对 int、double、cost、string 有定义；bool、json、struct 没有全序。",
+  "fix": [
+    "只比较 int、double、cost 或 string",
+    "对 json，先取出具体字段再比"
+  ],
+  "text": "error[E4011]: 这些操作数类型不能做大小比较\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 大小比较（\u003c \u003c= \u003e \u003e=）只对 int、double、cost、string 有定义；bool、json、struct 没有全序。\n  help: 只比较 int、double、cost 或 string\n  help: 对 json，先取出具体字段再比\n"
+}

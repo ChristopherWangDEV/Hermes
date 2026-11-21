@@ -1,0 +1,20 @@
+{
+  "code": "E3032",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "header": "V_header"
+  },
+  "message": "native header V_header is not a pure-C ABI header",
+  "why": "cgo only parses C; a C++ header (.hpp/.cpp/.cc) cannot serve as the native contract",
+  "fix": [
+    "provide a pure-C header (.h) for the archive",
+    "wrap the C++ API in a thin extern \"C\" shim and point #link native at the .h shim"
+  ],
+  "text": "error[E3032]: native header V_header is not a pure-C ABI header\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: cgo only parses C; a C++ header (.hpp/.cpp/.cc) cannot serve as the native contract\n  help: provide a pure-C header (.h) for the archive\n  help: wrap the C++ API in a thin extern \"C\" shim and point #link native at the .h shim\n"
+}

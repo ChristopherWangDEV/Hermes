@@ -1,0 +1,56 @@
+# 构建产物
+build/
+*.hbc
+*.sealed.hermes
+
+# SDK / 扩展的本地依赖与产物
+node_modules/
+dist/
+target/
+out/
+bin/
+obj/
+*.vsix
+*.tar.gz
+
+# 编辑器/系统
+.DS_Store
+
+# 误提交过的构建产物（已从索引移除）
+/hermes
+/hermesrt
+*.jar
+*.node
+*.dylib
+*.so
+
+# Python 打包产物
+packages/python/dist/
+packages/python/build/
+*.egg-info/
+
+# 内部文档：不进公开仓库
+.internal/
+
+# C 示例的构建产物
+examples/c-minimal/app
+examples/c-minimal/label.h
+examples/c-minimal/label.hbc
+examples/c-minimal/build/
+
+# CMake 构建产物
+build/
+
+# Python 字节码缓存（不应进仓库）
+__pycache__/
+*.pyc
+
+# 内部工作文档：不随仓库发布（迁移规格、审阅记录、路线图草稿）。
+# 它们写的是"我们怎么搬的/还剩什么"，属于团队内部上下文，不是给用户看的。
+docs/specs/
+docs/review-triage-*.md
+docs/ROADMAP-*.md
+.internal/
+
+# 本机编辑器配置
+.vscode/

@@ -1,0 +1,21 @@
+{
+  "code": "E_IR_ENTRY",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "name": "V_name",
+    "reason": "V_reason"
+  },
+  "message": "V_reason (workflow V_name)",
+  "why": "Entry selection must be unambiguous: `hermes run` without --workflow picks the single exported entry. Zero candidates means there is nothing to run; two means the choice is a coin flip and the artifact is not reproducible.",
+  "fix": [
+    "mark exactly one exported workflow with `entry`",
+    "or pass --workflow \u003cname\u003e explicitly at run time"
+  ],
+  "text": "error[E_IR_ENTRY]: V_reason (workflow V_name)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Entry selection must be unambiguous: `hermes run` without --workflow picks the single exported entry. Zero candidates means there is nothing to run; two means the choice is a coin flip and the artifact is not reproducible.\n  help: mark exactly one exported workflow with `entry`\n  help: or pass --workflow \u003cname\u003e explicitly at run time\n"
+}

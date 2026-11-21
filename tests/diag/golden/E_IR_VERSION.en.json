@@ -1,0 +1,22 @@
+{
+  "code": "E_IR_VERSION",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "field": "V_field",
+    "got": "V_got",
+    "want": "V_want"
+  },
+  "message": "V_field is V_got, but this build only accepts V_want (Hermes 2.0.0 and later)",
+  "why": "IR is deliberately not forward-compatible: 2.x reads only what 2.0.0 and later produce. Accepting an older artifact would mean interpreting fields whose meaning has changed since — a wrong answer that looks like a right one. There is no migration path on purpose: 1.x artifacts are rejected loudly instead of being silently misread.",
+  "fix": [
+    "recompile the source with this compiler (2.0.0+)",
+    "if you must run a 1.x artifact, use a 1.x binary — do not hand-edit the version field"
+  ],
+  "text": "error[E_IR_VERSION]: V_field is V_got, but this build only accepts V_want (Hermes 2.0.0 and later)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: IR is deliberately not forward-compatible: 2.x reads only what 2.0.0 and later produce. Accepting an older artifact would mean interpreting fields whose meaning has changed since — a wrong answer that looks like a right one. There is no migration path on purpose: 1.x artifacts are rejected loudly instead of being silently misread.\n  help: recompile the source with this compiler (2.0.0+)\n  help: if you must run a 1.x artifact, use a 1.x binary — do not hand-edit the version field\n"
+}

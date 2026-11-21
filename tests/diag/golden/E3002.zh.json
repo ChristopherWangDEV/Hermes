@@ -1,0 +1,20 @@
+{
+  "code": "E3002",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "chain": "V_chain"
+  },
+  "message": "include 成环：V_chain",
+  "why": "include 是深度优先展开的，成环就永不终止 —— 编译器会反复重新打开同一个头文件。注意这是**模块**环，不是运行期环：打破它改变的是\"哪些声明可见\"，不是执行顺序。",
+  "fix": [
+    "把共用的声明挪进第三个头文件，两边都 include 它",
+    "或者如果某个 include 只是为了一个可以前向声明的类型，删掉它"
+  ],
+  "text": "error[E3002]: include 成环：V_chain\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: include 是深度优先展开的，成环就永不终止 —— 编译器会反复重新打开同一个头文件。注意这是**模块**环，不是运行期环：打破它改变的是\"哪些声明可见\"，不是执行顺序。\n  help: 把共用的声明挪进第三个头文件，两边都 include 它\n  help: 或者如果某个 include 只是为了一个可以前向声明的类型，删掉它\n"
+}

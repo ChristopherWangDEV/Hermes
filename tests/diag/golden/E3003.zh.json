@@ -1,0 +1,21 @@
+{
+  "code": "E3003",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "depth": "V_depth",
+    "limit": "V_limit"
+  },
+  "message": "include 链深达 V_depth 层，超过上限 V_limit",
+  "why": "上限存在是为了让恶意或误写的链条耗尽不了栈。它远高于任何可读的设计 —— 真撞到上限，说明头文件层次有问题，不是上限有问题。",
+  "fix": [
+    "压平层次：把共用声明放进一个叶子头文件",
+    "或者把最深的那个头拆成两个平级的，而不是嵌套的"
+  ],
+  "text": "error[E3003]: include 链深达 V_depth 层，超过上限 V_limit\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 上限存在是为了让恶意或误写的链条耗尽不了栈。它远高于任何可读的设计 —— 真撞到上限，说明头文件层次有问题，不是上限有问题。\n  help: 压平层次：把共用声明放进一个叶子头文件\n  help: 或者把最深的那个头拆成两个平级的，而不是嵌套的\n"
+}

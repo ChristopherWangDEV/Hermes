@@ -1,0 +1,18 @@
+{
+  "code": "E1006",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "金额超过 6 位小数（微美元上限）",
+  "why": "cost 是微美元，最多保留 6 位小数；更细的精度无法表示，只会被静默舍入。",
+  "fix": [
+    "把金额四舍五入到 6 位小数",
+    "或者直接用微美元整数表示"
+  ],
+  "text": "error[E1006]: 金额超过 6 位小数（微美元上限）\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: cost 是微美元，最多保留 6 位小数；更细的精度无法表示，只会被静默舍入。\n  help: 把金额四舍五入到 6 位小数\n  help: 或者直接用微美元整数表示\n"
+}

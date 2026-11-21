@@ -1,0 +1,5 @@
+export workflow fb() entry -> string {
+    auto z = 0;
+    auto x = (1 / z) fallback { return 42; };
+    return "{x}";
+}

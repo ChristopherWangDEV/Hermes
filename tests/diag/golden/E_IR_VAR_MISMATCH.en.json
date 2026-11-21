@@ -1,0 +1,22 @@
+{
+  "code": "E_IR_VAR_MISMATCH",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "detail": "V_detail",
+    "name": "V_name",
+    "var": "V_var"
+  },
+  "message": "var V_name (id V_var) and the `decl` node binding it disagree: V_detail",
+  "why": "vars[] and decl nodes are two views of one binding. The executor reserves the slot from vars[] but assigns it in the decl node; if they disagree, the variable is read from a slot that was never written.",
+  "fix": [
+    "make var V_var.decl point at the `decl` node that assigns it",
+    "or drop the vars[] entry if the decl node no longer exists"
+  ],
+  "text": "error[E_IR_VAR_MISMATCH]: var V_name (id V_var) and the `decl` node binding it disagree: V_detail\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: vars[] and decl nodes are two views of one binding. The executor reserves the slot from vars[] but assigns it in the decl node; if they disagree, the variable is read from a slot that was never written.\n  help: make var V_var.decl point at the `decl` node that assigns it\n  help: or drop the vars[] entry if the decl node no longer exists\n"
+}

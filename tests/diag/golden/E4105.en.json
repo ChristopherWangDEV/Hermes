@@ -1,0 +1,18 @@
+{
+  "code": "E4105",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "break outside a loop",
+  "why": "`break` leaves the innermost loop, and the checker only counts for/while bodies as loops — here there is nothing to leave. Crossing the workflow boundary is what `stop` exists for; mixing the two makes the control flow unreadable.",
+  "fix": [
+    "use `workflow.stop(reason: …)` to end the workflow early",
+    "or move the `break` inside the loop it is meant to leave"
+  ],
+  "text": "error[E4105]: break outside a loop\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `break` leaves the innermost loop, and the checker only counts for/while bodies as loops — here there is nothing to leave. Crossing the workflow boundary is what `stop` exists for; mixing the two makes the control flow unreadable.\n  help: use `workflow.stop(reason: …)` to end the workflow early\n  help: or move the `break` inside the loop it is meant to leave\n"
+}

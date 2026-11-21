@@ -1,0 +1,18 @@
+{
+  "code": "E5002",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "在 `parallel` 块内声明的值在块外不可见",
+  "why": "parallel 的每个分支并发执行；块内产生的值在块外没有唯一确定的值，因此作用域限于块内。",
+  "fix": [
+    "在 parallel 块内使用该值",
+    "或者从分支返回再合并结果"
+  ],
+  "text": "error[E5002]: 在 `parallel` 块内声明的值在块外不可见\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: parallel 的每个分支并发执行；块内产生的值在块外没有唯一确定的值，因此作用域限于块内。\n  help: 在 parallel 块内使用该值\n  help: 或者从分支返回再合并结果\n"
+}

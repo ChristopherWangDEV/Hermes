@@ -1,0 +1,18 @@
+{
+  "code": "E4010",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "不能用 == 或 != 比较两个不同类型的值",
+  "why": "相等要求两侧同类型；跨类型比较没有唯一含义，只能靠隐藏的强制转换。",
+  "fix": [
+    "比较同类型的值",
+    "显式把一边转换成相同类型"
+  ],
+  "text": "error[E4010]: 不能用 == 或 != 比较两个不同类型的值\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 相等要求两侧同类型；跨类型比较没有唯一含义，只能靠隐藏的强制转换。\n  help: 比较同类型的值\n  help: 显式把一边转换成相同类型\n"
+}

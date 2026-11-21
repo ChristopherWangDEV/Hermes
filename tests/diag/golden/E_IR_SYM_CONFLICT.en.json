@@ -1,0 +1,23 @@
+{
+  "code": "E_IR_SYM_CONFLICT",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "count": "V_count",
+    "name": "V_name",
+    "namespace": "V_namespace",
+    "places": "V_places"
+  },
+  "message": "symbol V_name appears V_count times in V_namespace: V_places",
+  "why": "Each of the four namespaces (type / workflow / backend / tool) must hold unique names. With duplicates, export lookup becomes order-dependent — the linker resolves whichever it scans first, so the same archive can link differently on two machines.",
+  "fix": [
+    "rename one of them",
+    "or drop the duplicate export if it is a leftover"
+  ],
+  "text": "error[E_IR_SYM_CONFLICT]: symbol V_name appears V_count times in V_namespace: V_places\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Each of the four namespaces (type / workflow / backend / tool) must hold unique names. With duplicates, export lookup becomes order-dependent — the linker resolves whichever it scans first, so the same archive can link differently on two machines.\n  help: rename one of them\n  help: or drop the duplicate export if it is a leftover\n"
+}

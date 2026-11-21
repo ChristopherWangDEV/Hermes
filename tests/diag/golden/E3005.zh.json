@@ -1,0 +1,18 @@
+{
+  "code": "E3005",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": ".h 头文件里的 workflow 不能带函数体",
+  "why": "头文件只声明接口；头里写函数体会被复制进每个包含者，于是跑的是哪份实现取决于 include 图而非 #link。",
+  "fix": [
+    "把函数体挪到对应的 .hermes 实现里",
+    "头文件只保留签名"
+  ],
+  "text": "error[E3005]: .h 头文件里的 workflow 不能带函数体\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 头文件只声明接口；头里写函数体会被复制进每个包含者，于是跑的是哪份实现取决于 include 图而非 #link。\n  help: 把函数体挪到对应的 .hermes 实现里\n  help: 头文件只保留签名\n"
+}

@@ -1,0 +1,24 @@
+{
+  "code": "E_IR_DUP_ID",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "first": "V_first",
+    "id": "V_id",
+    "last": "V_last",
+    "second": "V_second",
+    "wf": "V_wf"
+  },
+  "message": "duplicate node id V_id in workflow V_wf: first at V_first, again at V_second",
+  "why": "Node ids are array indices (IR.md §4). Two nodes sharing one id make every reference to it ambiguous — a kid that says V_id could mean either of them, and which one you get depends on traversal order.",
+  "fix": [
+    "renumber the node at V_second (ids must stay contiguous, 0..V_last)",
+    "or delete one of the two nodes if it is a leftover"
+  ],
+  "text": "error[E_IR_DUP_ID]: duplicate node id V_id in workflow V_wf: first at V_first, again at V_second\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Node ids are array indices (IR.md §4). Two nodes sharing one id make every reference to it ambiguous — a kid that says V_id could mean either of them, and which one you get depends on traversal order.\n  help: renumber the node at V_second (ids must stay contiguous, 0..V_last)\n  help: or delete one of the two nodes if it is a leftover\n"
+}

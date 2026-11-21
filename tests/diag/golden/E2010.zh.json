@@ -1,0 +1,18 @@
+{
+  "code": "E2010",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "json 字段访问后缺少 ']'",
+  "why": "json 字段访问是方括号语法；缺 ']' 会让访问没闭合、后面的表达式被误解析。",
+  "fix": [
+    "闭合访问：obj[\"key\"]",
+    "检查键字符串与它的右括号"
+  ],
+  "text": "error[E2010]: json 字段访问后缺少 ']'\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: json 字段访问是方括号语法；缺 ']' 会让访问没闭合、后面的表达式被误解析。\n  help: 闭合访问：obj[\"key\"]\n  help: 检查键字符串与它的右括号\n"
+}

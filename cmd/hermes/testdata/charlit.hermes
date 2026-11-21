@@ -1,0 +1,7 @@
+export workflow ch() entry -> string {
+    char c = 'A';
+    short s = 7;
+    long l = 100000;
+    auto sum = c + s;
+    return "{sum}:{l}";
+}

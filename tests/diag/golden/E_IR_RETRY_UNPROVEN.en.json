@@ -1,0 +1,23 @@
+{
+  "code": "E_IR_RETRY_UNPROVEN",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "call": "V_call",
+    "mode": "V_mode",
+    "retry": "V_retry",
+    "tool": "V_tool"
+  },
+  "message": "retry node V_retry can execute call_tool V_call more than once, but tool V_tool declares idem.mode=V_mode — there is no idempotency proof",
+  "why": "A retry re-runs its whole body whenever a RunError comes back. If that body contains a tool call without a proof of idempotency, every 5xx repeats the same POST: duplicate charges, duplicate side effects. E5007 is a compile-time gate on the source AST, so it cannot protect an IR file that was hand-edited, produced by an older compiler, or rearranged by a codegen bug. This check runs on the node graph at load time, where 'inside retry' means reachable from retry.body.",
+  "fix": [
+    "move call_tool V_call out of the retry subtree — keep only proven calls inside it",
+    "give V_tool a real proof (GET/HEAD, idempotent = true, or a pure idem_key) and rebuild the IR with hermes ir; do not hand-edit idem.mode"
+  ],
+  "text": "error[E_IR_RETRY_UNPROVEN]: retry node V_retry can execute call_tool V_call more than once, but tool V_tool declares idem.mode=V_mode — there is no idempotency proof\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A retry re-runs its whole body whenever a RunError comes back. If that body contains a tool call without a proof of idempotency, every 5xx repeats the same POST: duplicate charges, duplicate side effects. E5007 is a compile-time gate on the source AST, so it cannot protect an IR file that was hand-edited, produced by an older compiler, or rearranged by a codegen bug. This check runs on the node graph at load time, where 'inside retry' means reachable from retry.body.\n  help: move call_tool V_call out of the retry subtree — keep only proven calls inside it\n  help: give V_tool a real proof (GET/HEAD, idempotent = true, or a pure idem_key) and rebuild the IR with hermes ir; do not hand-edit idem.mode\n"
+}

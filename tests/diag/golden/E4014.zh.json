@@ -1,0 +1,18 @@
+{
+  "code": "E4014",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "同一文件里重复声明了同名 struct",
+  "why": "每个 struct 名对应一种布局；同文件里第二次声明会让类型二义，字段顺序取决于哪份胜出。",
+  "fix": [
+    "给其中一个改名",
+    "若是残留，删掉重复的那份"
+  ],
+  "text": "error[E4014]: 同一文件里重复声明了同名 struct\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 每个 struct 名对应一种布局；同文件里第二次声明会让类型二义，字段顺序取决于哪份胜出。\n  help: 给其中一个改名\n  help: 若是残留，删掉重复的那份\n"
+}

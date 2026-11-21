@@ -1,0 +1,18 @@
+{
+  "code": "E1002",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "源文件超过 8 MiB 上限",
+  "why": "单个文件被限制在 8 MiB，好让编译器在恶意或失控输入下内存有界；include 展开另行计数。",
+  "fix": [
+    "把文件拆成更小的模块",
+    "精简内容，或把一部分挪到 #link 后面"
+  ],
+  "text": "error[E1002]: 源文件超过 8 MiB 上限\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 单个文件被限制在 8 MiB，好让编译器在恶意或失控输入下内存有界；include 展开另行计数。\n  help: 把文件拆成更小的模块\n  help: 精简内容，或把一部分挪到 #link 后面\n"
+}

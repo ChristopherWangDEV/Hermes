@@ -1,0 +1,22 @@
+{
+  "code": "E_IR_RECOMPUTE_DRIFT",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "actual": "V_actual",
+    "claimed": "V_claimed",
+    "field": "V_field"
+  },
+  "message": "V_field says V_claimed, but recomputing from the IR gives V_actual",
+  "why": "This field is derived, not authoritative. It is written at build time and must be recomputed on load — otherwise a tampered value would silently raise the execution ceiling, and bounds exist precisely to cap what a run may do.",
+  "fix": [
+    "regenerate the artifact — the producer wrote an inconsistent value",
+    "if it was edited by hand, do not: derived fields are recomputed, not trusted"
+  ],
+  "text": "error[E_IR_RECOMPUTE_DRIFT]: V_field says V_claimed, but recomputing from the IR gives V_actual\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: This field is derived, not authoritative. It is written at build time and must be recomputed on load — otherwise a tampered value would silently raise the execution ceiling, and bounds exist precisely to cap what a run may do.\n  help: regenerate the artifact — the producer wrote an inconsistent value\n  help: if it was edited by hand, do not: derived fields are recomputed, not trusted\n"
+}

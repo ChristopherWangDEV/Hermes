@@ -1,0 +1,22 @@
+{
+  "code": "E3015",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "mod": "V_mod",
+    "name": "V_name",
+    "path": "V_path"
+  },
+  "message": "#include V_path 指向的是实现文件；只能 include .h",
+  "why": ".hermes 里有函数体。include 它等于让每个包含者都拿到一份自己的实现副本，并把\"链的是哪份实现\"从 #link 手里挪到 include 图上 —— 而 #include/#link 分离存在的意义正是守住这个性质。",
+  "fix": [
+    "要用它的实现，写：#link \"V_mod\";",
+    "只要它的类型，include 它的接口：#include \"V_name.h\""
+  ],
+  "text": "error[E3015]: #include V_path 指向的是实现文件；只能 include .h\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: .hermes 里有函数体。include 它等于让每个包含者都拿到一份自己的实现副本，并把\"链的是哪份实现\"从 #link 手里挪到 include 图上 —— 而 #include/#link 分离存在的意义正是守住这个性质。\n  help: 要用它的实现，写：#link \"V_mod\";\n  help: 只要它的类型，include 它的接口：#include \"V_name.h\"\n"
+}

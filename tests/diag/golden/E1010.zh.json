@@ -1,0 +1,21 @@
+{
+  "code": "E1010",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "spec": "V_spec",
+    "suggestion": "V_suggestion"
+  },
+  "message": "#link V_spec 不是合法的模块名",
+  "why": "#link 的载荷是**模块名**不是文件名 —— 它解析成 \u003cname\u003e.hbc。写后缀或路径会让人以为绝对路径可行，然后一台机器上能过的构建在另一台上失败。",
+  "fix": [
+    "只写模块名：#link \"V_suggestion\";",
+    "库在别处的话，把 -L 指向它的目录，而不是把路径写进源码"
+  ],
+  "text": "error[E1010]: #link V_spec 不是合法的模块名\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: #link 的载荷是**模块名**不是文件名 —— 它解析成 \u003cname\u003e.hbc。写后缀或路径会让人以为绝对路径可行，然后一台机器上能过的构建在另一台上失败。\n  help: 只写模块名：#link \"V_suggestion\";\n  help: 库在别处的话，把 -L 指向它的目录，而不是把路径写进源码\n"
+}

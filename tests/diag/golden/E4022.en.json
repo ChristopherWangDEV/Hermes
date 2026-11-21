@@ -1,0 +1,18 @@
+{
+  "code": "E4022",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "cannot return a tuple",
+  "why": "A workflow's return type must be a single named type with a schema; a tuple has no name, so it cannot be exported or described to callers.",
+  "fix": [
+    "wrap the values in a struct and return that",
+    "or return one value and pass the rest via input"
+  ],
+  "text": "error[E4022]: cannot return a tuple\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A workflow's return type must be a single named type with a schema; a tuple has no name, so it cannot be exported or described to callers.\n  help: wrap the values in a struct and return that\n  help: or return one value and pass the rest via input\n"
+}

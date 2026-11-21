@@ -1,0 +1,16 @@
+#link <std/net>
+
+export struct PayInput {
+    string user_id;
+}
+
+export workflow pay(input: PayInput) entry -> json {
+    retry (2) {
+        auto r = tool.call<json>(
+            url = "https://api.example.com/pay",
+            method = "POST",
+            idem_key = "order-{input.user_id}"
+        );
+        return r;
+    }
+}

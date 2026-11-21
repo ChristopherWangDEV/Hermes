@@ -1,0 +1,18 @@
+{
+  "code": "E_IR_CODEGEN",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "code generation failed: the workflow could not be lowered to IR",
+  "why": "Codegen rejects shapes it cannot lower faithfully (for example an if/return decision tree that does not match its expected form); emitting a wrong IR would be worse than failing.",
+  "fix": [
+    "fix the construct the message names",
+    "or report it — an internal codegen error is a compiler bug, not your input"
+  ],
+  "text": "error[E_IR_CODEGEN]: code generation failed: the workflow could not be lowered to IR\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Codegen rejects shapes it cannot lower faithfully (for example an if/return decision tree that does not match its expected form); emitting a wrong IR would be worse than failing.\n  help: fix the construct the message names\n  help: or report it — an internal codegen error is a compiler bug, not your input\n"
+}

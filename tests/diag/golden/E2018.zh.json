@@ -1,0 +1,18 @@
+{
+  "code": "E2018",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "auth 子句必须是 auth env(\"NAME\")：密钥只能来自环境",
+  "why": "密钥来源必须可静态审计；允许表达式或默认值会让后端在未配置时启动，只在运行期以 401 失败。",
+  "fix": [
+    "写成 auth env(\"NAME\")，变量名用字面量",
+    "去掉任何默认值——密钥没有安全的默认"
+  ],
+  "text": "error[E2018]: auth 子句必须是 auth env(\"NAME\")：密钥只能来自环境\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 密钥来源必须可静态审计；允许表达式或默认值会让后端在未配置时启动，只在运行期以 401 失败。\n  help: 写成 auth env(\"NAME\")，变量名用字面量\n  help: 去掉任何默认值——密钥没有安全的默认\n"
+}

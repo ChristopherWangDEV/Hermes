@@ -1,0 +1,18 @@
+{
+  "code": "E3023",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "input 参数必须带类型",
+  "why": "input 的类型就是请求契约；没有它，解码器没有 schema 去校验进来的 body。",
+  "fix": [
+    "标注类型：input: Req",
+    "给该 struct 配上对应的 schema"
+  ],
+  "text": "error[E3023]: input 参数必须带类型\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: input 的类型就是请求契约；没有它，解码器没有 schema 去校验进来的 body。\n  help: 标注类型：input: Req\n  help: 给该 struct 配上对应的 schema\n"
+}

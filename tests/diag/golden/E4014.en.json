@@ -1,0 +1,18 @@
+{
+  "code": "E4014",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "duplicate struct declaration in this file",
+  "why": "Each struct name maps to one layout; a second declaration in the same file makes the type ambiguous and the field order depend on which one wins.",
+  "fix": [
+    "rename one of the two structs",
+    "or remove the duplicate if it is a leftover"
+  ],
+  "text": "error[E4014]: duplicate struct declaration in this file\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Each struct name maps to one layout; a second declaration in the same file makes the type ambiguous and the field order depend on which one wins.\n  help: rename one of the two structs\n  help: or remove the duplicate if it is a leftover\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E4008",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "cost and double do not mix in arithmetic",
+  "why": "cost is integer micro-USD; mixing it with a double reintroduces the exact rounding error cost was designed to avoid.",
+  "fix": [
+    "keep money math in cost (integers)",
+    "or convert deliberately and round explicitly"
+  ],
+  "text": "error[E4008]: cost and double do not mix in arithmetic\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: cost is integer micro-USD; mixing it with a double reintroduces the exact rounding error cost was designed to avoid.\n  help: keep money math in cost (integers)\n  help: or convert deliberately and round explicitly\n"
+}

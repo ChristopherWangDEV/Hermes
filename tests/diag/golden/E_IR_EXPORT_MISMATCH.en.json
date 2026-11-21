@@ -1,0 +1,26 @@
+{
+  "code": "E_IR_EXPORT_MISMATCH",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "action": "V_action",
+    "exported": "V_exported",
+    "name": "V_name",
+    "target": "V_target",
+    "verb": "V_verb",
+    "want": "V_want",
+    "where": "V_where"
+  },
+  "message": "workflow V_name has exported=V_exported, but V_where V_verb it",
+  "why": "`exported` on the workflow and exports.workflows (the symbol table) are two representations of one fact. The stripper reads the scalar; the linker reads the table. When they disagree, one believes the symbol is reachable and the other believes it does not exist — the artifact then works or breaks depending on which tool ran first.",
+  "fix": [
+    "set exported=V_want on the workflow",
+    "or V_action \"V_name\" V_target"
+  ],
+  "text": "error[E_IR_EXPORT_MISMATCH]: workflow V_name has exported=V_exported, but V_where V_verb it\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `exported` on the workflow and exports.workflows (the symbol table) are two representations of one fact. The stripper reads the scalar; the linker reads the table. When they disagree, one believes the symbol is reachable and the other believes it does not exist — the artifact then works or breaks depending on which tool ran first.\n  help: set exported=V_want on the workflow\n  help: or V_action \"V_name\" V_target\n"
+}

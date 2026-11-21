@@ -1,0 +1,21 @@
+{
+  "code": "W4112",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "chan": "V_chan",
+    "sig": "V_sig"
+  },
+  "message": "no handler for signal `V_sig` on channel \"V_chan\"",
+  "why": "The channel is hashed at compile time, so a typo produces a hash that nothing listens on: the emit runs and does nothing, silently. A global emit matches any global slot; a channel-routed emit only matches a slot on that same channel.",
+  "fix": [
+    "check the channel name, or add a handler: on V_sig from \"V_chan\" { … }",
+    "if another module handles it, ignore this warning."
+  ],
+  "text": "error[W4112]: no handler for signal `V_sig` on channel \"V_chan\"\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The channel is hashed at compile time, so a typo produces a hash that nothing listens on: the emit runs and does nothing, silently. A global emit matches any global slot; a channel-routed emit only matches a slot on that same channel.\n  help: check the channel name, or add a handler: on V_sig from \"V_chan\" { … }\n  help: if another module handles it, ignore this warning.\n"
+}

@@ -1,0 +1,21 @@
+{
+  "code": "E3106",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "lib": "V_lib",
+    "target": "V_target"
+  },
+  "message": "hermes compile: bare-metal target V_target may link static .a archives only; --link-static \"V_lib\" is not a static archive. Rebuild it as a pure C/Rust .a.",
+  "why": "On bare metal the plan carries nothing but the static archives you named — no dynamic libraries, no frameworks, no loader. A path that is not a .a (a .so/.dylib, an object file, a directory) has no archive index to resolve hermes_net_* or your extern symbols against, so the link fails with an unresolved symbol far away from the real cause.",
+  "fix": [
+    "rebuild it as a pure C/Rust .a (clang -c, then ar rcs)",
+    "or point --link-static at an equivalent library that already ships as an archive"
+  ],
+  "text": "error[E3106]: hermes compile: bare-metal target V_target may link static .a archives only; --link-static \"V_lib\" is not a static archive. Rebuild it as a pure C/Rust .a.\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: On bare metal the plan carries nothing but the static archives you named — no dynamic libraries, no frameworks, no loader. A path that is not a .a (a .so/.dylib, an object file, a directory) has no archive index to resolve hermes_net_* or your extern symbols against, so the link fails with an unresolved symbol far away from the real cause.\n  help: rebuild it as a pure C/Rust .a (clang -c, then ar rcs)\n  help: or point --link-static at an equivalent library that already ships as an archive\n"
+}

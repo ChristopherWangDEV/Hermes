@@ -1,0 +1,18 @@
+{
+  "code": "W5004",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a struct field named like a status code is compared with an HTTP status, but the default tool.call contract never binds it for a non-2xx response",
+  "why": "Without allow_status, tool.call returns T only on success and throws HttpError otherwise, so on a 404 the flow leaves at the tool.call line and the field is never bound — the comparison can never be true. The HTTP status only reaches the call site through allow_status (HttpResult\u003cT\u003e.status). This is a heuristic warning, not an error: a business field that happens to be named status and really equals 404 is legal, and the compiler cannot tell the two apart (LANGUAGE.md 12.1 L3).",
+  "fix": [
+    "list the code in the call's allow_status and compare the result's status: `tool.call\u003cT\u003e(..., allow_status = [404])` then `r.status == 404`",
+    "or read the outcome from the response body instead: a 200 response carries T, so check a business field on T (e.g. `found = false`) rather than the HTTP status"
+  ],
+  "text": "error[W5004]: a struct field named like a status code is compared with an HTTP status, but the default tool.call contract never binds it for a non-2xx response\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Without allow_status, tool.call returns T only on success and throws HttpError otherwise, so on a 404 the flow leaves at the tool.call line and the field is never bound — the comparison can never be true. The HTTP status only reaches the call site through allow_status (HttpResult\u003cT\u003e.status). This is a heuristic warning, not an error: a business field that happens to be named status and really equals 404 is legal, and the compiler cannot tell the two apart (LANGUAGE.md 12.1 L3).\n  help: list the code in the call's allow_status and compare the result's status: `tool.call\u003cT\u003e(..., allow_status = [404])` then `r.status == 404`\n  help: or read the outcome from the response body instead: a 200 response carries T, so check a business field on T (e.g. `found = false`) rather than the HTTP status\n"
+}

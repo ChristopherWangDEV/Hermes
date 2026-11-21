@@ -1,0 +1,18 @@
+{
+  "code": "E2015",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "the retry count and delay must be integer literals",
+  "why": "The retry bound is baked into the IR's cost upper bound; a non-literal count or delay cannot be statically bounded, so the strip and trace limits would be wrong.",
+  "fix": [
+    "write literal integers: retry 3 times delay 100",
+    "retry bounds are compile-time — a runtime value cannot be used here"
+  ],
+  "text": "error[E2015]: the retry count and delay must be integer literals\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The retry bound is baked into the IR's cost upper bound; a non-literal count or delay cannot be statically bounded, so the strip and trace limits would be wrong.\n  help: write literal integers: retry 3 times delay 100\n  help: retry bounds are compile-time — a runtime value cannot be used here\n"
+}

@@ -1,0 +1,13 @@
+// len 与下标：数组只来自 JSON 值，长度是编译期可判定的调用。
+export struct Bag {
+    string[] tags;
+}
+
+export workflow main(input: Bag) entry -> string {
+    auto tags = input.tags;
+    auto n = len(tags);
+    if (n > 0) {
+        return "has-tags";
+    }
+    return "empty";
+}

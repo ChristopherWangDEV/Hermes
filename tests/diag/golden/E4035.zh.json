@@ -1,0 +1,18 @@
+{
+  "code": "E4035",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "backend 参数的默认值必须是裸 backend 名",
+  "why": "形参的默认值会变成 `params[].v`——一个**编译期折叠好**的常量，所以 `backend = 1 + 1` 没有任何值可记，运行期也没有求值器去算它。而\"用哪个 backend\"**只**从裸标识符取：`backend = \"homonoia\"` 会折成 {\"k\":\"string\",\"v\":\"homonoia\"}，却仍然留下一个**空的 backend 名**，于是用户接下来看到的是另一条毫不相干的报错。点号路径更糟——它会被折成**最后一段**，静默选中另一个 backend。",
+  "fix": [
+    "把 backend 名裸写、不加引号：`backend = homonoia`",
+    "或者干脆不写这个形参：没有它就意味着这个 workflow 没有默认 backend"
+  ],
+  "text": "error[E4035]: backend 参数的默认值必须是裸 backend 名\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 形参的默认值会变成 `params[].v`——一个**编译期折叠好**的常量，所以 `backend = 1 + 1` 没有任何值可记，运行期也没有求值器去算它。而\"用哪个 backend\"**只**从裸标识符取：`backend = \"homonoia\"` 会折成 {\"k\":\"string\",\"v\":\"homonoia\"}，却仍然留下一个**空的 backend 名**，于是用户接下来看到的是另一条毫不相干的报错。点号路径更糟——它会被折成**最后一段**，静默选中另一个 backend。\n  help: 把 backend 名裸写、不加引号：`backend = homonoia`\n  help: 或者干脆不写这个形参：没有它就意味着这个 workflow 没有默认 backend\n"
+}

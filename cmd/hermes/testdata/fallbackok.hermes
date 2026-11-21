@@ -1,0 +1,4 @@
+export workflow fb2() entry -> string {
+    auto x = (6 / 2) fallback { return 42; };
+    return "{x}";
+}

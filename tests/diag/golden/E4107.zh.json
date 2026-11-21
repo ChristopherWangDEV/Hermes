@@ -1,0 +1,18 @@
+{
+  "code": "E4107",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "stop 不在 workflow 体内",
+  "why": "`stop` 结束的是当前 workflow，并把它的 data 写进返回位。声明层没有 workflow 可结束：类型检查只在 workflow 体内进入该状态。",
+  "fix": [
+    "把它挪进 workflow 体",
+    "如果这是顶层初始化，那没有东西可停止——删掉"
+  ],
+  "text": "error[E4107]: stop 不在 workflow 体内\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `stop` 结束的是当前 workflow，并把它的 data 写进返回位。声明层没有 workflow 可结束：类型检查只在 workflow 体内进入该状态。\n  help: 把它挪进 workflow 体\n  help: 如果这是顶层初始化，那没有东西可停止——删掉\n"
+}

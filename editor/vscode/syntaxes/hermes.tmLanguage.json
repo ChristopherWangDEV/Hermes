@@ -1,0 +1,220 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "HermesScript",
+  "scopeName": "source.hermes",
+  "patterns": [
+    {
+      "include": "#directives"
+    },
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#variables"
+    },
+    {
+      "include": "#builtins"
+    },
+    {
+      "include": "#functions"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#types"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#declarations"
+    }
+  ],
+  "repository": {
+    "directives": {
+      "patterns": [
+        {
+          "match": "^\\s*(#include)\\s*(<[^>]+>)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.directive.hermes"
+            },
+            "2": {
+              "name": "string.unquoted.include.hermes"
+            }
+          }
+        },
+        {
+          "match": "^\\s*(#link)\\s*(\"[^\"]*\"|<[^>]+>)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.directive.hermes"
+            },
+            "2": {
+              "name": "string.unquoted.link.hermes"
+            }
+          }
+        }
+      ]
+    },
+    "comments": {
+      "patterns": [
+        {
+          "match": "//.*$",
+          "name": "comment.line.double-slash.hermes"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.hermes",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "meta.interpolation.hermes",
+              "begin": "\\{",
+              "end": "\\}",
+              "patterns": [
+                {
+                  "include": "#builtins"
+                },
+                {
+                  "match": "[A-Za-z_][A-Za-z0-9_]*(\\.[A-Za-z_][A-Za-z0-9_]*)*",
+                  "name": "variable.other.readwrite.hermes"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "match": "\\b(export|workflow|struct|backend|entry|const|auto|return|if|else|match|retry|try|catch|parallel|throw|default)\\b",
+          "name": "keyword.control.hermes"
+        },
+        {
+          "match": "\\b(true|false)\\b",
+          "name": "constant.language.boolean.hermes"
+        }
+      ]
+    },
+    "types": {
+      "patterns": [
+        {
+          "match": "\\b(string|int|double|bool|json|cost)\\b",
+          "name": "storage.type.hermes"
+        }
+      ]
+    },
+    "builtins": {
+      "patterns": [
+        {
+          "match": "\\b(model\\.generate|tool\\.call|json\\.(as_int|as_string|as_bool|as_float|get))\\b",
+          "name": "support.function.builtin.hermes"
+        },
+        {
+          "match": "\\b(NetworkError|HttpError|ModelError|ContractError|CircuitOpenError|Error)\\b",
+          "name": "support.class.error.hermes"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "match": "\\b\\d+\\b",
+          "name": "constant.numeric.integer.hermes"
+        }
+      ]
+    },
+    "declarations": {
+      "patterns": [
+        {
+          "match": "\\b(workflow|struct)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.hermes"
+            },
+            "2": {
+              "name": "entity.name.type.hermes"
+            }
+          }
+        },
+        {
+          "match": "\\b(backend)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.hermes"
+            },
+            "2": {
+              "name": "entity.name.tag.hermes"
+            }
+          }
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "comment": "C++ 风格声明：`int x = ...` / `auto x = ...` / `const int X = ...`。TextMate 不能跨行追踪作用域，这条是行内规则。",
+          "match": "\\b(?:const\\s+)?(?:int|string|bool|double|json|cost|auto)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+          "captures": {
+            "1": {
+              "name": "keyword.control.hermes"
+            },
+            "2": {
+              "name": "variable.other.readwrite.hermes"
+            }
+          },
+          "fontStyle": "bold"
+        },
+        {
+          "comment": "解构声明：`let [a, b] = ...`。",
+          "match": "\\b(let)\\s*\\[([^\\]]*)\\]",
+          "captures": {
+            "1": {
+              "name": "keyword.control.hermes"
+            },
+            "2": {
+              "name": "variable.other.readwrite.hermes"
+            }
+          },
+          "fontStyle": "bold"
+        },
+        {
+          "comment": "struct 字段名：`string title;` 里的 title。没有它，字段名和类型同色，读起来分不清。",
+          "match": "^\\s*(string|int|double|bool|json|cost)\\s+([A-Za-z_][A-Za-z0-9_]*)\\s*[;,]",
+          "captures": {
+            "1": {
+              "name": "storage.type.hermes"
+            },
+            "2": {
+              "name": "variable.other.member.hermes"
+            }
+          },
+          "fontStyle": "bold"
+        }
+      ]
+    },
+    "functions": {
+      "comment": "调用处的方法名：`json.as_string(...)`、`tool.call(...)`、`triage(...)`。",
+      "patterns": [
+        {
+          "match": "\\b([A-Za-z_][A-Za-z0-9_]*)\\s*\\(",
+          "captures": {
+            "1": {
+              "name": "entity.name.function.hermes"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

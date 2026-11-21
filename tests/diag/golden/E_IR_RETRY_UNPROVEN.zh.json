@@ -1,0 +1,23 @@
+{
+  "code": "E_IR_RETRY_UNPROVEN",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "call": "V_call",
+    "mode": "V_mode",
+    "retry": "V_retry",
+    "tool": "V_tool"
+  },
+  "message": "retry 节点 V_retry 会把 call_tool V_call 执行多次，但工具 V_tool 的 idem.mode=V_mode —— 没有任何幂等证明",
+  "why": "retry 在遇到 RunError 时会重跑整个 body。如果 body 里有未证明幂等的工具调用，每一次 5xx 都会把同一个 POST 再发一遍：重复扣款、重复副作用。E5007 是源码 AST 上的编译期闸门，保护不了被手改过的、旧编译器产出的、或被 codegen bug 搬过位置的 IR 文件。这条校验在加载期落在节点图上 ——「retry 内」的准确含义是「从 retry.body 可达」。",
+  "fix": [
+    "把 call_tool V_call 移出 retry 子树，只把已证明幂等的调用留在里面",
+    "给 V_tool 一个真证明（GET/HEAD、idempotent = true 或纯 idem_key），用 hermes ir 重新生成 IR；不要手改 idem.mode"
+  ],
+  "text": "error[E_IR_RETRY_UNPROVEN]: retry 节点 V_retry 会把 call_tool V_call 执行多次，但工具 V_tool 的 idem.mode=V_mode —— 没有任何幂等证明\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: retry 在遇到 RunError 时会重跑整个 body。如果 body 里有未证明幂等的工具调用，每一次 5xx 都会把同一个 POST 再发一遍：重复扣款、重复副作用。E5007 是源码 AST 上的编译期闸门，保护不了被手改过的、旧编译器产出的、或被 codegen bug 搬过位置的 IR 文件。这条校验在加载期落在节点图上 ——「retry 内」的准确含义是「从 retry.body 可达」。\n  help: 把 call_tool V_call 移出 retry 子树，只把已证明幂等的调用留在里面\n  help: 给 V_tool 一个真证明（GET/HEAD、idempotent = true 或纯 idem_key），用 hermes ir 重新生成 IR；不要手改 idem.mode\n"
+}

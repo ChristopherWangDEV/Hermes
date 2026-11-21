@@ -1,0 +1,18 @@
+{
+  "code": "E4020",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "the same case label appears more than once",
+  "why": "A duplicated label makes the second arm dead and hides that the author probably meant a different value.",
+  "fix": [
+    "remove the duplicate arm",
+    "or change it to the value you actually meant"
+  ],
+  "text": "error[E4020]: the same case label appears more than once\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A duplicated label makes the second arm dead and hides that the author probably meant a different value.\n  help: remove the duplicate arm\n  help: or change it to the value you actually meant\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E4029",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "legacy float label has no IR value representation",
+  "why": "This is a legacy-tag defense line, not a ban on floating point. Since v2.0.0 the only floating type is `double` (IEEE-754 binary64) and literals are emitted as the bit pattern {\"k\":\"double\",\"bits\":\"\u003c16 lowercase hex digits\u003e\"}; IR bytes contain no JSON floating-point numbers, so V-7 / canonical / signing all hold. A LitExpr tagged \"float\" is the pre-v2.0.0 shape: it falls into the string fallback and produces {\"t\":\"string\",\"v\":\"float\"} — valid IR that silently returns the string \"float\" at runtime. The three scanners stay as defense in depth against C ABI callers that ignore diagnostics.",
+  "fix": [
+    "use `double` for floating-point values (literals 1.5 / 1.5e2 / 1e3 are supported)",
+    "keep money in `cost` / int micro-units; the `json.as_float` API name is unchanged"
+  ],
+  "text": "error[E4029]: legacy float label has no IR value representation\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: This is a legacy-tag defense line, not a ban on floating point. Since v2.0.0 the only floating type is `double` (IEEE-754 binary64) and literals are emitted as the bit pattern {\"k\":\"double\",\"bits\":\"\u003c16 lowercase hex digits\u003e\"}; IR bytes contain no JSON floating-point numbers, so V-7 / canonical / signing all hold. A LitExpr tagged \"float\" is the pre-v2.0.0 shape: it falls into the string fallback and produces {\"t\":\"string\",\"v\":\"float\"} — valid IR that silently returns the string \"float\" at runtime. The three scanners stay as defense in depth against C ABI callers that ignore diagnostics.\n  help: use `double` for floating-point values (literals 1.5 / 1.5e2 / 1e3 are supported)\n  help: keep money in `cost` / int micro-units; the `json.as_float` API name is unchanged\n"
+}

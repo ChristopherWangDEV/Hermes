@@ -1,0 +1,15 @@
+# libhermes_parser.a 公开 C ABI 符号面（T09）。
+# 少一个 = 前端缺能力；多一个 = 偷偷长出新职责。与 build.sh 的 nm 校验双向 diff。
+hm_codegen
+hm_codegen_backends
+hm_codegen_ext
+hm_codegen_functions
+hm_codegen_tools
+hm_codegen_types
+hm_codegen_wfdecls
+hm_parse
+hm_parse_count
+hm_parse_diag
+hm_parse_dump
+hm_parse_kind_name
+hm_parse_version

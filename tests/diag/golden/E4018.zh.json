@@ -1,0 +1,18 @@
+{
+  "code": "E4018",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "`match` 缺少 `default` 分支",
+  "why": "字符串主题无法证明穷尽，缺 default 的 match 遇到不匹配的值时结果未定义。",
+  "fix": [
+    "加一个 default: 分支",
+    "或者收窄主题使各分支可证明穷尽"
+  ],
+  "text": "error[E4018]: `match` 缺少 `default` 分支\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 字符串主题无法证明穷尽，缺 default 的 match 遇到不匹配的值时结果未定义。\n  help: 加一个 default: 分支\n  help: 或者收窄主题使各分支可证明穷尽\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E4032",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "不能对非数组的值取下标",
+  "why": "只有数组支持按下标访问；对 int/string/json/struct 取下标没有元素可取。",
+  "fix": [
+    "对数组值取下标",
+    "对 json，先取出类型化数组（json.as_array）"
+  ],
+  "text": "error[E4032]: 不能对非数组的值取下标\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 只有数组支持按下标访问；对 int/string/json/struct 取下标没有元素可取。\n  help: 对数组值取下标\n  help: 对 json，先取出类型化数组（json.as_array）\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E2010",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "expected ']' after json field access",
+  "why": "Json field access is bracket syntax; a missing ']' leaves the access unterminated and the rest of the expression misparsed.",
+  "fix": [
+    "close the access: obj[\"key\"]",
+    "check the key string and its closing bracket"
+  ],
+  "text": "error[E2010]: expected ']' after json field access\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Json field access is bracket syntax; a missing ']' leaves the access unterminated and the rest of the expression misparsed.\n  help: close the access: obj[\"key\"]\n  help: check the key string and its closing bracket\n"
+}

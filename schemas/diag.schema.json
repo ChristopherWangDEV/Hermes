@@ -1,0 +1,85 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Hermes 编译器前端诊断数组",
+  "description": "LANGUAGE.md §11.1 诊断结构。每条诊断一个对象，整体为数组。所有字段均必填（除 notes 可选）。",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "required": ["severity", "code", "message", "line", "col", "end_line", "end_col", "module"],
+    "properties": {
+      "severity": {
+        "type": "string",
+        "enum": ["error", "warning", "note"],
+        "description": "严重程度。error 阻断 build；warning 默认可放行（--deny-warnings 升级）；note 仅附注。"
+      },
+      "code": {
+        "type": "string",
+        "pattern": "^(E|W)[0-9]{4}$",
+        "description": "诊断码。E=错误，W=警告。码值全集以 ARCH 任务表为准（不在本 schema 内穷举）。"
+      },
+      "message": {
+        "type": "string",
+        "minLength": 1,
+        "description": "一句可独立读懂的话，禁止 'invalid token' 这类无主语短语。"
+      },
+      "line": { "type": "integer", "minimum": 1, "description": "起始行（1-based）。" },
+      "col": { "type": "integer", "minimum": 1, "description": "起始列（1-based，指向首字符）。" },
+      "end_line": { "type": "integer", "minimum": 1, "description": "结束行。" },
+      "end_col": { "type": "integer", "minimum": 1, "description": "结束列（指向末字符之后）。T35 golden 诊断逐字比对依赖此字段。" },
+      "module": {
+        "type": "string",
+        "minLength": 1,
+        "description": "诊断所属源文件名（diag 用的文件名，非完整路径）。"
+      },
+      "why": {
+        "type": ["string", "null"],
+        "description": "为什么错（= 为什么 段落）。至少一条诊断须有非空 why。"
+      },
+      "fix": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "type": "string", "minLength": 1 },
+        "description": "怎么改（至少一条）。多解时展开为多元素。"
+      },
+      "notes": {
+        "type": "array",
+        "items": {
+          "type": "object",
+          "required": ["module", "line", "col", "message"],
+          "properties": {
+            "module": { "type": "string" },
+            "line": { "type": "integer", "minimum": 1 },
+            "col": { "type": "integer", "minimum": 1 },
+            "message": { "type": "string" }
+          }
+        },
+        "description": "跨文件问题时指回定义处（如 struct 声明位置）。"
+      },
+      "docs": {
+        "type": ["string", "null"],
+        "description": "相关文档锚点，如 'docs/LANGUAGE.md#7.4'。"
+      },
+      "edits": {
+        "type": "array",
+        "description": "M2 机器可应用的修正编辑（修正提示）。仅当存在自动可应用的改写时出现，不属于 required。",
+        "items": {
+          "type": "object",
+          "required": ["span", "replacement"],
+          "properties": {
+            "span": {
+              "type": "object",
+              "required": ["line", "col", "end_line", "end_col"],
+              "properties": {
+                "line": { "type": "integer", "minimum": 1 },
+                "col": { "type": "integer", "minimum": 1 },
+                "end_line": { "type": "integer", "minimum": 1 },
+                "end_col": { "type": "integer", "minimum": 1 }
+              }
+            },
+            "replacement": { "type": "string" }
+          }
+        }
+      }
+    }
+  }
+}

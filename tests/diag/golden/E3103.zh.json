@@ -1,0 +1,20 @@
+{
+  "code": "E3103",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "lib": "V_lib"
+  },
+  "message": "hermes compile: \"V_lib\" 带 Go runtime，但不在 g* 命名空间里。把它改名成 glibhermesnet.a（或 gnet.a），裸机闸门才看得见它；所有带 Go runtime 的库都必须以 'g' 开头。",
+  "why": "g* 前缀是一条**声明**，不是扫文件内容的启发式：编译器有权把每个 g* 库都当作带 Go runtime，而裸机闸门只读这条命名。不带前缀的 Go 归档对闸门是隐形的，于是它能走进固件——那时报的是缺 OS，而不是构建期的错。",
+  "fix": [
+    "把归档改名成 glibhermesnet.a（或 gnet.a）后重新生成链接计划",
+    "如果它本来就是纯 C/Rust 库，就不要占用 g* 命名空间——两条边都是声明，不是扫描"
+  ],
+  "text": "error[E3103]: hermes compile: \"V_lib\" 带 Go runtime，但不在 g* 命名空间里。把它改名成 glibhermesnet.a（或 gnet.a），裸机闸门才看得见它；所有带 Go runtime 的库都必须以 'g' 开头。\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: g* 前缀是一条**声明**，不是扫文件内容的启发式：编译器有权把每个 g* 库都当作带 Go runtime，而裸机闸门只读这条命名。不带前缀的 Go 归档对闸门是隐形的，于是它能走进固件——那时报的是缺 OS，而不是构建期的错。\n  help: 把归档改名成 glibhermesnet.a（或 gnet.a）后重新生成链接计划\n  help: 如果它本来就是纯 C/Rust 库，就不要占用 g* 命名空间——两条边都是声明，不是扫描\n"
+}

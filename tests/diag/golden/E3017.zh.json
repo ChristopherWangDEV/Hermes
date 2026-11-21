@@ -1,0 +1,18 @@
+{
+  "code": "E3017",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "#link 只允许出现在 .hermes 文件里",
+  "why": "#link 选择实现；头文件描述接口且会被多次包含，放在头里会把同一实现拉进每个包含者。",
+  "fix": [
+    "把 #link 挪进 .hermes 实现",
+    "头文件里只保留 #include"
+  ],
+  "text": "error[E3017]: #link 只允许出现在 .hermes 文件里\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: #link 选择实现；头文件描述接口且会被多次包含，放在头里会把同一实现拉进每个包含者。\n  help: 把 #link 挪进 .hermes 实现\n  help: 头文件里只保留 #include\n"
+}

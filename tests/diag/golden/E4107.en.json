@@ -1,0 +1,18 @@
+{
+  "code": "E4107",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "stop outside a workflow",
+  "why": "`stop` ends the current workflow and writes its data into the return slot. At declaration level there is no workflow to end: the checker only enters workflow bodies.",
+  "fix": [
+    "move it inside a workflow body",
+    "if this is top-level initialisation, there is nothing to stop — delete it"
+  ],
+  "text": "error[E4107]: stop outside a workflow\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: `stop` ends the current workflow and writes its data into the return slot. At declaration level there is no workflow to end: the checker only enters workflow bodies.\n  help: move it inside a workflow body\n  help: if this is top-level initialisation, there is nothing to stop — delete it\n"
+}

@@ -1,0 +1,18 @@
+{
+  "code": "E_IR_CODEGEN",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "代码生成失败：该 workflow 无法降到 IR",
+  "why": "codegen 会拒绝无法忠实下降的形状（如形状不符的 if/return 决策树）；产出错误的 IR 比失败更糟。",
+  "fix": [
+    "修正消息点名的那处构造",
+    "或者上报——内部 codegen 错误是编译器 bug，不是你的输入"
+  ],
+  "text": "error[E_IR_CODEGEN]: 代码生成失败：该 workflow 无法降到 IR\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: codegen 会拒绝无法忠实下降的形状（如形状不符的 if/return 决策树）；产出错误的 IR 比失败更糟。\n  help: 修正消息点名的那处构造\n  help: 或者上报——内部 codegen 错误是编译器 bug，不是你的输入\n"
+}

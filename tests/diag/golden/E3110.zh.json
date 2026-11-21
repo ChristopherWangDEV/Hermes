@@ -1,0 +1,18 @@
+{
+  "code": "E3110",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "带 Go runtime 的库（g*）不能链进裸机目标。请改用纯 C/Rust 静态库。",
+  "why": "裸机产物运行时没有操作系统：没有调度器、线程、动态加载器和系统调用层。Go runtime 归档的机器码默认这些东西都存在，所以固件可能链得过、却在第一次 goroutine 切换时就死。g* 前缀是「这个库带 Go runtime」的声明（旧 Go 归档名也在筛查表里），所以链接计划按名字拒绝，而不是靠猜符号。",
+  "fix": [
+    "把网络层重建为纯 C/Rust 静态 .a，用 extern \"C\" 桥接暴露接口后链它",
+    "或者去掉 --target，在宿主上原生编译本单元（宿主有 Go runtime）"
+  ],
+  "text": "error[E3110]: 带 Go runtime 的库（g*）不能链进裸机目标。请改用纯 C/Rust 静态库。\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 裸机产物运行时没有操作系统：没有调度器、线程、动态加载器和系统调用层。Go runtime 归档的机器码默认这些东西都存在，所以固件可能链得过、却在第一次 goroutine 切换时就死。g* 前缀是「这个库带 Go runtime」的声明（旧 Go 归档名也在筛查表里），所以链接计划按名字拒绝，而不是靠猜符号。\n  help: 把网络层重建为纯 C/Rust 静态 .a，用 extern \"C\" 桥接暴露接口后链它\n  help: 或者去掉 --target，在宿主上原生编译本单元（宿主有 Go runtime）\n"
+}

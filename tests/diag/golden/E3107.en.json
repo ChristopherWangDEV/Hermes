@@ -1,0 +1,18 @@
+{
+  "code": "E3107",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "hermes compile: this program calls tools/models and needs the Go network archive; build it with: go build -buildmode=c-archive -o build/glibhermesnet.a ./cmd/hermesnet",
+  "why": "tool.call / model.generate lower to hermes_net_* calls in the generated C, and the only carrier of those symbols is the Go network archive (a c-archive containing the AI interface compatibility layer). With no archive resolved, every one of those calls is an unresolved symbol at link time.",
+  "fix": [
+    "run the go build command in the message, or point HERMES_NET_LIB at an existing g* archive (the default lookup is build/glibhermesnet.a)",
+    "if the program needs no network or model access, remove tool.call / model.generate and the backend that needs them"
+  ],
+  "text": "error[E3107]: hermes compile: this program calls tools/models and needs the Go network archive; build it with: go build -buildmode=c-archive -o build/glibhermesnet.a ./cmd/hermesnet\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: tool.call / model.generate lower to hermes_net_* calls in the generated C, and the only carrier of those symbols is the Go network archive (a c-archive containing the AI interface compatibility layer). With no archive resolved, every one of those calls is an unresolved symbol at link time.\n  help: run the go build command in the message, or point HERMES_NET_LIB at an existing g* archive (the default lookup is build/glibhermesnet.a)\n  help: if the program needs no network or model access, remove tool.call / model.generate and the backend that needs them\n"
+}

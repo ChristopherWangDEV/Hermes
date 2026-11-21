@@ -1,0 +1,21 @@
+{
+  "code": "E1009",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "path": "V_path",
+    "suggestion": "V_suggestion"
+  },
+  "message": "include path V_path escapes the include root",
+  "why": "Include paths must stay inside the project. A path containing '.' or '..' lets a header reach outside the tree — which breaks reproducible builds (the resolved path depends on where the source tree happens to sit) and makes an offline build read files nobody declared.",
+  "fix": [
+    "use a path relative to the include root: V_suggestion",
+    "or add the directory with -I and include it by its name inside that root"
+  ],
+  "text": "error[E1009]: include path V_path escapes the include root\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Include paths must stay inside the project. A path containing '.' or '..' lets a header reach outside the tree — which breaks reproducible builds (the resolved path depends on where the source tree happens to sit) and makes an offline build read files nobody declared.\n  help: use a path relative to the include root: V_suggestion\n  help: or add the directory with -I and include it by its name inside that root\n"
+}

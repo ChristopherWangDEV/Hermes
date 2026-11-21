@@ -1,0 +1,23 @@
+#link <std/model>
+#link <std/net>
+
+export struct Order {
+    string id;
+}
+
+export tool orders {
+    description = "按订单号查订单";
+    url = "http://127.0.0.1:9/orders/{id}";
+    method = "GET";
+}
+
+export backend gw : openai = env("GATEWAY_URL", "http://127.0.0.1:8080");
+
+export workflow support(input: Order, backend = gw) entry -> string {
+    auto answer = model.agent(
+        goal = "查一下订单 {input.id} 的状态",
+        tools = ["orders"],
+        max_steps = 4
+    );
+    return answer;
+}

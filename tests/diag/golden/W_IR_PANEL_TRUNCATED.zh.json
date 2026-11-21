@@ -1,0 +1,21 @@
+{
+  "code": "W_IR_PANEL_TRUNCATED",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "dropped": "V_dropped",
+    "shown": "V_shown"
+  },
+  "message": "在 V_shown 条诊断后停止；另有 V_dropped 条被抑制",
+  "why": "一份坏输入可以产生上千条连带的错误，而有用的永远在最上面。上限让报告保持可读，也给恶意 IR 的产出的内存定了界。",
+  "fix": [
+    "先修前 V_shown 条再重跑 —— 其余通常是连带结果",
+    "确实想看全量的话用 --max-diags 提高上限"
+  ],
+  "text": "error[W_IR_PANEL_TRUNCATED]: 在 V_shown 条诊断后停止；另有 V_dropped 条被抑制\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 一份坏输入可以产生上千条连带的错误，而有用的永远在最上面。上限让报告保持可读，也给恶意 IR 的产出的内存定了界。\n  help: 先修前 V_shown 条再重跑 —— 其余通常是连带结果\n  help: 确实想看全量的话用 --max-diags 提高上限\n"
+}

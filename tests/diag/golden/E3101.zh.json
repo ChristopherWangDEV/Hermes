@@ -1,0 +1,18 @@
+{
+  "code": "E3101",
+  "lang": "zh",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "一个编译单元只能包含一个 workflow（其余会被丢弃）",
+  "why": "汇编阶段围绕单个 workflow 构建 IR；多出的那个永远进不了产物，看起来却完全正常——数据被静默丢弃。",
+  "fix": [
+    "把每个 workflow 拆到各自的 .hermes 文件",
+    "分别构建"
+  ],
+  "text": "error[E3101]: 一个编译单元只能包含一个 workflow（其余会被丢弃）\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: 汇编阶段围绕单个 workflow 构建 IR；多出的那个永远进不了产物，看起来却完全正常——数据被静默丢弃。\n  help: 把每个 workflow 拆到各自的 .hermes 文件\n  help: 分别构建\n"
+}

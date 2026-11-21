@@ -1,0 +1,20 @@
+{
+  "code": "E3104",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "target": "V_target"
+  },
+  "message": "hermes compile: the built-in Go network archive is built for the host and cannot be linked into an artifact cross-compiled to V_target. Build a g* c-archive for V_target and pass it with --link-static, or compile this unit natively.",
+  "why": "A Go c-archive is host-architecture machine code. Cross-compiling the unit to another target while linking the host-built archive produces either unresolved hermes_net_* symbols or an architecture mismatch — and the linker's complaint names a symbol, not the real cause.",
+  "fix": [
+    "build the g* c-archive for V_target (GOOS/GOARCH matching the target) and pass it with --link-static",
+    "or drop --target and compile this unit on the host it will run on"
+  ],
+  "text": "error[E3104]: hermes compile: the built-in Go network archive is built for the host and cannot be linked into an artifact cross-compiled to V_target. Build a g* c-archive for V_target and pass it with --link-static, or compile this unit natively.\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: A Go c-archive is host-architecture machine code. Cross-compiling the unit to another target while linking the host-built archive produces either unresolved hermes_net_* symbols or an architecture mismatch — and the linker's complaint names a symbol, not the real cause.\n  help: build the g* c-archive for V_target (GOOS/GOARCH matching the target) and pass it with --link-static\n  help: or drop --target and compile this unit on the host it will run on\n"
+}

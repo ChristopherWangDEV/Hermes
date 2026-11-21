@@ -1,0 +1,18 @@
+{
+  "code": "E3101",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "a compilation unit may contain only one workflow (the rest would be dropped)",
+  "why": "The assembly stage builds IR around a single workflow; an extra one never reaches the output and looks perfectly normal — data silently dropped.",
+  "fix": [
+    "split each workflow into its own .hermes file",
+    "build each one separately"
+  ],
+  "text": "error[E3101]: a compilation unit may contain only one workflow (the rest would be dropped)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: The assembly stage builds IR around a single workflow; an extra one never reaches the output and looks perfectly normal — data silently dropped.\n  help: split each workflow into its own .hermes file\n  help: build each one separately\n"
+}

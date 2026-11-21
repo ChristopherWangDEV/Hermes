@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://hermes.local/schemas/trace.schema.json",
+  "title": "Hermes trace",
+  "description": "一次 workflow 执行的完整记录。整数之外没有别的数值类型：浮点会让哈希跨机器漂移。",
+  "type": "object",
+  "required": ["run_id", "events", "chain"],
+  "additionalProperties": false,
+  "properties": {
+    "run_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "本次运行的标识。同一次运行重放时保持不变。"
+    },
+    "events": {
+      "type": "array",
+      "description": "按发生顺序排列。数组下标即哈希链的块号（第 k 块 = 第 k 个事件）。",
+      "items": {
+        "anyOf": [
+          { "$ref": "#/$defs/spanEvent" },
+          { "$ref": "#/$defs/truncatedEvent" }
+        ]
+      }
+    },
+    "chain": { "$ref": "#/$defs/chain" }
+  },
+  "$defs": {
+    "spanEvent": {
+      "type": "object",
+      "required": [
+        "span_id", "parent_id", "step_id", "kind", "name", "status",
+        "attr", "dur_ns", "micro_usd", "start_ns", "tokens_in", "tokens_out"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "span_id": { "type": "string", "minLength": 1 },
+        "parent_id": {
+          "type": "string",
+          "description": "空串表示根。非空时必须在同一份 trace 里存在（否则是孤儿）。"
+        },
+        "step_id": {
+          "type": "string",
+          "description": "必须能在源文件里 grep 到：IR 的变量名规则。没有它，trace 指不回代码。"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["workflow", "step", "provider", "tool", "admission", "budget", "event"]
+        },
+        "name": { "type": "string" },
+        "status": { "type": "string", "enum": ["ok", "failed", "refused", "truncated"] },
+        "attr": {
+          "type": "string",
+          "description": "6 值闭集之一，或空串表示成功。闭集见 docs/DECISIONS.md D-008。",
+          "enum": [
+            "", "model_contract_violation", "upstream_contract_drift",
+            "transport", "policy", "budget", "circuit"
+          ]
+        },
+        "start_ns": { "type": "integer", "minimum": 0 },
+        "dur_ns": { "type": "integer", "minimum": 0 },
+        "tokens_in": { "type": "integer", "minimum": 0 },
+        "tokens_out": { "type": "integer", "minimum": 0 },
+        "micro_usd": { "type": "integer", "minimum": 0 },
+        "detail": {
+          "type": ["object", "null"],
+          "additionalProperties": { "type": "string" },
+          "description": "结构化细节（expect/got sha256、schema 关键字…）。值一律字符串，避免数值类型分歧。"
+        }
+      }
+    },
+    "truncatedEvent": {
+      "type": "object",
+      "required": ["kind", "name", "status"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": { "const": "event" },
+        "name": { "const": "trace.truncated" },
+        "status": { "const": "truncated" },
+        "detail": {
+          "type": "object",
+          "required": ["at_bytes"],
+          "additionalProperties": false,
+          "properties": {
+            "at_bytes": { "type": "integer", "minimum": 0 }
+          }
+        }
+      }
+    },
+    "chain": {
+      "type": "object",
+      "required": ["blocks", "total_len", "root", "block_hashes"],
+      "additionalProperties": false,
+      "properties": {
+        "blocks": { "type": "integer", "minimum": 0 },
+        "total_len": { "type": "integer", "minimum": 0 },
+        "root": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$",
+          "description": "终块哈希（含块数与总字节数），小写十六进制。"
+        },
+        "block_hashes": {
+          "type": "array",
+          "items": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+          "description": "逐块哈希。**必须存**：只有根哈希能判'变了'，存了逐块哈希才能判'第几块变了'。"
+        },
+        "truncated": { "type": "boolean" }
+      }
+    }
+  }
+}

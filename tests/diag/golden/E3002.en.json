@@ -1,0 +1,20 @@
+{
+  "code": "E3002",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {
+    "chain": "V_chain"
+  },
+  "message": "include cycle: V_chain",
+  "why": "Includes are expanded depth-first, so a cycle never terminates — the compiler would keep reopening the same header. Note this is a *module* cycle, not a runtime one: breaking it changes which declarations are visible, not the execution order.",
+  "fix": [
+    "move the shared declarations into a third header that both sides include",
+    "or drop one of the two includes if it is only needed for a type that can be forward-declared"
+  ],
+  "text": "error[E3002]: include cycle: V_chain\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: Includes are expanded depth-first, so a cycle never terminates — the compiler would keep reopening the same header. Note this is a *module* cycle, not a runtime one: breaking it changes which declarations are visible, not the execution order.\n  help: move the shared declarations into a third header that both sides include\n  help: or drop one of the two includes if it is only needed for a type that can be forward-declared\n"
+}

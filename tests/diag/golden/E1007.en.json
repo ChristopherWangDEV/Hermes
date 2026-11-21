@@ -1,0 +1,18 @@
+{
+  "code": "E1007",
+  "lang": "en",
+  "module": "w.hermes",
+  "path": "workflows[0].nodes[3]",
+  "line": 12,
+  "col": 8,
+  "end_line": 12,
+  "end_col": 9,
+  "args": {},
+  "message": "unterminated string (must be single-line)",
+  "why": "An unterminated or line-broken string swallows the following code, turning one typo into a cascade of unrelated errors.",
+  "fix": [
+    "close the string on the same line",
+    "use \\n for a newline, or split the content into multiple segments"
+  ],
+  "text": "error[E1007]: unterminated string (must be single-line)\n  --\u003e w.hermes\n      at workflows[0].nodes[3]\n      line 12, col 8\n   why: An unterminated or line-broken string swallows the following code, turning one typo into a cascade of unrelated errors.\n  help: close the string on the same line\n  help: use \\n for a newline, or split the content into multiple segments\n"
+}
